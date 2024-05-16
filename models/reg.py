@@ -29,9 +29,6 @@ def get_preprocessing_layers(
     """Return preprocessing layers for regression model."""
 
     def preproc_layers(x):
-        import pdb
-        pdb.set_trace()
-
         chans = [None] * n_chans
         for idx in range(n_chans):
             if noisy_chans[idx]:
