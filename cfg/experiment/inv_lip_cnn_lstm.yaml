@@ -16,8 +16,9 @@ data:
             name: all_hotspots_but_lip
     input:
         chan_1: xco2_prec
-        chan_2: v_wind
-        chan_3: u_wind
+        chan_2: None
+        chan_3: v_wind
+        chan_4: u_wind
         # chan_4: weighted_plume
 callbacks:
     model_checkpoint: false

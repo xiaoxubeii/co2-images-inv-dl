@@ -14,6 +14,8 @@ data:
     input:
         chan_1: xco2_prec
         chan_2: None
+        # chan_3: None
+        # chan_4: None
         chan_3: v_wind
         chan_4: u_wind
         # chan_4: weighted_plume
