@@ -328,8 +328,6 @@ class Input_train:
             axis=-1, name="preproc_norm")
         self.n_layer.adapt(self.train)
 
-        print("data.x.train.shape", self.train.shape)
-
     def prepare_for_scaling(self):
         """Prepare for scaling. Get plume in independant array and boolean channels."""
         self.scale_bool = [False] * len(self.list_chans)
