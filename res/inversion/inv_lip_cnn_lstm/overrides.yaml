@@ -1,0 +1,5 @@
+- +experiment=inv_lip_cnn_lstm
+- ++exp_name=inv_lip_cnn_lstm
+- ++training.max_epochs=1
+- ++data.init.window_length=2
+- ++training.batch_size=8

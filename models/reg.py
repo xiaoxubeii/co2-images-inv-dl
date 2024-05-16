@@ -29,6 +29,9 @@ def get_preprocessing_layers(
     """Return preprocessing layers for regression model."""
 
     def preproc_layers(x):
+        import pdb
+        pdb.set_trace()
+
         chans = [None] * n_chans
         for idx in range(n_chans):
             if noisy_chans[idx]:
@@ -41,8 +44,11 @@ def get_preprocessing_layers(
                         stddev=0.7, name=f"noise_{idx}"
                     )(x[:, :, :, idx: idx + 1])
             else:
-                # layer = tf.keras.layers.Layer()
-                chans[idx] = x[:, :, :, idx: idx + 1]
+                if window_length > 0:
+                    # layer = tf.keras.layers.Layer()
+                    chans[idx] = x[:, :, :, :, idx: idx + 1]
+                else:
+                    chans[idx] = x[:, :, :, idx: idx + 1]
 
         concatted = tf.keras.layers.Concatenate()(chans)
         x = n_layer(concatted)
