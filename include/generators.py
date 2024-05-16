@@ -221,6 +221,9 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             range(index * self.batch_size, (index + 1) * self.batch_size)
         ]
         x, y = self.__get_data(batches, batches_back, batches_alt)
+        with tf.device('/cpu:0'):
+            x = tf.convert_to_tensor(x, np.float32)
+            y = tf.convert_to_tensor(y, np.float32)
         return x, y
 
     def __len__(self):
