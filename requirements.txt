@@ -1,0 +1,15 @@
+hydra-core
+numpy
+joblib
+matplotlib
+pandas
+seaborn
+tensorflow
+xarray
+cmcrameri
+scipy
+scikit-learn
+treeconfigparser
+wandb
+netcdf4
+keras_applications
