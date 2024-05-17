@@ -23,7 +23,7 @@ sys.path.append(
 
 mympf.setMatplotlibParam()
 plt.viridis()
-dir_res = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/inv_lip"
+dir_res = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/inv_lip_cnn_lstm"
 name_model = dir_res
 path_eval_nc = "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/all_hotspots_but_lip/train_dataset.nc"
 data = model_eval.get_data_for_inversion(

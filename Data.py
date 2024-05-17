@@ -505,8 +505,8 @@ class Output_eval:
 class Data_eval:
 
     path_eval_nc: str
-    window_length: int = 0,
-    shift: int = 0,
+    window_length: int,
+    shift: int,
 
     def __post_init__(self):
         self.ds = xr.open_dataset(self.path_eval_nc)
