@@ -534,6 +534,7 @@ class Data_eval:
             chan_4,
             dir_seg_models=dir_seg_models,
             window_length=self.window_length,
+            shift=self.shift
         )
 
     def prepare_output_segmentation(
