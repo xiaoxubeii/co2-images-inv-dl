@@ -139,11 +139,21 @@ def get_bool_perf_seg(ds: xr.Dataset) -> np.ndarray:
     return np.expand_dims(ds.bool_perf_seg.values, -1)
 
 
-def get_emiss(ds: xr.Dataset, N_hours_prec: int) -> np.ndarray:
+def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int) -> np.ndarray:
     """Return emiss array related to ds."""
     emiss = np.array(ds.emiss.values, dtype=float)
     emiss = emiss[:, 1: N_hours_prec + 1]
-    return emiss
+    if window_length > 0:
+        num_batches = int(np.floor((len(emiss) - window_length)/shift)) + 1
+        num_features = emiss.shape[1]
+        output_targets = np.repeat(
+            np.nan, repeats=num_batches * num_features).reshape(num_batches, num_features)
+        for batch in range(num_batches):
+            output_targets[batch] = emiss[(
+                shift*batch + (window_length-1))]
+        return output_targets
+    else:
+        return emiss
 
 
 def get_bool_(ds: xr.Dataset, N_hours_prec: int) -> np.ndarray:
@@ -358,6 +368,8 @@ class Output_train:
     ds_train: xr.Dataset
     ds_valid: xr.Dataset
     classes: int
+    window_length: int = 0
+    shift: int = 0
 
     def get_segmentation(self, curve, min_w, max_w, param_curve):
         """Get segmentation train and valid."""
@@ -369,8 +381,10 @@ class Output_train:
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
-        self.train = get_emiss(self.ds_train, N_hours_prec)
-        self.valid = get_emiss(self.ds_valid, N_hours_prec)
+        self.train = get_emiss(self.ds_train, N_hours_prec,
+                               window_length=self.window_length, shift=self.shift)
+        self.valid = get_emiss(self.ds_valid, N_hours_prec,
+                               window_length=self.window_length, shift=self.shift)
 
 
 @dataclass
@@ -426,7 +440,7 @@ class Data_train:
     def prepare_output_inversion(self, N_hours_prec: int = 1):
         """Prepare output object for inversion."""
         self.y = Output_train(
-            self.ds_train, self.ds_valid, classes=1
+            self.ds_train, self.ds_valid, classes=1, window_length=self.window_length, shift=self.shift
         )
         self.y.get_inversion(N_hours_prec=N_hours_prec)
 
