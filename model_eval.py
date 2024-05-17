@@ -287,8 +287,6 @@ def get_data_for_inversion(
     """Prepare Data_eval object with name_dataset."""
 
     cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
-    import pdb
-    pdb.set_trace()
     data = Data_eval(path_eval_nc, cfg.data.init.window_length,
                      cfg.data.init.shift)
     data.prepare_input(
