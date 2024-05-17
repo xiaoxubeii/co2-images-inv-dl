@@ -67,7 +67,8 @@ def get_segmentation_model(
     loss=pixel_weighted_cross_entropy,
 ):
     """Get segmentation neural network model and compile it with pixel_weighted_cross_entropy loss."""
-    model = tf.keras.models.load_model(os.path.join(dir_res, name_w), compile=False)
+    model = tf.keras.models.load_model(
+        os.path.join(dir_res, name_w), compile=False)
     model.compile(optimiser, loss=loss)
     return model
 
@@ -91,12 +92,13 @@ def get_wbce_model_on_data(model: tf.keras.Model, data: Data_eval) -> np.ndarray
 def get_nwbce_model_on_data(model: tf.keras.Model, data: Data_eval) -> np.ndarray:
     """Get nwbce scores by segmentation model applied on data."""
     all_cnn_wbce = get_wbce_model_on_data(model, data)
-    b1_all_wbce = get_b1_seg_wbce(tf.convert_to_tensor(data.y.eval, np.float32))
+    b1_all_wbce = get_b1_seg_wbce(
+        tf.convert_to_tensor(data.y.eval, np.float32))
     all_cnn_nwbce = all_cnn_wbce / b1_all_wbce
     return all_cnn_nwbce
 
 
-## neutral baseline functions
+# neutral baseline functions
 
 
 def get_mean_loss(params, y_test: tf.Tensor, pred_test: tf.Tensor) -> float:
@@ -132,7 +134,7 @@ def get_b1_seg_wbce(y: tf.Tensor) -> np.ndarray:
     return wbce
 
 
-## plot functions
+# plot functions
 
 
 def plot_segmentation_examples(
@@ -199,13 +201,16 @@ def plot_segmentation_examples(
             np.squeeze(data.x.eval[idx, :, :, 0]), origin="lower"
         )
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         i_ax = cur_row + i * N_cols
         cur_row += 1
-        ims[i_ax] = axs[i_ax].imshow(np.squeeze(data.y.eval[idx]), origin="lower")
+        ims[i_ax] = axs[i_ax].imshow(
+            np.squeeze(data.y.eval[idx]), origin="lower")
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         i_ax = cur_row + i * N_cols
         cur_row += 1
@@ -217,7 +222,8 @@ def plot_segmentation_examples(
             origin="lower",
         )
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         if no2:
             i_ax = cur_row + i * N_cols
@@ -226,7 +232,8 @@ def plot_segmentation_examples(
                 np.squeeze(data.x.eval[idx, :, :, -1]), origin="lower"
             )
             caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-            cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+            cbars[i_ax] = plt.colorbar(
+                ims[i_ax], caxs[i_ax], orientation="vertical")
 
         if proba_plume > 0:
             i_ax = cur_row + i * N_cols
@@ -241,7 +248,8 @@ def plot_segmentation_examples(
                 origin="lower",
             )
             caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-            cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+            cbars[i_ax] = plt.colorbar(
+                ims[i_ax], caxs[i_ax], orientation="vertical")
 
     list_pd_t_idx = []
     list_cnn_nwbce = []
@@ -269,7 +277,7 @@ def plot_segmentation_examples(
 
 
 # Inversion
-## Get functions
+#  Get functions
 
 
 def get_data_for_inversion(
@@ -280,7 +288,8 @@ def get_data_for_inversion(
 
     cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
 
-    data = Data_eval(path_eval_nc)
+    data = Data_eval(path_eval_nc, cfg.data.init.window_length,
+                     cfg.data.init.shift)
     data.prepare_input(
         cfg.data.input.chan_0,
         cfg.data.input.chan_1,
@@ -298,7 +307,8 @@ def get_inversion_model(
     optimiser: str = "adam",
     loss=tf.keras.losses.MeanAbsoluteError(),
 ):
-    model = tf.keras.models.load_model(os.path.join(dir_res, name_w), compile=False)
+    model = tf.keras.models.load_model(
+        os.path.join(dir_res, name_w), compile=False)
     model.compile(optimiser, loss=loss)
     return model
 
@@ -332,7 +342,8 @@ def get_inv_metrics_pred_from_ensemble_paths(list_paths_model, path_ds_nc, name_
 
 def get_inv_metrics(y: tf.Tensor, pred: tf.Tensor):
     """Get inversion metrics between predictions and truth."""
-    f_mae = tf.keras.losses.MeanAbsoluteError(reduction=tf.losses.Reduction.NONE)
+    f_mae = tf.keras.losses.MeanAbsoluteError(
+        reduction=tf.losses.Reduction.NONE)
     all_mae = f_mae(y, pred)
     f_mape = tf.keras.losses.MeanAbsolutePercentageError(
         reduction=tf.losses.Reduction.NONE
@@ -368,7 +379,7 @@ def get_inv_metrics_from_paths(path_model: str, path_ds_nc: str):
     return metrics
 
 
-## plot functions
+# plot functions
 def draw_idx(
     all_scores: np.ndarray, ds: xr.Dataset, interval: list = [], idx: int = -1
 ) -> list:
@@ -404,7 +415,8 @@ def get_summary_histo_inversion(
     df_mape_2 = pd.DataFrame({"loss": mean_metrics["mape"], "method": "mean"})
     df_mape = pd.concat([df_mape_1, df_mape_2])
 
-    pred = np.squeeze(model.predict(tf.convert_to_tensor(data.x.eval, np.float32)))
+    pred = np.squeeze(model.predict(
+        tf.convert_to_tensor(data.x.eval, np.float32)))
     y = data.y.eval[:, -1]
     df_emiss_1 = pd.DataFrame({"emiss": y, "origin": "truth"})
     df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
@@ -539,7 +551,8 @@ def plot_inversion_examples(
             np.squeeze(data.x.eval[idx, :, :, 0]), origin="lower"
         )
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         i_ax = cur_row + i * N_cols
         cur_row += 1
@@ -547,7 +560,8 @@ def plot_inversion_examples(
             np.squeeze(data.x.eval[idx, :, :, 1]), origin="lower"
         )
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         i_ax = cur_row + i * N_cols
         cur_row += 1
@@ -555,7 +569,8 @@ def plot_inversion_examples(
             np.squeeze(data.x.eval[idx, :, :, 2]), origin="lower"
         )
         caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+        cbars[i_ax] = plt.colorbar(
+            ims[i_ax], caxs[i_ax], orientation="vertical")
 
         if fourth_col:
             i_ax = cur_row + i * N_cols
@@ -564,7 +579,8 @@ def plot_inversion_examples(
                 np.squeeze(data.x.eval[idx, :, :, 3]), origin="lower"
             )
             caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-            cbars[i_ax] = plt.colorbar(ims[i_ax], caxs[i_ax], orientation="vertical")
+            cbars[i_ax] = plt.colorbar(
+                ims[i_ax], caxs[i_ax], orientation="vertical")
 
     list_pd_t_idx = []
     list_all_scores = []
@@ -648,11 +664,13 @@ def build_df_perf_inv(metrics):
     df_mape_seg = pd.DataFrame(
         {mape_col: metrics_seg_pred_no2["mape"], second_col: "Segmentation"}
     )
-    df_mape_no2 = pd.DataFrame({mape_col: metrics_no2["mape"], second_col: "XNO2"})
+    df_mape_no2 = pd.DataFrame(
+        {mape_col: metrics_no2["mape"], second_col: "XNO2"})
     df_mape_cs = pd.DataFrame(
         {mape_col: metrics_cs["mape"], second_col: "CSF"}
     )
-    df_mape_cs[mape_col] = df_mape_cs[mape_col].apply(lambda x: 200 if x > 200 else x)
+    df_mape_cs[mape_col] = df_mape_cs[mape_col].apply(
+        lambda x: 200 if x > 200 else x)
     df_mape = pd.concat([df_mape_none, df_mape_seg, df_mape_no2, df_mape_cs])
 
     mae_col = "Absolute error (Mt/yr)"
@@ -663,11 +681,13 @@ def build_df_perf_inv(metrics):
     df_mae_seg = pd.DataFrame(
         {mae_col: metrics_seg_pred_no2["mae"], second_col: "Segmentation"}
     )
-    df_mae_no2 = pd.DataFrame({mae_col: metrics_no2["mae"], second_col: "XNO2"})
+    df_mae_no2 = pd.DataFrame(
+        {mae_col: metrics_no2["mae"], second_col: "XNO2"})
     df_mae_cs = pd.DataFrame(
         {mae_col: metrics_cs["mae"], second_col: "CSF"}
     )
-    df_mae_cs[mae_col] = df_mae_cs[mae_col].apply(lambda x: 30 if x > 30 else x)
+    df_mae_cs[mae_col] = df_mae_cs[mae_col].apply(
+        lambda x: 30 if x > 30 else x)
     df_mae = pd.concat([df_mae_none, df_mae_seg, df_mae_no2, df_mae_cs])
 
     df_mape_groupby = df_mape.groupby("Add. input:")
@@ -695,6 +715,7 @@ def build_df_perf_inv(metrics):
     result = desc_mape.join(desc_mae)
     return {"res": result, "df_mae": df_mae, "df_mape": df_mape}
 
+
 def integrated_gradients(model, img_tensor, baseline_tensor, num_steps=100):
     # Define the path from baseline to input as a straight line
     alphas = tf.linspace(start=0.0, stop=1.0, num=num_steps + 1)
@@ -716,9 +737,11 @@ def integrated_gradients(model, img_tensor, baseline_tensor, num_steps=100):
     with tf.GradientTape() as tape:
         tape.watch(interpolated_inputs)
         interpolated_predictions = model(interpolated_inputs)
-    interpolated_grads = tape.gradient(interpolated_predictions, interpolated_inputs)
+    interpolated_grads = tape.gradient(
+        interpolated_predictions, interpolated_inputs)
 
     # Approximate the integral using the trapezoidal rule
     avg_grads = tf.reduce_mean(interpolated_grads, axis=0)
-    integrated_grads = tf.reduce_sum(avg_grads * (img_tensor - baseline_tensor), axis=0)
+    integrated_grads = tf.reduce_sum(
+        avg_grads * (img_tensor - baseline_tensor), axis=0)
     return integrated_grads

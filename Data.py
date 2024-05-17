@@ -139,7 +139,7 @@ def get_bool_perf_seg(ds: xr.Dataset) -> np.ndarray:
     return np.expand_dims(ds.bool_perf_seg.values, -1)
 
 
-def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length=0, shift=0) -> np.ndarray:
+def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int) -> np.ndarray:
     """Return emiss array related to ds."""
     emiss = np.array(ds.emiss.values, dtype=float)
     emiss = emiss[:, 1: N_hours_prec + 1]
@@ -486,6 +486,8 @@ class Output_eval:
 
     ds_eval: xr.Dataset
     classes: int
+    window_length: int
+    shift: int
 
     def get_segmentation(self, curve, min_w, max_w, param_curve):
         """Get segmentation train and valid."""
@@ -495,13 +497,16 @@ class Output_eval:
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
-        self.eval = get_emiss(self.ds_eval, N_hours_prec)
+        self.eval = get_emiss(self.ds_eval, N_hours_prec,
+                              self.window_length, self.shift)
 
 
 @dataclass
 class Data_eval:
 
     path_eval_nc: str
+    window_length: int = 0,
+    shift: int = 0,
 
     def __post_init__(self):
         self.ds = xr.open_dataset(self.path_eval_nc)
@@ -539,6 +544,7 @@ class Data_eval:
 
     def prepare_output_inversion(self, N_hours_prec: int = 1):
         """Prepare output object for inversion."""
-        self.y = Output_eval(self.ds, classes=1)
+        self.y = Output_eval(
+            self.ds, classes=1, window_length=self.window_length, shift=self.shift)
         self.y.get_inversion(N_hours_prec=N_hours_prec)
         self.y.get_inversion(N_hours_prec=N_hours_prec)
