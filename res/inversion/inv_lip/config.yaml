@@ -3,6 +3,8 @@ data:
     _target_: Data.Data_train
     path_train_ds: ${data.path.directory}/${data.path.train.name}/${data.path.train.nc}
     path_valid_ds: ${data.path.directory}/${data.path.valid.name}/${data.path.valid.nc}
+    window_length: 0
+    shift: 0
   input:
     dir_seg_models: /cerea_raid/users/dumontj/dev/coco2/dl/res/models
     chan_0: xco2
