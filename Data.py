@@ -457,6 +457,8 @@ class Input_eval:
     chan_4: str = "None"
     dir_seg_models: str = "None"
     noise_level: float = 0.7
+    window_length: int = 0
+    shift: int = 0
 
     def __post_init__(self):
 
@@ -476,6 +478,8 @@ class Input_eval:
         self.eval = filler.fill_data(
             self.ds,
             self.list_chans,
+            self.window_length,
+            self.shift,
         )
         self.fields_input_shape = list(self.eval.shape[1:])
 
@@ -529,6 +533,8 @@ class Data_eval:
             chan_3,
             chan_4,
             dir_seg_models=dir_seg_models,
+            window_length=self.window_length,
+            shift=self.shift
         )
 
     def prepare_output_segmentation(
