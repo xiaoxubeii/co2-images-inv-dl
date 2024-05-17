@@ -473,13 +473,13 @@ class Input_eval:
         filler = Input_filler(
             self.dir_seg_models,
             self.noise_level,
+            self.window_length,
+            self.shift
         )
 
         self.eval = filler.fill_data(
             self.ds,
             self.list_chans,
-            self.window_length,
-            self.shift,
         )
         self.fields_input_shape = list(self.eval.shape[1:])
 
@@ -534,7 +534,6 @@ class Data_eval:
             chan_4,
             dir_seg_models=dir_seg_models,
             window_length=self.window_length,
-            shift=self.shift
         )
 
     def prepare_output_segmentation(
