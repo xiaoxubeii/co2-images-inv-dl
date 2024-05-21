@@ -69,8 +69,8 @@ def run_exp(**args):
     os.system(run_exp)
 
 
-# run_exp(exp_name="essential",
-#         model_name="essential", window_length=0, shift=0, max_epochs=1)
+# run_exp(exp_name="cnn-lstm",
+#         model_name="cnn-lstm", window_length=2, shift=1, max_epochs=1)
 
 test_exp(exp_name="cnn-lstm",
          res_path=default_params["res_path"], test_dataset=default_params["test_dataset"])
