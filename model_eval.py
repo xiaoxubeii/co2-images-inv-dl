@@ -352,6 +352,7 @@ def get_inv_metrics(y: tf.Tensor, pred: tf.Tensor):
 
 
 def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval) -> dict:
+    import pdb;pdb.set_trace()
     """Get inversion scores by inversion model applied on data."""
     x = tf.convert_to_tensor(data.x.eval, np.float32)[:10]
     pred = tf.convert_to_tensor(model.predict(x), np.float32)
