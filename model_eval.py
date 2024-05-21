@@ -353,9 +353,9 @@ def get_inv_metrics(y: tf.Tensor, pred: tf.Tensor):
 
 def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval) -> dict:
     """Get inversion scores by inversion model applied on data."""
-    x = tf.convert_to_tensor(data.x.eval, np.float32)[:10]
+    x = tf.convert_to_tensor(data.x.eval, np.float32)[:100]
     pred = tf.convert_to_tensor(model.predict(x), np.float32)
-    y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
+    y = tf.convert_to_tensor(data.y.eval, np.float32)[:100]
     return get_inv_metrics(y, pred)
 
 
@@ -403,6 +403,7 @@ def get_summary_histo_inversion(
     model: tf.keras.Model, data: Data_eval, dir_save: str = "None"
 ) -> None:
     """Get various histograms summing up the inversion results."""
+    import pdb;pdb.set_trace()
     metrics = get_inv_metrics_model_on_data(model, data)
     mean_metrics = get_inv_mean_loss(data)
 
@@ -494,18 +495,22 @@ def plot_inversion_examples(
     list_ds_idx: list = [],
     proba_plume: float = 0,
     fourth_col=False,
+    window_length=0,
 ):
     """Plot examples of {input / truth / output} of the CNN model."""
-
     if not list_idx:
-        [idx0, ds_idx0] = draw_idx(all_mae, data.ds)
-        [idx1, ds_idx1] = draw_idx(all_mae, data.ds)
-        [idx2, ds_idx2] = draw_idx(all_mae, data.ds)
-        list_idx = [idx0, idx1, idx2]
-        list_ds_idx = [ds_idx0, ds_idx1, ds_idx2]
+        if window_length > 0:
+            [idx, ds_idx] = draw_idx(all_mae, data.ds)
+            list_idx = [idx]*window_length
+            list_ds_idx = [ds_idx]*window_length
+        else:
+            [idx0, ds_idx0] = draw_idx(all_mae, data.ds)
+            [idx1, ds_idx1] = draw_idx(all_mae, data.ds)
+            [idx2, ds_idx2] = draw_idx(all_mae, data.ds)
+            list_idx = [idx0, idx1, idx2]
+            list_ds_idx = [ds_idx0, ds_idx1, ds_idx2]
 
     N_idx = len(list_idx)
-
     N_cols = 3
     if proba_plume > 0:
         N_cols = N_cols + 1
@@ -538,48 +543,50 @@ def plot_inversion_examples(
         ax.set_xticklabels([])
         ax.set_yticklabels([])
 
-    for i, idx in enumerate(list_idx):
-
-        x_idx = data.x.eval[idx]
-
-        cur_row = 0
-
-        i_ax = cur_row + i * N_cols
-        cur_row += 1
-        ims[i_ax] = axs[i_ax].imshow(
-            np.squeeze(data.x.eval[idx, :, :, 0]), origin="lower"
-        )
-        caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(
-            ims[i_ax], caxs[i_ax], orientation="vertical")
-
-        i_ax = cur_row + i * N_cols
-        cur_row += 1
-        ims[i_ax] = axs[i_ax].imshow(
-            np.squeeze(data.x.eval[idx, :, :, 1]), origin="lower"
-        )
-        caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(
-            ims[i_ax], caxs[i_ax], orientation="vertical")
-
-        i_ax = cur_row + i * N_cols
-        cur_row += 1
-        ims[i_ax] = axs[i_ax].imshow(
-            np.squeeze(data.x.eval[idx, :, :, 2]), origin="lower"
-        )
-        caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
-        cbars[i_ax] = plt.colorbar(
-            ims[i_ax], caxs[i_ax], orientation="vertical")
-
-        if fourth_col:
+    def _plot_data(data, list_idx):
+        for i, idx in enumerate(list_idx):
+            cur_row = 0
             i_ax = cur_row + i * N_cols
             cur_row += 1
             ims[i_ax] = axs[i_ax].imshow(
-                np.squeeze(data.x.eval[idx, :, :, 3]), origin="lower"
+                np.squeeze(data[idx, :, :, 0]), origin="lower"
             )
             caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
             cbars[i_ax] = plt.colorbar(
                 ims[i_ax], caxs[i_ax], orientation="vertical")
+
+            i_ax = cur_row + i * N_cols
+            cur_row += 1
+            ims[i_ax] = axs[i_ax].imshow(
+                np.squeeze(data[idx, :, :, 1]), origin="lower"
+            )
+            caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
+            cbars[i_ax] = plt.colorbar(
+                ims[i_ax], caxs[i_ax], orientation="vertical")
+
+            i_ax = cur_row + i * N_cols
+            cur_row += 1
+            ims[i_ax] = axs[i_ax].imshow(
+                np.squeeze(data[idx, :, :, 2]), origin="lower"
+            )
+            caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
+            cbars[i_ax] = plt.colorbar(
+                ims[i_ax], caxs[i_ax], orientation="vertical")
+
+            if fourth_col:
+                i_ax = cur_row + i * N_cols
+                cur_row += 1
+                ims[i_ax] = axs[i_ax].imshow(
+                    np.squeeze(data[idx, :, :, 3]), origin="lower"
+                )
+                caxs[i_ax] = axs[i_ax].inset_axes((1.02, 0, 0.035, 1))
+                cbars[i_ax] = plt.colorbar(
+                    ims[i_ax], caxs[i_ax], orientation="vertical")
+
+    if window_length > 0:
+        _plot_data(data.x.eval[list_idx[0]], range(window_length))
+    else:
+        _plot_data(data.x.eval, list_idx)
 
     list_pd_t_idx = []
     list_all_scores = []
