@@ -187,8 +187,8 @@ class Model_training_manager:
         cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
-        cbs = cbs.append(WandbCallback())
-        cbs = cbs.append(WandbModelCheckpoint("models"))
+        cbs.append(WandbCallback())
+        cbs.append(WandbModelCheckpoint("models"))
         self.trainer = Trainer(
             generator,
             cbs,
