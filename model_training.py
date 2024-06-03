@@ -181,8 +181,9 @@ class Model_training_manager:
             sys.exit()
 
         wandb.login(key=cfg.wandb.key)
+        config = OmegaConf.to_container(cfg, resolve=True)
         wandb.init(project=cfg.wandb.project_name,
-                   name=cfg.exp_name, config=cfg)
+                   name=cfg.exp_name, config=config)
 
         cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
         cbs = callbacks.get_lrscheduler(
