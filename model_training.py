@@ -196,8 +196,8 @@ class Model_training_manager:
         config = OmegaConf.to_container(self.cfg, resolve=True)
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
-            self.trainer.callbacks.append(
-                WandbCallback(), WandbModelCheckpoint("models"))
+            self.trainer.callbacks.append(WandbCallback())
+            self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
         return self.trainer.get_val_loss()
 
