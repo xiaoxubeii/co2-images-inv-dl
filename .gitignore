@@ -13,7 +13,6 @@ __pycache__/
 *.swk
 *.ipynb_checkpoints
 
-
 # Datasets (may contain large files)
 /data/
 
@@ -141,3 +140,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+res/

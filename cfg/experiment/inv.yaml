@@ -23,3 +23,7 @@ model:
 training:
     max_epochs: 10
 sweep: true
+
+wandb:
+    api_key: 69fea85817147f437d88815d733f3e2ed9799c12
+    project_name: co2-emission-estimation

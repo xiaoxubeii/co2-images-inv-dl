@@ -25,6 +25,8 @@ import include.optimisers as optimisers
 import models.seg as sm
 from Data import Data_train
 from saver import Saver
+from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
+import wandb
 
 
 @dataclass
@@ -180,7 +182,11 @@ class Model_training_manager:
         cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
-
+        cbs.append(WandbMetricsLogger())
+        cbs.append(WandbModelCheckpoint("models"))
+        wandb.login(key=cfg.wandb.key)
+        wandb.init(project=cfg.wandb.project_name,
+                   name=cfg.exp_name, config=cfg)
         self.trainer = Trainer(
             generator,
             cbs,
