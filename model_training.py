@@ -66,11 +66,11 @@ class Model_training_manager:
     """Manager for segmentation, inversion with CNN models."""
 
     def __init__(self, cfg: DictConfig) -> None:
-
         self.prepare_data(cfg)
         self.build_model(cfg)
         self.prepare_training(cfg)
         self.saver = Saver()
+        self.cfg = cfg
 
     def prepare_data(self, cfg: DictConfig) -> None:
         """Prepare Data inputs to the neural network and outputs (=labels, targets)."""
@@ -180,16 +180,9 @@ class Model_training_manager:
         else:
             sys.exit()
 
-        wandb.login(key=cfg.wandb.key)
-        config = OmegaConf.to_container(cfg, resolve=True)
-        wandb.init(project=cfg.wandb.project_name,
-                   name=cfg.exp_name, config=config)
-
         cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
-        cbs.append(WandbCallback())
-        cbs.append(WandbModelCheckpoint("models"))
         self.trainer = Trainer(
             generator,
             cbs,
@@ -199,7 +192,13 @@ class Model_training_manager:
 
     def run(self) -> None:
         """Train the model with the training data."""
-        self.model = self.trainer.train_model(self.model, self.data)
+        wandb.login(key=self.cfg.wandb.key)
+        config = OmegaConf.to_container(self.cfg, resolve=True)
+        with wandb.init(project=self.cfg.wandb.project_name,
+                        name=self.cfg.exp_name, config=config) as run:
+            self.trainer.callbacks.append(
+                WandbCallback(), WandbModelCheckpoint("models"))
+            self.model = self.trainer.train_model(self.model, self.data)
         return self.trainer.get_val_loss()
 
     def save(self) -> None:
