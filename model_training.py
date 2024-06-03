@@ -199,7 +199,8 @@ class Model_training_manager:
             self.trainer.callbacks.append(WandbCallback())
             self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
-            config_yaml = OmegaConf.to_yaml(self.cfg, resolve=True)
+            import pdb
+            pdb.set_trace()
             run.save(os.path.join(self.cfg.dir_res,
                      self.cfg.exp_name, "config.yaml"))
         return self.trainer.get_val_loss()
