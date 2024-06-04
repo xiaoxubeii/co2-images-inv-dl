@@ -39,6 +39,7 @@ class Trainer:
     N_epochs: int = 10
 
     def train_model(self, model: tf.keras.Model, data: Data_train) -> tf.keras.Model:
+        print("Training epoch: ". self.N_epochs)
         """Train model and evaluate validation."""
         self.history = model.fit(
             self.generator,
@@ -199,7 +200,7 @@ class Model_training_manager:
             self.trainer.callbacks.append(WandbCallback())
             self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
-            # run.save(os.path.abspath("config.yaml"))
+            run.save(os.path.abspath("config.yaml"))
         return self.trainer.get_val_loss()
 
     def save(self) -> None:
