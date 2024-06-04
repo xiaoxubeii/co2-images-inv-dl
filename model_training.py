@@ -199,10 +199,12 @@ class Model_training_manager:
             self.trainer.callbacks.append(WandbCallback())
             self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
-            import pdb
-            pdb.set_trace()
-            run.save(os.path.join(self.cfg.dir_res,
-                     self.cfg.exp_name, "config.yaml"))
+            print(os.path.abspath(os.path.join(self.cfg.dir_res,
+                                               self.cfg.exp_name, "config.yaml")))
+            os.system(
+                f"ls -l {os.path.abspath(os.path.join(self.cfg.dir_res, self.cfg.exp_name))}")
+            run.save(os.path.abspath(os.path.join(self.cfg.dir_res,
+                     self.cfg.exp_name, "config.yaml")))
         return self.trainer.get_val_loss()
 
     def save(self) -> None:
