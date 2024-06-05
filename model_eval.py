@@ -769,7 +769,7 @@ def get_histo_inversion(
     df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
     df_emiss = pd.concat([df_emiss_1, df_emiss_2])
 
-    N_rows = 2
+    N_rows = 1
     N_cols = 2
     mympf.setMatplotlibParam()
     plt.viridis()
@@ -805,23 +805,9 @@ def get_histo_inversion(
         alpha=0.2,
         ax=axs[1],
     )
-    sns.kdeplot(
-        data=df_emiss,
-        x="emiss",
-        common_norm=True,
-        hue="origin",
-        color="firebrick",
-        fill=True,
-        alpha=0.2,
-        ax=axs[2],
-    )
-    sns.kdeplot(pred / y, color="firebrick", fill=True, alpha=0.2, ax=axs[3])
-
     titles = [
         "Mean absolute error",
         "Mean absolute percentage error",
-        "Emission rate",
-        "Prediction/Truth",
     ]
 
     for i_ax, ax in enumerate(axs):
