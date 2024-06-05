@@ -767,7 +767,7 @@ def get_histo_inversion(
     axs = mympf.set_figure_axs(
         N_rows,
         N_cols,
-        wratio=.5,
+        wratio=.6,
         hratio=1,
         pad_w_ext_left=0.25,
         pad_w_ext_right=0.25,
