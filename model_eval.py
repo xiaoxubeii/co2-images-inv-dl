@@ -758,9 +758,9 @@ def get_histo_inversion(
     """Get various histograms summing up the inversion results."""
     metrics = get_inv_metrics_model_on_data(model, data)
 
-    df_mae = pd.DataFrame({"loss": metrics["mae"], "method": "CNN"})
+    df_mae = pd.DataFrame({"loss": metrics["mae"], "method": "CNN-LSTM"})
 
-    df_mape = pd.DataFrame({"loss": metrics["mape"], "method": "CNN"})
+    df_mape = pd.DataFrame({"loss": metrics["mape"], "method": "CNN-LSTM"})
 
     pred = np.squeeze(model.predict(
         tf.convert_to_tensor(data.x.eval, np.float32)))
