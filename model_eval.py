@@ -777,7 +777,7 @@ def get_histo_inversion(
         N_rows,
         N_cols,
         wratio=0.35,
-        hratio=0.75,
+        hratio=1,
         pad_w_ext_left=0.25,
         pad_w_ext_right=0.25,
         pad_w_int=0.3,
