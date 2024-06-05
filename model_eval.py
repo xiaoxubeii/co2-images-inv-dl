@@ -757,17 +757,8 @@ def get_histo_inversion(
 ) -> None:
     """Get various histograms summing up the inversion results."""
     metrics = get_inv_metrics_model_on_data(model, data)
-
     df_mae = pd.DataFrame({"loss": metrics["mae"], "method": "CNN-LSTM"})
-
     df_mape = pd.DataFrame({"loss": metrics["mape"], "method": "CNN-LSTM"})
-
-    pred = np.squeeze(model.predict(
-        tf.convert_to_tensor(data.x.eval, np.float32)))
-    y = data.y.eval[:, -1]
-    df_emiss_1 = pd.DataFrame({"emiss": y, "origin": "truth"})
-    df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
-    df_emiss = pd.concat([df_emiss_1, df_emiss_2])
 
     N_rows = 1
     N_cols = 2
@@ -789,7 +780,7 @@ def get_histo_inversion(
         data=df_mae,
         x="loss",
         common_norm=True,
-        hue="method",
+        # hue="method",
         color="firebrick",
         fill=True,
         alpha=0.2,
