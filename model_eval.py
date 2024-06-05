@@ -750,3 +750,84 @@ def integrated_gradients(model, img_tensor, baseline_tensor, num_steps=100):
     integrated_grads = tf.reduce_sum(
         avg_grads * (img_tensor - baseline_tensor), axis=0)
     return integrated_grads
+
+
+def get_histo_inversion(
+    model: tf.keras.Model, data: Data_eval, dir_save: str = "None"
+) -> None:
+    """Get various histograms summing up the inversion results."""
+    metrics = get_inv_metrics_model_on_data(model, data)
+
+    df_mae = pd.DataFrame({"loss": metrics["mae"], "method": "CNN"})
+
+    df_mape = pd.DataFrame({"loss": metrics["mape"], "method": "CNN"})
+
+    pred = np.squeeze(model.predict(
+        tf.convert_to_tensor(data.x.eval, np.float32)))
+    y = data.y.eval[:, -1]
+    df_emiss_1 = pd.DataFrame({"emiss": y, "origin": "truth"})
+    df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
+    df_emiss = pd.concat([df_emiss_1, df_emiss_2])
+
+    N_rows = 2
+    N_cols = 2
+    mympf.setMatplotlibParam()
+    plt.viridis()
+    axs = mympf.set_figure_axs(
+        N_rows,
+        N_cols,
+        wratio=0.35,
+        hratio=0.75,
+        pad_w_ext_left=0.25,
+        pad_w_ext_right=0.25,
+        pad_w_int=0.3,
+        pad_h_ext=0.3,
+        pad_h_int=0.35,
+    )
+
+    sns.kdeplot(
+        data=df_mae,
+        x="loss",
+        common_norm=True,
+        hue="method",
+        color="firebrick",
+        fill=True,
+        alpha=0.2,
+        ax=axs[0],
+    )
+    sns.kdeplot(
+        data=df_mape,
+        x="loss",
+        common_norm=True,
+        hue="method",
+        color="firebrick",
+        fill=True,
+        alpha=0.2,
+        ax=axs[1],
+    )
+    sns.kdeplot(
+        data=df_emiss,
+        x="emiss",
+        common_norm=True,
+        hue="origin",
+        color="firebrick",
+        fill=True,
+        alpha=0.2,
+        ax=axs[2],
+    )
+    sns.kdeplot(pred / y, color="firebrick", fill=True, alpha=0.2, ax=axs[3])
+
+    titles = [
+        "Mean absolute error",
+        "Mean absolute percentage error",
+        "Emission rate",
+        "Prediction/Truth",
+    ]
+
+    for i_ax, ax in enumerate(axs):
+        ax.set_yticklabels([])
+        ax.set_xlabel("")
+        ax.set_xlabel(titles[i_ax])
+
+    if dir_save != "None":
+        plt.savefig(os.path.join(dir_save, "summary_inv.png"))
