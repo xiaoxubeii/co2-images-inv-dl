@@ -780,10 +780,10 @@ def get_histo_inversion(
         data=df_mae,
         x="loss",
         common_norm=True,
-        # hue="method",
+        hue="method",
         color="firebrick",
         fill=True,
-        alpha=0.2,
+        alpha=0.5,
         ax=axs[0],
     )
     sns.kdeplot(
