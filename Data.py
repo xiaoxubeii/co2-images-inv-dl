@@ -573,8 +573,7 @@ def estimate_data_size(cfg: DictConfig):
         cfg.data.input.chan_2,
         cfg.data.input.chan_3,
         cfg.data.input.chan_4,
-        cfg.data.input.dir_seg_models,
-        cfg.data.init.cutoff_size,
+        cfg.data.input.dir_seg_models
     )
     data.prepare_output_inversion(cfg.data.output.N_emissions)
     print(f"occupied memory is: {sys.getsizeof(data)}")
