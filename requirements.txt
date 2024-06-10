@@ -13,3 +13,4 @@ treeconfigparser
 wandb
 netcdf4
 keras_applications
+pympler
