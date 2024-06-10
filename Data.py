@@ -577,7 +577,7 @@ def estimate_data_size(cfg: DictConfig):
         cfg.data.input.dir_seg_models
     )
     data.prepare_output_inversion(cfg.data.output.N_emissions)
-    print(f"data shape: {data.x.train.shape}, occupied memory is: {asizeof.asizeof(data.x.train)}GB")
+    print(f"data shape: {data.x.train.shape}, occupied memory is: {bytesto(asizeof.asizeof(data.x.train), "g")}GB")
 
 
 def cutoff_ds(ds, num):
