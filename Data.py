@@ -6,10 +6,13 @@
 # ----------------------------------------------------------------------------
 
 import math
+import hydra
+from omegaconf import DictConfig, OmegaConf
 import os
 import sys
 from dataclasses import dataclass, field
 from functools import reduce
+from hydra.utils import call, instantiate
 
 
 import joblib
@@ -554,3 +557,22 @@ class Data_eval:
             self.ds, classes=1, window_length=self.window_length, shift=self.shift)
         self.y.get_inversion(N_hours_prec=N_hours_prec)
         self.y.get_inversion(N_hours_prec=N_hours_prec)
+
+
+@hydra.main(config_path="cfg", config_name="config")
+def estimate_data_size(cfg: DictConfig):
+    data = instantiate(cfg.data.init)
+    data.prepare_input(
+        cfg.data.input.chan_0,
+        cfg.data.input.chan_1,
+        cfg.data.input.chan_2,
+        cfg.data.input.chan_3,
+        cfg.data.input.chan_4,
+        cfg.data.input.dir_seg_models,
+    )
+    data.prepare_output_inversion(cfg.data.output.N_emissions)
+    print(f"occupied memory is: {sys.getsizeof(data)}")
+
+
+if __name__ == "__main__":
+    estimate_data_size()
