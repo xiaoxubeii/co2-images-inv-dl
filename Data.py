@@ -289,6 +289,7 @@ class Input_train:
     noise_level: float = 0.7
     window_length: int = 0
     shift: int = 0
+    cutoff_size: int = 0
 
     def __post_init__(self):
 
@@ -398,11 +399,14 @@ class Data_train:
     path_valid_ds: str
     window_length: int = 0
     shift: int = 0
+    cutoff_size: int = 0
 
     def __post_init__(self):
-
         self.ds_train = xr.open_dataset(self.path_train_ds)
         self.ds_valid = xr.open_dataset(self.path_valid_ds)
+        if self.cutoff_size > 0:
+            self.ds_train = cutoff_ds(self.ds_train, self.cutoff_size)
+            self.ds_valid = cutoff_ds(self.ds_valid, self.cutoff_size)
 
     def prepare_input(
         self,
@@ -424,7 +428,8 @@ class Data_train:
             chan_4,
             dir_seg_models=dir_seg_models,
             window_length=self.window_length,
-            shift=self.shift
+            shift=self.shift,
+            cutoff_size=self.cutoff_size,
         )
 
     def prepare_output_segmentation(
@@ -569,9 +574,17 @@ def estimate_data_size(cfg: DictConfig):
         cfg.data.input.chan_3,
         cfg.data.input.chan_4,
         cfg.data.input.dir_seg_models,
+        cfg.data.init.cutoff_size,
     )
     data.prepare_output_inversion(cfg.data.output.N_emissions)
     print(f"occupied memory is: {sys.getsizeof(data)}")
+
+
+def cutoff_ds(ds, num):
+    data = {}
+    for k in ds.variables:
+        data[k] = ds.variables[k][:num]
+    return xr.Dataset(data)
 
 
 if __name__ == "__main__":
