@@ -578,7 +578,7 @@ def estimate_data_size(cfg: DictConfig):
     )
     data.prepare_output_inversion(cfg.data.output.N_emissions)
     print(
-        f'data_shape={data.x.train.shape}, memory={asizeof.asizeof(data.x.train)}')
+        f'data_shape={data.x.train.shape}|memory={asizeof.asizeof(data.x.train)}')
 
 
 def cutoff_ds(ds, num):
