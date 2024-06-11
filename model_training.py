@@ -39,6 +39,7 @@ class Trainer:
     N_epochs: int = 10
 
     def train_model(self, model: tf.keras.Model, data: Data_train) -> tf.keras.Model:
+        import pdb;pdb.set_trace()
         """Train model and evaluate validation."""
         self.history = model.fit(
             self.generator,
