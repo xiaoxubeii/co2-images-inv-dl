@@ -1,5 +1,5 @@
 type: mae
 name: mae
-loss_func: MeanAbsoluteError
+loss_func: MeanSquaredError
 dropout_rate: 0.2
 scaling_coefficient: 1

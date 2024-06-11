@@ -167,6 +167,7 @@ class Model_training_manager:
                 ),
                 loss=loss.define_loss(cfg.model.loss_func),
                 metrics=loss.define_metrics(cfg.model.type),
+                run_eagerly=True,
             )
 
     def prepare_training(self, cfg: DictConfig) -> None:

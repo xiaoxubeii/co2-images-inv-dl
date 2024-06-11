@@ -20,7 +20,7 @@ WEIGHT_DECAY = 1e-4
 EPOCHS = 100
 
 # AUGMENTATION
-IMAGE_SIZE = 48  # We'll resize input images to this size.
+IMAGE_SIZE = 64  # We'll resize input images to this size.
 PATCH_SIZE = 6  # Size of the patches to be extract from the input images.
 NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 MASK_PROPORTION = 0.75
@@ -54,6 +54,7 @@ class Patches(layers.Layer):
         self.resize = layers.Reshape((-1, patch_size * patch_size * CHANNELS))
 
     def call(self, images):
+        import pdb;pdb.set_trace()
         # Create patches from the input images
         patches = tf.image.extract_patches(
             images=images,
@@ -354,6 +355,7 @@ class MaskedAutoencoder(keras.Model):
         # if self.top_layers is not None:
         #     decoder_patches = self.top_layers(decoder_patches)
 
+        import pdb;pdb.set_trace()
         loss_patch = tf.gather(patches, mask_indices, axis=1, batch_dims=1)
         loss_output = tf.gather(
             decoder_patches, mask_indices, axis=1, batch_dims=1)
@@ -398,24 +400,36 @@ class MaskedAutoencoder(keras.Model):
 
 
 def get_train_augmentation_model():
+    # model = keras.Sequential(
+    #     [
+    #         layers.Rescaling(1 / 255.0),
+    #         layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
+    #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
+    #         layers.RandomFlip("horizontal"),
+    #     ],
+    #     name="train_data_augmentation",
+    # )
     model = keras.Sequential(
-        [
-            layers.Rescaling(1 / 255.0),
-            layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
+        [layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
             layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
             layers.RandomFlip("horizontal"),
-        ],
+         ],
         name="train_data_augmentation",
     )
     return model
 
 
 def get_test_augmentation_model():
+    # model = keras.Sequential(
+    #     [layers.Rescaling(1 / 255.0),
+    #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
+    #     name="test_data_augmentation",
+    # )
     model = keras.Sequential(
-        [layers.Rescaling(1 / 255.0),
-         layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
+        [layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
         name="test_data_augmentation",
     )
+
     return model
 
 
