@@ -13,7 +13,6 @@ This implementation is based on the original paper.
 @author: Christopher Masch
 """
 
-import keras.backend as K
 import numpy as np
 import tensorflow as tf
 

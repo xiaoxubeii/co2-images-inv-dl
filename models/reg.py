@@ -21,6 +21,7 @@ from models.my_mobilenet import MobileNet
 from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
+from models.mae import mae
 
 
 def get_preprocessing_layers(
@@ -90,6 +91,8 @@ def get_core_model(
     classes: int = 1,
     dropout_rate: float = 0.2,
     scaling_coefficient: float = 1,
+    top_layers=None,
+    bottom_layers=None,
 ):
     """Get core model for regression model."""
     if name == "efficientnet":
@@ -115,6 +118,9 @@ def get_core_model(
         core_model = ShuffleNet(input_shape, scaling_coefficient=0.75)
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
+    elif name == "mae":
+        core_model = mae(input_shape=input_shape,
+                         top_layers=top_layers, bottom_layers=bottom_layers)
 
     else:
         sys.exit()
@@ -140,24 +146,26 @@ class Reg_model_builder:
 
     def get_model(self):
         """Return regression model, keras or locals."""
-
         bottom_layers = get_preprocessing_layers(
             self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length
         )
+        top_layers = get_top_layers(self.classes, self.name)
         core_model = get_core_model(
             self.name,
             self.input_shape,
             self.classes,
             self.dropout_rate,
             self.scaling_coefficient,
+            top_layers,
+            bottom_layers,
         )
-        top_layers = get_top_layers(self.classes, self.name)
-
-        inputs = tf.keras.layers.Input(self.input_shape, name="input_layer")
-        x = bottom_layers(inputs)
-        x = core_model(x)
-        outputs = top_layers(x)
-
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
+        if self.name != "mae":
+            import pdb;pdb.set_trace()
+            inputs = tf.keras.layers.Input(
+                self.input_shape, name="input_layer")
+            x = bottom_layers(inputs)
+            x = core_model(x)
+            outputs = top_layers(x)
+            return tf.keras.Model(inputs, outputs)
+        else:
+            return core_model

@@ -25,7 +25,7 @@ import include.optimisers as optimisers
 import models.seg as sm
 from Data import Data_train
 from saver import Saver
-from wandb.integration.keras import WandbCallback, WandbModelCheckpoint
+from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
 import wandb
 
 
@@ -43,12 +43,12 @@ class Trainer:
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=(data.x.valid, data.y.valid),
+            validation_data=data.x.valid,
             verbose=1,
             steps_per_epoch=int(
                 np.floor(data.x.train.shape[0] / self.batch_size)),
             callbacks=self.callbacks,
-            shuffle=True,
+            shuffle=False,
         )
 
         return model
@@ -102,6 +102,15 @@ class Model_training_manager:
                 cfg.data.input.dir_seg_models,
             )
             self.data.prepare_output_inversion(cfg.data.output.N_emissions)
+        if cfg.model.type == "mae":
+            self.data.prepare_input(
+                cfg.data.input.chan_0,
+                cfg.data.input.chan_1,
+                cfg.data.input.chan_2,
+                cfg.data.input.chan_3,
+                cfg.data.input.chan_4,
+            )
+            self.data.prepare_output_inversion(cfg.data.output.N_emissions)
 
     def build_model(self, cfg: DictConfig) -> None:
         """Build the inversion or segmentation model."""
@@ -137,7 +146,18 @@ class Model_training_manager:
                     self.data.x.window_length,
                 )
                 self.model = reg_builder.get_model()
-
+            elif cfg.model.type == "mae":
+                reg_builder = rm.Reg_model_builder(
+                    cfg.model.name,
+                    self.data.x.fields_input_shape,
+                    self.data.y.classes,
+                    self.data.x.n_layer,
+                    self.data.x.xco2_noisy_chans,
+                    cfg.model.dropout_rate,
+                    cfg.model.scaling_coefficient,
+                    self.data.x.window_length,
+                )
+                self.model = reg_builder.get_model()
             else:
                 sys.exit()
 
@@ -173,6 +193,22 @@ class Model_training_manager:
                 [False]*5,
                 # self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
+                cfg.training.batch_size,
+                plume_scaling_min=cfg.augmentations.plume_scaling_min,
+                plume_scaling_max=cfg.augmentations.plume_scaling_max,
+                window_length=self.data.x.window_length,
+            )
+        elif cfg.model.type == "mae":
+            generator = generators.ScaleDataGen(
+                self.data.x.train,
+                self.data.x.plumes_train,
+                self.data.x.xco2_back_train,
+                self.data.x.xco2_alt_anthro_train,
+                self.data.y.train,
+                [False]*5,
+                # self.data.x.scale_bool,
+                self.data.x.fields_input_shape,
+                cfg.training.batch_size,
                 plume_scaling_min=cfg.augmentations.plume_scaling_min,
                 plume_scaling_max=cfg.augmentations.plume_scaling_max,
                 window_length=self.data.x.window_length,
@@ -196,8 +232,8 @@ class Model_training_manager:
         config = OmegaConf.to_container(self.cfg, resolve=True)
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
-            self.trainer.callbacks.append(WandbCallback())
-            self.trainer.callbacks.append(WandbModelCheckpoint("models"))
+            self.trainer.callbacks.append(WandbMetricsLogger())
+            # self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
         return self.trainer.get_val_loss()

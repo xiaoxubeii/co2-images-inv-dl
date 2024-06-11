@@ -1,7 +1,7 @@
 # @package _global_
 
 defaults:
-    - override /model: inversion
+    - override /model: mae
 
 data:
     init:
@@ -24,9 +24,12 @@ data:
 callbacks:
     model_checkpoint: false
 model:
-    name: efficientnet
+    name: mae
+    type: mae
+    # name: efficientnet
 training:
     max_epochs: 1
+    batch_size: 32
 
 sweep: true
 wandb:
