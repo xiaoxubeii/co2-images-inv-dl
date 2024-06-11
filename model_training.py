@@ -234,7 +234,7 @@ class Model_training_manager:
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
             self.trainer.callbacks.append(WandbMetricsLogger())
-            self.trainer.callbacks.append(WandbModelCheckpoint("models"))
+            # self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
         return self.trainer.get_val_loss()
