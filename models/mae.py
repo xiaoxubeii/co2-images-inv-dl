@@ -313,16 +313,13 @@ class MaskedAutoencoder(keras.Model):
         self.patch_encoder = patch_encoder
         self.encoder = encoder
         self.decoder = decoder
-        self.input_shape = input_shape
-        inputs = tf.keras.layers.Input(
-            self.input_shape, name="input_layer")
+        inputs = tf.keras.layers.Input(input_shape, name="input_layer")
         outputs = bottom_layers(inputs)
         self.bottom_layers = keras.Model(inputs, outputs, name="bottom_layers")
         # self.top_layers = top_layers
 
     def calculate_loss(self, images, test=False):
         if self.bottom_layers is not None:
-            import pdb;pdb.set_trace()
             images = self.bottom_layers(images)
 
         # Augment the input images.
