@@ -9,6 +9,7 @@ import os
 import sys
 from dataclasses import dataclass, field
 from typing import Any
+import hydra
 
 import numpy as np
 import tensorflow as tf
@@ -243,3 +244,8 @@ class Model_training_manager:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
         self.saver.save_model_and_weights(self.model)
+
+
+@hydra.main(config_path="cfg", config_name="config")
+def build_model(cfg: DictConfig):
+    pass

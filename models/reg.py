@@ -7,6 +7,8 @@
 
 import sys
 from dataclasses import dataclass, field
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 import numpy as np
 import tensorflow as tf
@@ -22,6 +24,7 @@ from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
 from models.mae import mae
+from models.emiss_trans import EmissTransformer
 
 
 def get_preprocessing_layers(
@@ -121,6 +124,9 @@ def get_core_model(
     elif name == "mae":
         core_model = mae(input_shape=input_shape,
                          top_layers=top_layers, bottom_layers=bottom_layers)
+    elif name == "emiss_trans":
+        encoder_class =
+        core_model = EmissTransformer()
 
     else:
         sys.exit()
@@ -160,7 +166,8 @@ class Reg_model_builder:
             bottom_layers,
         )
         if self.name != "mae":
-            import pdb;pdb.set_trace()
+            import pdb
+            pdb.set_trace()
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)
