@@ -248,4 +248,4 @@ class Model_training_manager:
 
 @hydra.main(config_path="cfg", config_name="config")
 def build_model(cfg: DictConfig):
-    pass
+    print(cfg)
