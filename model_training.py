@@ -244,8 +244,3 @@ class Model_training_manager:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
         self.saver.save_model_and_weights(self.model)
-
-
-@hydra.main(config_path="cfg", config_name="config")
-def build_model(cfg: DictConfig):
-    print(cfg)
