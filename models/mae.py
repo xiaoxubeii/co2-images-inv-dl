@@ -54,7 +54,6 @@ class Patches(layers.Layer):
         self.resize = layers.Reshape((-1, patch_size * patch_size * CHANNELS))
 
     def call(self, images):
-        import pdb;pdb.set_trace()
         # Create patches from the input images
         patches = tf.image.extract_patches(
             images=images,
@@ -355,7 +354,6 @@ class MaskedAutoencoder(keras.Model):
         # if self.top_layers is not None:
         #     decoder_patches = self.top_layers(decoder_patches)
 
-        import pdb;pdb.set_trace()
         loss_patch = tf.gather(patches, mask_indices, axis=1, batch_dims=1)
         loss_output = tf.gather(
             decoder_patches, mask_indices, axis=1, batch_dims=1)
