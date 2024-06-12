@@ -93,7 +93,7 @@ class Model_training_manager:
                 cfg.data.output.max_w,
                 cfg.data.output.param_curve,
             )
-        if cfg.model.type == "inversion":
+        if cfg.model.type in ("inversion", "mae", "transformer"):
             self.data.prepare_input(
                 cfg.data.input.chan_0,
                 cfg.data.input.chan_1,
@@ -101,15 +101,6 @@ class Model_training_manager:
                 cfg.data.input.chan_3,
                 cfg.data.input.chan_4,
                 cfg.data.input.dir_seg_models,
-            )
-            self.data.prepare_output_inversion(cfg.data.output.N_emissions)
-        if cfg.model.type == "mae":
-            self.data.prepare_input(
-                cfg.data.input.chan_0,
-                cfg.data.input.chan_1,
-                cfg.data.input.chan_2,
-                cfg.data.input.chan_3,
-                cfg.data.input.chan_4,
             )
             self.data.prepare_output_inversion(cfg.data.output.N_emissions)
 
@@ -135,7 +126,7 @@ class Model_training_manager:
                 )
                 self.model = seg_builder.get_model()
 
-            elif cfg.model.type == "inversion":
+            elif cfg.model.type in ("inversion", "mae", "transformer"):
                 reg_builder = rm.Reg_model_builder(
                     cfg.model.name,
                     self.data.x.fields_input_shape,
@@ -145,18 +136,7 @@ class Model_training_manager:
                     cfg.model.dropout_rate,
                     cfg.model.scaling_coefficient,
                     self.data.x.window_length,
-                )
-                self.model = reg_builder.get_model()
-            elif cfg.model.type == "mae":
-                reg_builder = rm.Reg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
-                    self.data.y.classes,
-                    self.data.x.n_layer,
-                    self.data.x.xco2_noisy_chans,
-                    cfg.model.dropout_rate,
-                    cfg.model.scaling_coefficient,
-                    self.data.x.window_length,
+                    cfg
                 )
                 self.model = reg_builder.get_model()
             else:
@@ -185,22 +165,7 @@ class Model_training_manager:
                 cfg.augmentations.shuffle,
             )
             generator = gen_machine.flow(self.data.x.train, self.data.y.train)
-        elif cfg.model.type == "inversion":
-            generator = generators.ScaleDataGen(
-                self.data.x.train,
-                self.data.x.plumes_train,
-                self.data.x.xco2_back_train,
-                self.data.x.xco2_alt_anthro_train,
-                self.data.y.train,
-                [False]*5,
-                # self.data.x.scale_bool,
-                self.data.x.fields_input_shape,
-                cfg.training.batch_size,
-                plume_scaling_min=cfg.augmentations.plume_scaling_min,
-                plume_scaling_max=cfg.augmentations.plume_scaling_max,
-                window_length=self.data.x.window_length,
-            )
-        elif cfg.model.type == "mae":
+        elif cfg.model.type in ("inversion", "mae", "transformer"):
             generator = generators.ScaleDataGen(
                 self.data.x.train,
                 self.data.x.plumes_train,

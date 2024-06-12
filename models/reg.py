@@ -96,6 +96,7 @@ def get_core_model(
     scaling_coefficient: float = 1,
     top_layers=None,
     bottom_layers=None,
+    config=None,
 ):
     """Get core model for regression model."""
     if name == "efficientnet":
@@ -125,8 +126,10 @@ def get_core_model(
         core_model = mae(input_shape=input_shape,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
-        encoder_class =
-        core_model = EmissTransformer()
+        autoencoder = mae(input_shape=input_shape,
+                          top_layers=None, bottom_layers=None)
+        autoencoder.load_weights(config.model.embedding_weights_path)
+        core_model = EmissTransformer(autoencoder.encoder)
 
     else:
         sys.exit()
@@ -149,6 +152,7 @@ class Reg_model_builder:
     dropout_rate: float = 0.2
     scaling_coefficient: float = 1
     window_length: int = 0
+    config: DictConfig = None
 
     def get_model(self):
         """Return regression model, keras or locals."""
@@ -164,10 +168,9 @@ class Reg_model_builder:
             self.scaling_coefficient,
             top_layers,
             bottom_layers,
+            self.config
         )
         if self.name != "mae":
-            import pdb
-            pdb.set_trace()
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)

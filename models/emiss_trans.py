@@ -29,8 +29,8 @@ FINETUNING_EPOCHS = 3
 
 
 class EmissTransformer(keras.Model):
-    def __init__(self, encoder_class, **kwargs):
-        self.encoder_class = encoder_class
+    def __init__(self, encoder, **kwargs):
+        self.encoder = encoder
 
     def call(self, inputs):
         input_shape = ops.shape(inputs)
@@ -38,9 +38,7 @@ class EmissTransformer(keras.Model):
         seq_len = input_shape[1]
         mask = self.compute_mask(batch_size, seq_len, seq_len, "bool")
 
-        encoder = self.encoder_class()
-        encoder.trainable = False
-        embedding = encoder(inputs)
+        embedding = self.encoder(inputs)
 
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
         outputs = embedding + positional_encoding

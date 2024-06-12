@@ -1,0 +1,6 @@
+type: transformer
+name: emiss_trans
+loss_func: MeanSquaredError
+dropout_rate: 0.2
+scaling_coefficient: 1
+embedding_weights_path: ""
