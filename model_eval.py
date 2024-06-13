@@ -306,10 +306,10 @@ def get_inversion_model(
     name_w: str = "w_best.keras",
     optimiser: str = "adam",
     loss=tf.keras.losses.MeanAbsoluteError(),
-    config=None,
 ):
-    if config and config.model.name in ("mae", "emiss_trans"):
-        model_trainer = Model_training_manager(config)
+    cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
+    if cfg.model.name in ("mae", "emiss_trans"):
+        model_trainer = Model_training_manager(cfg)
         model = model_trainer.model
         model.load_weights(os.path.join(dir_res, name_w))
     else:
