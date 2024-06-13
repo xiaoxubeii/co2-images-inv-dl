@@ -73,7 +73,7 @@ class EmissTransformer(keras.Model):
                 layer_norm_epsilon=NORM_EPSILON,
             )(outputs, attention_mask=mask)
 
-        return outputs
+        return keras.layers.Dense(1)(outputs)
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):
