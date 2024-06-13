@@ -1,6 +1,6 @@
 type: transformer
 name: emiss_trans
-loss_func: MeanSquaredError
+loss_func: MeanAbsoluteError
 dropout_rate: 0.2
 scaling_coefficient: 1
-embedding_weights_path: ""
+embedding_weights_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/mae/pretrained_mae/w_last.keras"

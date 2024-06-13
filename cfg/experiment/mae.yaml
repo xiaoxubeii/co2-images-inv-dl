@@ -4,8 +4,8 @@ defaults:
     - override /model: mae
 
 data:
-    # init:
-    #     cutoff_size: 100
+    init:
+        cutoff_size: 200
         # window_length: 3
         # shift: 1
     path:
@@ -13,14 +13,14 @@ data:
             name: all_hotspots_but_lip
         valid:
             name: all_hotspots_but_lip
-    input:
-        # chan_1: xco2_prec
-        # chan_2: no2
-        # chan_3: v_wind
-        # chan_4: u_wind
-        # chan_5: weighted_plume
-        chan_1: v_wind
-        chan_2: u_wind
+    # input:
+    #     # chan_1: xco2_prec
+    #     # chan_2: no2
+    #     # chan_3: v_wind
+    #     # chan_4: u_wind
+    #     # chan_5: weighted_plume
+    #     chan_1: v_wind
+    #     chan_2: u_wind
 callbacks:
     model_checkpoint: false
 model:
@@ -28,8 +28,8 @@ model:
     type: mae
     # name: efficientnet
 training:
-    max_epochs: 200
-    batch_size: 8
+    max_epochs: 1
+    batch_size: 32
 
 sweep: true
 wandb:

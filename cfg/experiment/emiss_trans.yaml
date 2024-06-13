@@ -6,7 +6,7 @@ defaults:
 data:
     init:
         cutoff_size: 100
-        window_length: 84
+        window_length: 2
         shift: 1
     path:
         train:
@@ -23,10 +23,6 @@ data:
     #     chan_2: u_wind
 callbacks:
     model_checkpoint: false
-model:
-    name: emiss_trans
-    type: inversion
-    # name: efficientnet
 training:
     max_epochs: 1
     batch_size: 8

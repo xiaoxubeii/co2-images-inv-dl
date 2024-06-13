@@ -313,10 +313,8 @@ class MaskedAutoencoder(keras.Model):
         self.patch_encoder = patch_encoder
         self.encoder = encoder
         self.decoder = decoder
-        inputs = tf.keras.layers.Input(input_shape, name="input_layer")
-        outputs = bottom_layers(inputs)
-        self.bottom_layers = keras.Model(inputs, outputs, name="bottom_layers")
-        # self.top_layers = top_layers
+        self.bottom_layers = bottom_layers
+        self.top_layers = top_layers
 
     def calculate_loss(self, images, test=False):
         if self.bottom_layers is not None:
@@ -351,8 +349,8 @@ class MaskedAutoencoder(keras.Model):
         # Decode the inputs.
         decoder_outputs = self.decoder(decoder_inputs)
         decoder_patches = self.patch_layer(decoder_outputs)
-        # if self.top_layers is not None:
-        #     decoder_patches = self.top_layers(decoder_patches)
+        if self.top_layers is not None:
+            decoder_patches = self.top_layers(decoder_patches)
 
         loss_patch = tf.gather(patches, mask_indices, axis=1, batch_dims=1)
         loss_output = tf.gather(

@@ -129,7 +129,7 @@ def get_core_model(
         autoencoder = mae(input_shape=input_shape,
                           top_layers=None, bottom_layers=None)
         autoencoder.load_weights(config.model.embedding_weights_path)
-        core_model = EmissTransformer(autoencoder.encoder)
+        core_model = EmissTransformer(autoencoder)
 
     else:
         sys.exit()
@@ -170,7 +170,7 @@ class Reg_model_builder:
             bottom_layers,
             self.config
         )
-        if self.name != "mae":
+        if self.name not in ("mae", "emiss_trans"):
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)
