@@ -136,6 +136,8 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         for idx, chan in enumerate(self.chans_for_scale):
             if chan:
                 if self.window_length > 0:
+                    import pdb
+                    pdb.set_trace()
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         plume_scaling.reshape(plume_scaling.shape + (1,) * 3)
                         * self.plume[idx][batches]
@@ -184,12 +186,13 @@ class ScaleDataGen(tf.keras.utils.Sequence):
 
     def __get_output(self, batches: list, plume_scaling: np.ndarray):
         """Get output batches with random scaling."""
-        y_batch = (
-            self.y[batches]
-            + plume_scaling.reshape(plume_scaling.shape +
-                                    (1,) * 1) * self.y[batches]
-        )
-        return y_batch
+        # TODO
+        # y_batch = (
+        #     self.y[batches]
+        #     + plume_scaling.reshape(plume_scaling.shape +
+        #                             (1,) * 1) * self.y[batches]
+        # )
+        return self.y[batches]
 
     def __get_data(self, batches: list, batches_back: list, batches_alt: list):
         """Get random batches, drawing random scaling."""

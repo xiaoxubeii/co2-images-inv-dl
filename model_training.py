@@ -44,7 +44,7 @@ class Trainer:
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=data.x.valid,
+            validation_data=(data.x.valid, data.y.valid),
             verbose=1,
             steps_per_epoch=int(
                 np.floor(data.x.train.shape[0] / self.batch_size)),

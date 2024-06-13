@@ -374,6 +374,8 @@ class MaskedAutoencoder(keras.Model):
         return {m.name: m.result() for m in self.metrics}
 
     def test_step(self, images):
+        if isinstance(images, tuple):
+            images = images[0]
         total_loss, loss_patch, loss_output = self.calculate_loss(
             images, test=True)
 

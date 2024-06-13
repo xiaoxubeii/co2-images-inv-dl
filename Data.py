@@ -149,12 +149,16 @@ def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int)
     emiss = emiss[:, 1: N_hours_prec + 1]
     if window_length > 0:
         num_batches = int(np.floor((len(emiss) - window_length)/shift)) + 1
-        num_features = emiss.shape[1]
+        num_features = reduce(lambda x, y: x * y, emiss.shape[1:])
         output_targets = np.repeat(
-            np.nan, repeats=num_batches * num_features).reshape(num_batches, num_features)
+            np.nan, repeats=num_batches * window_length * num_features).reshape(num_batches, window_length, *emiss.shape[1:])
+
         for batch in range(num_batches):
-            output_targets[batch] = emiss[(
-                shift*batch + (window_length-1))]
+            output_targets[batch, :, :] = emiss[shift *
+                                                batch:shift*batch+window_length, :]
+        # for batch in range(num_batches):
+        #     output_targets[batch] = emiss[(
+        #         shift*batch + (window_length-1))]
         return output_targets
     else:
         return emiss
