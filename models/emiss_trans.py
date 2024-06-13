@@ -73,6 +73,7 @@ class EmissTransformer(keras.Model):
                 layer_norm_epsilon=NORM_EPSILON,
             )(outputs, attention_mask=mask)
 
+        import pdb;pdb.set_trace()
         return keras.layers.Dense(1)(outputs)
 
 
