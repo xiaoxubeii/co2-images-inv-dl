@@ -27,6 +27,7 @@ from sklearn import preprocessing
 from cfg.convert_cfg_to_yaml import save_myyaml_from_mycfg
 from Data import Data_eval
 from include.loss import pixel_weighted_cross_entropy
+from model_training import Model_training_manager
 
 # Segmentation
 
@@ -305,9 +306,15 @@ def get_inversion_model(
     name_w: str = "w_best.keras",
     optimiser: str = "adam",
     loss=tf.keras.losses.MeanAbsoluteError(),
+    config=None,
 ):
-    model = tf.keras.models.load_model(
-        os.path.join(dir_res, name_w), compile=False)
+    if config and config.model.name in ("mae", "emiss_trans"):
+        model_trainer = Model_training_manager(config)
+        model = model_trainer.model
+        model.load_weights(os.path.join(dir_res, name_w))
+    else:
+        model = tf.keras.models.load_model(
+            os.path.join(dir_res, name_w), compile=False)
     model.compile(optimiser, loss=loss)
     return model
 
