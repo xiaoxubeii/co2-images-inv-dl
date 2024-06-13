@@ -245,8 +245,8 @@ def create_encoder(num_heads=ENC_NUM_HEADS, num_layers=ENC_LAYERS):
     return keras.Model(inputs, outputs, name="mae_encoder")
 
 
-def create_decoder(image_size, channel_size, num_layers=DEC_LAYERS, num_heads=DEC_NUM_HEADS):
-    inputs = layers.Input((image_size, ENC_PROJECTION_DIM))
+def create_decoder(image_size, patch_size, channel_size, num_layers=DEC_LAYERS, num_heads=DEC_NUM_HEADS):
+    inputs = layers.Input(((image_size//patch_size)**2, ENC_PROJECTION_DIM))
     x = layers.Dense(DEC_PROJECTION_DIM)(inputs)
 
     for _ in range(num_layers):
@@ -422,7 +422,7 @@ def mae(input_shape, image_size, patch_size, channel_size, top_layers=None, bott
     patch_layer = Patches(patch_size, channel_size)
     patch_encoder = PatchEncoder(patch_size, channel_size)
     encoder = create_encoder()
-    decoder = create_decoder(image_size, channel_size)
+    decoder = create_decoder(image_size, patch_size, channel_size)
     return MaskedAutoencoder(
         # train_augmentation_model=train_augmentation_model,
         # test_augmentation_model=test_augmentation_model,
