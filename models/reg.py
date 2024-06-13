@@ -123,10 +123,10 @@ def get_core_model(
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
     elif name == "mae":
-        core_model = mae(input_shape=input_shape, image_size=input_shape[0], patch_size=config.model.patch_size,
+        core_model = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
-        autoencoder = mae(input_shape=input_shape, image_size=input_shape[0], patch_size=config.model.patch_size,
+        autoencoder = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
                           top_layers=top_layers, bottom_layers=bottom_layers)
         autoencoder.load_weights(config.model.embedding_weights_path)
         core_model = EmissTransformer(autoencoder)

@@ -416,10 +416,9 @@ class MaskedAutoencoder(keras.Model):
 #     return model
 
 
-def mae(input_shape, image_size, patch_size, top_layers=None, bottom_layers=None):
+def mae(input_shape, image_size, patch_size, channel_size, top_layers=None, bottom_layers=None):
     # train_augmentation_model = get_train_augmentation_model()
     # test_augmentation_model = get_test_augmentation_model()
-    channel_size = input_shape[2]
     patch_layer = Patches(patch_size, channel_size)
     patch_encoder = PatchEncoder(patch_size, channel_size)
     encoder = create_encoder()
