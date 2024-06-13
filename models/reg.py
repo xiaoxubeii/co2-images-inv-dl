@@ -82,7 +82,7 @@ def get_top_layers(classes: int, choice_top: str = "linear"):
         elif choice_top == "cnn-lstm":
             outputs = tf.keras.layers.Dense(1, activation='linear')(x)
         else:
-            sys.exit()
+            return x
         return outputs
 
     return top_layers
@@ -123,11 +123,11 @@ def get_core_model(
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
     elif name == "mae":
-        core_model = mae(input_shape=input_shape,
+        core_model = mae(input_shape=input_shape, image_size=input_shape[0], patch_size=config.model.patch_size,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
         autoencoder = mae(input_shape=input_shape,
-                          top_layers=None, bottom_layers=None)
+                          top_layers=top_layers, bottom_layers=bottom_layers)
         autoencoder.load_weights(config.model.embedding_weights_path)
         core_model = EmissTransformer(autoencoder)
 

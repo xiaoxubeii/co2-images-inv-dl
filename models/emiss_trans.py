@@ -55,7 +55,9 @@ class EmissTransformer(keras.Model):
         embedding = tf.vectorized_map(do_embedding, inputs)
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
         outputs = embedding + positional_encoding
-        outputs = tf.reshape(outputs, [batch_size, seq_len, 100*128])
+        output_shape = outputs.shape
+        outputs = tf.reshape(
+            outputs, [batch_size, seq_len, output_shape[-1]*output_shape[-2]])
 
         # Apply layer normalization and dropout to the embedding.
         outputs = keras.layers.LayerNormalization(

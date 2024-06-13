@@ -4,25 +4,10 @@ from tensorflow.keras import layers
 from matplotlib import pyplot as plt
 import numpy as np
 
-CHANNELS = 5
-# DATA
-BUFFER_SIZE = 1024
-BATCH_SIZE = 256
-AUTO = tf.data.AUTOTUNE
-INPUT_SHAPE = (64, 64, CHANNELS)
-NUM_CLASSES = 10
-
-# OPTIMIZER
-LEARNING_RATE = 5e-3
-WEIGHT_DECAY = 1e-4
-
-# TRAINING
-EPOCHS = 100
-
 # AUGMENTATION
-IMAGE_SIZE = 64  # We'll resize input images to this size.
-PATCH_SIZE = 6  # Size of the patches to be extract from the input images.
-NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
+# IMAGE_SIZE = 64  # We'll resize input images to this size.
+# PATCH_SIZE = 8  # Size of the patches to be extract from the input images.
+# NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 MASK_PROPORTION = 0.75
 
 # ENCODER and DECODER
@@ -45,13 +30,15 @@ DEC_TRANSFORMER_UNITS = [
 
 
 class Patches(layers.Layer):
-    def __init__(self, patch_size=PATCH_SIZE, **kwargs):
+    def __init__(self, patch_size, channel_size, **kwargs):
         super().__init__(**kwargs)
         self.patch_size = patch_size
+        self.channel_size = channel_size
 
         # Assuming the image has three channels each patch would be
         # of size (patch_size, patch_size, 3).
-        self.resize = layers.Reshape((-1, patch_size * patch_size * CHANNELS))
+        self.resize = layers.Reshape(
+            (-1, self.patch_size * self.patch_size * self.channel_size))
 
     def call(self, images):
         # Create patches from the input images
@@ -84,7 +71,7 @@ class Patches(layers.Layer):
         for i, patch in enumerate(patches[idx]):
             ax = plt.subplot(n, n, i + 1)
             patch_img = tf.reshape(
-                patch, (self.patch_size, self.patch_size, CHANNELS))
+                patch, (self.patch_size, self.patch_size, self.channel_size))
             plt.imshow(tf.keras.utils.img_to_array(patch_img))
             plt.axis("off")
         plt.show()
@@ -100,7 +87,7 @@ class Patches(layers.Layer):
         num_patches = patch.shape[0]
         n = int(np.sqrt(num_patches))
         patch = tf.reshape(
-            patch, (num_patches, self.patch_size, self.patch_size, CHANNELS))
+            patch, (num_patches, self.patch_size, self.patch_size, self.channel_size))
         rows = tf.split(patch, n, axis=0)
         rows = [tf.concat(tf.unstack(x), axis=1) for x in rows]
         reconstructed = tf.concat(rows, axis=0)
@@ -110,7 +97,8 @@ class Patches(layers.Layer):
 class PatchEncoder(layers.Layer):
     def __init__(
         self,
-        patch_size=PATCH_SIZE,
+        patch_size,
+        channel_size,
         projection_dim=ENC_PROJECTION_DIM,
         mask_proportion=MASK_PROPORTION,
         downstream=False,
@@ -118,6 +106,7 @@ class PatchEncoder(layers.Layer):
     ):
         super().__init__(**kwargs)
         self.patch_size = patch_size
+        self.channel_size = channel_size
         self.projection_dim = projection_dim
         self.mask_proportion = mask_proportion
         self.downstream = downstream
@@ -125,7 +114,7 @@ class PatchEncoder(layers.Layer):
         # This is a trainable mask token initialized randomly from a normal
         # distribution.
         self.mask_token = tf.Variable(
-            tf.random.normal([1, patch_size * patch_size * CHANNELS]), trainable=True
+            tf.random.normal([1, self.patch_size * self.patch_size * self.channel_size]), trainable=True
         )
 
     def build(self, input_shape):
@@ -256,10 +245,8 @@ def create_encoder(num_heads=ENC_NUM_HEADS, num_layers=ENC_LAYERS):
     return keras.Model(inputs, outputs, name="mae_encoder")
 
 
-def create_decoder(
-    num_layers=DEC_LAYERS, num_heads=DEC_NUM_HEADS, image_size=IMAGE_SIZE
-):
-    inputs = layers.Input((NUM_PATCHES, ENC_PROJECTION_DIM))
+def create_decoder(image_size, channel_size, num_layers=DEC_LAYERS, num_heads=DEC_NUM_HEADS):
+    inputs = layers.Input((image_size, ENC_PROJECTION_DIM))
     x = layers.Dense(DEC_PROJECTION_DIM)(inputs)
 
     for _ in range(num_layers):
@@ -286,8 +273,8 @@ def create_decoder(
     x = layers.LayerNormalization(epsilon=LAYER_NORM_EPS)(x)
     x = layers.Flatten()(x)
     pre_final = layers.Dense(
-        units=image_size * image_size * CHANNELS, activation="sigmoid")(x)
-    outputs = layers.Reshape((image_size, image_size, CHANNELS))(pre_final)
+        units=image_size * image_size * channel_size, activation="sigmoid")(x)
+    outputs = layers.Reshape((image_size, image_size, channel_size))(pre_final)
 
     return keras.Model(inputs, outputs, name="mae_decoder")
 
@@ -295,8 +282,8 @@ def create_decoder(
 class MaskedAutoencoder(keras.Model):
     def __init__(
         self,
-        train_augmentation_model,
-        test_augmentation_model,
+        # train_augmentation_model,
+        # test_augmentation_model,
         patch_layer,
         patch_encoder,
         encoder,
@@ -307,8 +294,8 @@ class MaskedAutoencoder(keras.Model):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.train_augmentation_model = train_augmentation_model
-        self.test_augmentation_model = test_augmentation_model
+        # self.train_augmentation_model = train_augmentation_model
+        # self.test_augmentation_model = test_augmentation_model
         self.patch_layer = patch_layer
         self.patch_encoder = patch_encoder
         self.encoder = encoder
@@ -321,13 +308,13 @@ class MaskedAutoencoder(keras.Model):
             images = self.bottom_layers(images)
 
         # Augment the input images.
-        if test:
-            augmeneted_images = self.test_augmentation_model(images)
-        else:
-            augmeneted_images = self.train_augmentation_model(images)
+        # if test:
+        #     augmeneted_images = self.test_augmentation_model(images)
+        # else:
+        #     augmeneted_images = self.train_augmentation_model(images)
 
         # Patch the augmented images.
-        patches = self.patch_layer(augmeneted_images)
+        patches = self.patch_layer(images)
 
         # Encode the patches.
         (
@@ -369,7 +356,7 @@ class MaskedAutoencoder(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            self.train_augmentation_model.trainable_variables,
+            # self.train_augmentation_model.trainable_variables,
             self.patch_layer.trainable_variables,
             self.patch_encoder.trainable_variables,
             self.encoder.trainable_variables,
@@ -395,50 +382,51 @@ class MaskedAutoencoder(keras.Model):
         return {m.name: m.result() for m in self.metrics}
 
 
-def get_train_augmentation_model():
-    # model = keras.Sequential(
-    #     [
-    #         layers.Rescaling(1 / 255.0),
-    #         layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
-    #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
-    #         layers.RandomFlip("horizontal"),
-    #     ],
-    #     name="train_data_augmentation",
-    # )
-    model = keras.Sequential(
-        [layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
-            layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
-            layers.RandomFlip("horizontal"),
-         ],
-        name="train_data_augmentation",
-    )
-    return model
+# def get_train_augmentation_model(input_shape):
+#     # model = keras.Sequential(
+#     #     [
+#     #         layers.Rescaling(1 / 255.0),
+#     #         layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
+#     #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
+#     #         layers.RandomFlip("horizontal"),
+#     #     ],
+#     #     name="train_data_augmentation",
+#     # )
+#     model = keras.Sequential(
+#         [layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
+#             layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
+#             layers.RandomFlip("horizontal"),
+#          ],
+#         name="train_data_augmentation",
+#     )
+#     return model
 
 
-def get_test_augmentation_model():
-    # model = keras.Sequential(
-    #     [layers.Rescaling(1 / 255.0),
-    #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
-    #     name="test_data_augmentation",
-    # )
-    model = keras.Sequential(
-        [layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
-        name="test_data_augmentation",
-    )
+# def get_test_augmentation_model():
+#     # model = keras.Sequential(
+#     #     [layers.Rescaling(1 / 255.0),
+#     #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
+#     #     name="test_data_augmentation",
+#     # )
+#     model = keras.Sequential(
+#         [layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
+#         name="test_data_augmentation",
+#     )
 
-    return model
+#     return model
 
 
-def mae(input_shape, top_layers=None, bottom_layers=None):
-    train_augmentation_model = get_train_augmentation_model()
-    test_augmentation_model = get_test_augmentation_model()
-    patch_layer = Patches()
-    patch_encoder = PatchEncoder()
+def mae(input_shape, image_size, patch_size, top_layers=None, bottom_layers=None):
+    # train_augmentation_model = get_train_augmentation_model()
+    # test_augmentation_model = get_test_augmentation_model()
+    channel_size = input_shape[2]
+    patch_layer = Patches(patch_size, channel_size)
+    patch_encoder = PatchEncoder(patch_size, channel_size)
     encoder = create_encoder()
-    decoder = create_decoder()
+    decoder = create_decoder(image_size, channel_size)
     return MaskedAutoencoder(
-        train_augmentation_model=train_augmentation_model,
-        test_augmentation_model=test_augmentation_model,
+        # train_augmentation_model=train_augmentation_model,
+        # test_augmentation_model=test_augmentation_model,
         patch_layer=patch_layer,
         patch_encoder=patch_encoder,
         encoder=encoder,
