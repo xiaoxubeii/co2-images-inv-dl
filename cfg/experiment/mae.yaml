@@ -4,10 +4,10 @@ defaults:
     - override /model: mae
 
 data:
-    # init:
-    #     cutoff_size: 500
-        # window_length: 3
-        # shift: 1
+    init:
+        cutoff_size: 500
+    # window_length: 3
+    # shift: 1
     path:
         train:
             name: all_hotspots_but_lip
@@ -28,7 +28,7 @@ model:
     type: mae
     # name: efficientnet
 training:
-    max_epochs: 100
+    max_epochs: 10
     batch_size: 32
 
 sweep: true

@@ -14,12 +14,63 @@ DROPOUT = 0.1
 NORM_EPSILON = 1e-5
 
 
+class EmissPredictor(keras.Model):
+    def __init__(self, mae, bottom_layers, top_layers, **kwargs):
+        super().__init__(**kwargs)
+        self.mae = mae
+        self.trans = EmissTransformer(mae)
+        self.predictor = keras.layers.Sequential([
+            keras.layers.Dense(1, activation='linear'),
+            keras.layers.Dense(1, activation='relu')
+        ])
+        self.bottom_layers = bottom_layers
+        self.top_layers = top_layers
+
+    def calculate_loss(self, inputs, test=False):
+        x, y = inputs
+        if self.bottom_layers is not None:
+            inputs = self.bottom_layers(inputs)
+
+        loss1, outputs = self.trans.calculate_loss(x)
+        outputs = self.predictor(outputs)
+        loss2 = self.compiled_loss(y, outputs)
+        return loss1+loss2
+
+    def train_step(self, inputs):
+        with tf.GradientTape() as tape:
+            total_loss, loss_patch, loss_output = self.calculate_loss(inputs)
+
+        # Apply gradients.
+        train_vars = [
+            self.predictor.trainable_variables,
+            self.trans.trainable_variables,
+        ]
+        grads = tape.gradient(total_loss, train_vars)
+        tv_list = []
+        for (grad, var) in zip(grads, train_vars):
+            for g, v in zip(grad, var):
+                tv_list.append((g, v))
+        self.optimizer.apply_gradients(tv_list)
+
+        # Report progress.
+        self.compiled_metrics.update_state(loss_patch, loss_output)
+        return {m.name: m.result() for m in self.metrics}
+
+    def test_step(self, inputs):
+        total_loss, loss_patch, loss_output = self.calculate_loss(
+            inputs, test=True)
+
+        # Update the trackers.
+        self.compiled_metrics.update_state(loss_patch, loss_output)
+        return {m.name: m.result() for m in self.metrics}
+
+
 class EmissTransformer(keras.Model):
     def __init__(self, mae, **kwargs):
         super().__init__(**kwargs)
         self.mae = mae
 
-    def call(self, inputs):
+    def calculate_loss(self, inputs):
         input_shape = ops.shape(inputs)
         batch_size = input_shape[0]
         seq_len = input_shape[1]
@@ -38,14 +89,14 @@ class EmissTransformer(keras.Model):
 
         embedding = tf.vectorized_map(do_embedding, inputs)
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
-        outputs = embedding + positional_encoding
-        output_shape = outputs.shape
-        outputs = tf.reshape(
-            outputs, [batch_size, seq_len, output_shape[-1]*output_shape[-2]])
+        embedding = embedding + positional_encoding
+        embedding_shape = embedding.shape
+        embedding = tf.reshape(
+            embedding, [batch_size, seq_len, embedding_shape[-1]*embedding_shape[-2]])
 
         # Apply layer normalization and dropout to the embedding.
         outputs = keras.layers.LayerNormalization(
-            epsilon=NORM_EPSILON)(outputs)
+            epsilon=NORM_EPSILON)(embedding)
         outputs = keras.layers.Dropout(rate=DROPOUT)(outputs)
 
         # Add a number of encoder blocks
@@ -57,9 +108,7 @@ class EmissTransformer(keras.Model):
                 layer_norm_epsilon=NORM_EPSILON,
             )(outputs, attention_mask=mask)
 
-        outputs = keras.layers.Dense(1, activation='linear')(outputs)
-        outputs = keras.layers.Dense(1, activation='relu')(outputs)
-        return outputs
+        return self.compiled_loss(embedding, outputs), outputs
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):
