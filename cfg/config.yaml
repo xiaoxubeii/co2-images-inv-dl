@@ -10,6 +10,6 @@ defaults:
           - wandb
     - hydra: default
 dir_res: res/${model.type}
-exp_name: ${now:%Y-%m-%d}_${now:%H-%M-%S}
+exp_name: ${model.name}_${now:%Y-%m-%d}_${now:%H-%M-%S}
 seed: 42
 sweep: false

@@ -39,8 +39,6 @@ class EmissTransformer(keras.Model):
         seq_len = input_shape[1]
         mask = compute_mask(batch_size, seq_len, seq_len, "bool")
 
-        tf.vectorized_map(lambda x: x, inputs)
-
         def do_embedding(inputs):
             patch_layer = self.mae.patch_layer
             patch_encoder = self.mae.patch_encoder

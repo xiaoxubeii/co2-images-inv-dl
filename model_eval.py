@@ -8,6 +8,7 @@
 import itertools
 import os
 import sys
+import hydra
 
 import joblib
 import matplotlib.pyplot as plt
@@ -315,7 +316,7 @@ def get_inversion_model(
     else:
         model = tf.keras.models.load_model(
             os.path.join(dir_res, name_w), compile=False)
-    model.compile(optimiser, loss=loss)
+        model.compile(optimiser, loss=loss)
     return model
 
 
@@ -815,3 +816,26 @@ def get_histo_inversion(
 
     if dir_save != "None":
         plt.savefig(os.path.join(dir_save, "summary_inv.png"))
+
+
+def test_exp():
+    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/2024-06-14_09-20-15", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
+    data = get_data_for_inversion(model_res_path, test_dataset_path)
+    import pdb
+    pdb.set_trace()
+    model = get_inversion_model(
+        model_res_path, name_w=model_weights_name)
+    metrics = get_inv_metrics_model_on_data(model, data)
+    print("mae:", np.mean(metrics["mae"]))
+    print("mape:", np.mean(metrics["mape"]))
+
+    plot_inversion_examples(
+        data, metrics["mae"], metrics["mape"], model)
+    plot_inversion_examples(
+        data, metrics["mae"], metrics["mape"], model)
+    get_summary_histo_inversion(model, data)
+#     model_eval.get_histo_inversion(model, data)
+
+
+if __name__ == "__main__":
+    test_exp()

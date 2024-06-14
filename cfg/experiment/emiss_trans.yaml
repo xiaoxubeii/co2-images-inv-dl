@@ -24,7 +24,7 @@ data:
 callbacks:
     model_checkpoint: false
 training:
-    max_epochs: 10
+    max_epochs: 1
     batch_size: 32
 
 sweep: true
