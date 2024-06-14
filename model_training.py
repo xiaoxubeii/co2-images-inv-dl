@@ -183,7 +183,7 @@ class Model_training_manager:
         else:
             sys.exit()
 
-        cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
+        cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [], filepath="w_best.keras")
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
         self.trainer = Trainer(
@@ -200,7 +200,7 @@ class Model_training_manager:
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
             self.trainer.callbacks.append(WandbMetricsLogger())
-            self.trainer.callbacks.append(WandbModelCheckpoint("models"))
+            # self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
         return self.trainer.get_val_loss()

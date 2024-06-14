@@ -4,8 +4,8 @@ defaults:
     - override /model: mae
 
 data:
-    init:
-        cutoff_size: 500
+    # init:
+    #     cutoff_size: 500
     # window_length: 3
     # shift: 1
     path:
@@ -22,13 +22,12 @@ data:
     #     chan_1: v_wind
     #     chan_2: u_wind
 callbacks:
-    model_checkpoint: false
+    model_checkpoint: true
 model:
     name: mae
     type: mae
-    # name: efficientnet
 training:
-    max_epochs: 10
+    max_epochs: 100
     batch_size: 32
 
 sweep: true
