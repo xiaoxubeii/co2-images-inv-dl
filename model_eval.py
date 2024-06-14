@@ -19,6 +19,8 @@ import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as keras
 import xarray as xr
+from keras import ops
+
 from cmcrameri import cm
 from hydra import compose, initialize
 from omegaconf import OmegaConf
@@ -818,14 +820,48 @@ def get_histo_inversion(
         plt.savefig(os.path.join(dir_save, "summary_inv.png"))
 
 
-def test_exp():
-    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/2024-06-14_09-20-15", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
+def sample_from(self, logits):
+    logits, indices = ops.top_k(logits, k=self.k, sorted=True)
+    indices = np.asarray(indices).astype("int32")
+    preds = keras.activations.softmax(ops.expand_dims(logits, 0))[0]
+    preds = np.asarray(preds).astype("float32")
+    return np.random.choice(indices, p=preds)
+
+
+def test_emiss_exp():
+    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-14_12-38-12", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
     data = get_data_for_inversion(model_res_path, test_dataset_path)
-    import pdb
-    pdb.set_trace()
     model = get_inversion_model(
         model_res_path, name_w=model_weights_name)
-    metrics = get_inv_metrics_model_on_data(model, data)
+    # metrics = get_inv_metrics_model_on_data(model, data)
+
+    maxlen = 64
+    max_tokens = maxlen-1
+    x = tf.convert_to_tensor(data.x.eval, np.float32)
+    start_tokens = [x[0, 0]]
+    num_tokens_generated = 0
+    tokens_generated = []
+    while num_tokens_generated <= max_tokens:
+        # pad_len = maxlen - len(start_tokens)
+        # if pad_len < 0:
+        #     x = start_tokens[:maxlen]
+        #     sample_index = maxlen - 1
+        # elif pad_len > 0:
+        #     x = start_tokens + [0] * pad_len
+        # else:
+        #     x = start_tokens
+
+        # x = np.array([x])
+        x = start_tokens
+        y, _ = model.predict(x, verbose=0)
+        tokens_generated.append(y)
+        start_tokens.append(sample_token)
+        num_tokens_generated = len(tokens_generated)
+
+    pred = tf.convert_to_tensor(model.predict(x), np.float32)
+    y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
+
+    metrics = get_inv_metrics(y, pred)
     print("mae:", np.mean(metrics["mae"]))
     print("mape:", np.mean(metrics["mape"]))
 
@@ -838,4 +874,4 @@ def test_exp():
 
 
 if __name__ == "__main__":
-    test_exp()
+    test_emiss_exp()

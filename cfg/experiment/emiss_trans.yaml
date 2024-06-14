@@ -6,7 +6,7 @@ defaults:
 data:
     init:
         cutoff_size: 64
-        window_length: 2
+        window_length: 8
         shift: 1
     path:
         train:

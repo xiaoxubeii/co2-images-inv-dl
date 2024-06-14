@@ -6,26 +6,12 @@ import numpy as np
 import keras_nlp
 from keras import ops
 
-# Preprocessing params.
-PRETRAINING_BATCH_SIZE = 128
-FINETUNING_BATCH_SIZE = 32
-SEQ_LENGTH = 128
-MASK_RATE = 0.25
-PREDICTIONS_PER_SEQ = 32
-
 # Model params.
 NUM_LAYERS = 3
-MODEL_DIM = 256
 INTERMEDIATE_DIM = 512
 NUM_HEADS = 4
 DROPOUT = 0.1
 NORM_EPSILON = 1e-5
-
-# Training params.
-PRETRAINING_LEARNING_RATE = 5e-4
-PRETRAINING_EPOCHS = 8
-FINETUNING_LEARNING_RATE = 5e-5
-FINETUNING_EPOCHS = 3
 
 
 class EmissTransformer(keras.Model):
@@ -47,7 +33,7 @@ class EmissTransformer(keras.Model):
 
             patches = patch_layer(inputs)
             unmasked_embeddings = patch_encoder(patches)
-            # Pass the unmaksed patche to the encoder.
+            # Pass the unmaksed patch to the encoder.
             return encoder(unmasked_embeddings)
 
         embedding = tf.vectorized_map(do_embedding, inputs)
@@ -71,7 +57,9 @@ class EmissTransformer(keras.Model):
                 layer_norm_epsilon=NORM_EPSILON,
             )(outputs, attention_mask=mask)
 
-        return keras.layers.Dense(1)(outputs)
+        outputs = keras.layers.Dense(1, activation='linear')(outputs)
+        outputs = keras.layers.Dense(1, activation='relu')(outputs)
+        return outputs
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):
