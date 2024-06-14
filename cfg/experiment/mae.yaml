@@ -5,7 +5,7 @@ defaults:
 
 data:
     init:
-        cutoff_size: 64
+        cutoff_size: 500
         # window_length: 3
         # shift: 1
     path:
@@ -28,7 +28,7 @@ model:
     type: mae
     # name: efficientnet
 training:
-    max_epochs: 1
+    max_epochs: 100
     batch_size: 32
 
 sweep: true

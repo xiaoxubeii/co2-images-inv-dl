@@ -123,7 +123,7 @@ def get_core_model(
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
     elif name == "mae":
-        core_model = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
+        core_model = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
         autoencoder = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
@@ -156,7 +156,6 @@ class Reg_model_builder:
 
     def get_model(self):
         """Return regression model, keras or locals."""
-        import pdb;pdb.set_trace()
         bottom_layers = get_preprocessing_layers(
             self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length
         )

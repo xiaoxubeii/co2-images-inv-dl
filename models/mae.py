@@ -282,8 +282,8 @@ def create_decoder(image_size, patch_size, channel_size, num_layers=DEC_LAYERS, 
 class MaskedAutoencoder(keras.Model):
     def __init__(
         self,
-        # train_augmentation_model,
-        # test_augmentation_model,
+        train_augmentation_model,
+        test_augmentation_model,
         patch_layer,
         patch_encoder,
         encoder,
@@ -294,8 +294,8 @@ class MaskedAutoencoder(keras.Model):
         **kwargs
     ):
         super().__init__(**kwargs)
-        # self.train_augmentation_model = train_augmentation_model
-        # self.test_augmentation_model = test_augmentation_model
+        self.train_augmentation_model = train_augmentation_model
+        self.test_augmentation_model = test_augmentation_model
         self.patch_layer = patch_layer
         self.patch_encoder = patch_encoder
         self.encoder = encoder
@@ -308,13 +308,13 @@ class MaskedAutoencoder(keras.Model):
             images = self.bottom_layers(images)
 
         # Augment the input images.
-        # if test:
-        #     augmeneted_images = self.test_augmentation_model(images)
-        # else:
-        #     augmeneted_images = self.train_augmentation_model(images)
+        if test:
+            augmeneted_images = self.test_augmentation_model(images)
+        else:
+            augmeneted_images = self.train_augmentation_model(images)
 
         # Patch the augmented images.
-        patches = self.patch_layer(images)
+        patches = self.patch_layer(augmeneted_images)
 
         # Encode the patches.
         (
@@ -356,7 +356,7 @@ class MaskedAutoencoder(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            # self.train_augmentation_model.trainable_variables,
+            self.train_augmentation_model.trainable_variables,
             self.patch_layer.trainable_variables,
             self.patch_encoder.trainable_variables,
             self.encoder.trainable_variables,
@@ -384,50 +384,51 @@ class MaskedAutoencoder(keras.Model):
         return {m.name: m.result() for m in self.metrics}
 
 
-# def get_train_augmentation_model(input_shape):
-#     # model = keras.Sequential(
-#     #     [
-#     #         layers.Rescaling(1 / 255.0),
-#     #         layers.Resizing(INPUT_SHAPE[0] + 20, INPUT_SHAPE[0] + 20),
-#     #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
-#     #         layers.RandomFlip("horizontal"),
-#     #     ],
-#     #     name="train_data_augmentation",
-#     # )
-#     model = keras.Sequential(
-#         [layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
-#             layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
-#             layers.RandomFlip("horizontal"),
-#          ],
-#         name="train_data_augmentation",
-#     )
-#     return model
+def get_train_augmentation_model(input_shape, image_size):
+    model = keras.Sequential(
+        [
+            # layers.Rescaling(1 / 255.0),
+            layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
+            layers.RandomCrop(image_size, image_size),
+            layers.RandomFlip("horizontal"),
+        ],
+        name="train_data_augmentation",
+    )
+    # model = keras.Sequential(
+    #     [layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
+    #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
+    #         layers.RandomFlip("horizontal"),
+    #      ],
+    #     name="train_data_augmentation",
+    # )
+    return model
 
 
-# def get_test_augmentation_model():
-#     # model = keras.Sequential(
-#     #     [layers.Rescaling(1 / 255.0),
-#     #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
-#     #     name="test_data_augmentation",
-#     # )
-#     model = keras.Sequential(
-#         [layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
-#         name="test_data_augmentation",
-#     )
+def get_test_augmentation_model(image_size):
+    # model = keras.Sequential(
+    #     [layers.Rescaling(1 / 255.0),
+    #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
+    #     name="test_data_augmentation",
+    # )
+    model = keras.Sequential(
+        [layers.Resizing(image_size, image_size),],
+        name="test_data_augmentation",
+    )
 
-#     return model
+    return model
 
 
 def mae(input_shape, image_size, patch_size, channel_size, top_layers=None, bottom_layers=None):
-    # train_augmentation_model = get_train_augmentation_model()
-    # test_augmentation_model = get_test_augmentation_model()
+    train_augmentation_model = get_train_augmentation_model(
+        input_shape, image_size)
+    test_augmentation_model = get_test_augmentation_model(image_size)
     patch_layer = Patches(patch_size, channel_size)
     patch_encoder = PatchEncoder(patch_size, channel_size)
     encoder = create_encoder()
     decoder = create_decoder(image_size, patch_size, channel_size)
     return MaskedAutoencoder(
-        # train_augmentation_model=train_augmentation_model,
-        # test_augmentation_model=test_augmentation_model,
+        train_augmentation_model=train_augmentation_model,
+        test_augmentation_model=test_augmentation_model,
         patch_layer=patch_layer,
         patch_encoder=patch_encoder,
         encoder=encoder,

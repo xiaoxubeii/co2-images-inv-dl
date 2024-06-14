@@ -3,4 +3,5 @@ name: mae
 loss_func: MeanSquaredError
 dropout_rate: 0.2
 scaling_coefficient: 1
-patch_size: 16
+patch_size: 24
+image_size: 48
