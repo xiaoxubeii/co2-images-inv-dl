@@ -156,6 +156,7 @@ class Reg_model_builder:
 
     def get_model(self):
         """Return regression model, keras or locals."""
+        import pdb;pdb.set_trace()
         bottom_layers = get_preprocessing_layers(
             self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length
         )
