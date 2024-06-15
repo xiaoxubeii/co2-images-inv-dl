@@ -46,8 +46,8 @@ class Trainer:
             epochs=self.N_epochs,
             validation_data=(data.x.valid, data.y.valid),
             verbose=1,
-            steps_per_epoch=int(
-                np.floor(data.x.train.shape[0] / self.batch_size)),
+            # steps_per_epoch=int(
+            #     np.floor(data.x.train.shape[0] / self.batch_size)),
             callbacks=self.callbacks,
             shuffle=False,
         )
@@ -183,7 +183,8 @@ class Model_training_manager:
         else:
             sys.exit()
 
-        cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [], filepath="w_best.keras")
+        cbs = callbacks.get_modelcheckpoint(
+            cfg.callbacks.model_checkpoint, [], filepath="w_best.keras")
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
         self.trainer = Trainer(
