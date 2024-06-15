@@ -24,7 +24,7 @@ from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
 from models.mae import mae
-from models.emiss_trans import EmissTransformer
+from models.emiss_trans import EmissionPredictor
 
 
 def get_preprocessing_layers(
@@ -129,7 +129,9 @@ def get_core_model(
         autoencoder = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
                           top_layers=top_layers, bottom_layers=bottom_layers)
         autoencoder.load_weights(config.model.embedding_weights_path)
-        core_model = EmissTransformer(autoencoder)
+        # core_model = EmissTransformer(autoencoder)
+        core_model = EmissionPredictor(
+            autoencoder, bottom_layers=bottom_layers)
 
     else:
         sys.exit()

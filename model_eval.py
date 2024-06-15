@@ -829,7 +829,7 @@ def sample_from(self, logits):
 
 
 def test_emiss_exp():
-    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-14_12-38-12", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
+    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-14_23-14-15", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
     data = get_data_for_inversion(model_res_path, test_dataset_path)
     model = get_inversion_model(
         model_res_path, name_w=model_weights_name)
@@ -838,6 +838,8 @@ def test_emiss_exp():
     maxlen = 64
     max_tokens = maxlen-1
     x = tf.convert_to_tensor(data.x.eval, np.float32)
+    import pdb;pdb.set_trace()
+    model.trans.predict(x)
     start_tokens = [x[0, 0]]
     num_tokens_generated = 0
     tokens_generated = []
