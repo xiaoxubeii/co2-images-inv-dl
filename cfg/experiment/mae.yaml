@@ -10,9 +10,9 @@ data:
     # shift: 1
     path:
         train:
-            name: all_hotspots_but_lip
+            name: all_hotspots_but_box
         valid:
-            name: all_hotspots_but_lip
+            name: all_hotspots_but_box
     # input:
     #     # chan_1: xco2_prec
     #     # chan_2: no2
@@ -27,7 +27,7 @@ model:
     name: mae
     type: mae
 training:
-    max_epochs: 100
+    max_epochs: 10
     batch_size: 32
 
 sweep: true
