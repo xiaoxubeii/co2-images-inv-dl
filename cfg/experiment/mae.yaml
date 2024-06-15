@@ -28,7 +28,7 @@ model:
     name: mae
     type: mae
 training:
-    max_epochs: 10
+    max_epochs: 100
     batch_size: 32
 
 sweep: true
