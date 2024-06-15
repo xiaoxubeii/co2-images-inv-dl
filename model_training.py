@@ -187,6 +187,7 @@ class Model_training_manager:
             cfg.callbacks.model_checkpoint, [], filepath="w_best.keras")
         cbs = callbacks.get_lrscheduler(
             cfg.callbacks.learning_rate_monitor, cbs)
+        cbs = callbacks.get_earlystopping(cfg.callbacks.early_stopping, cbs)
         self.trainer = Trainer(
             generator,
             cbs,

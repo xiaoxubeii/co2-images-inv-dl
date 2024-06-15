@@ -23,6 +23,7 @@ data:
     #     chan_2: u_wind
 callbacks:
     model_checkpoint: true
+    early_stopping: true
 model:
     name: mae
     type: mae
