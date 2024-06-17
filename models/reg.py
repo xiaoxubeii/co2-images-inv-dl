@@ -36,6 +36,8 @@ def get_preprocessing_layers(
         chans = [None] * n_chans
         for idx in range(n_chans):
             if noisy_chans[idx]:
+                import pdb
+                pdb.set_trace()
                 if window_length > 0:
                     chans[idx] = tf.keras.layers.GaussianNoise(
                         stddev=0.7, name=f"noise_{idx}"
@@ -126,6 +128,7 @@ def get_core_model(
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
+        import pdb; pdb.set_trace()
         autoencoder = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
                           top_layers=top_layers, bottom_layers=bottom_layers)
         autoencoder.load_weights(config.model.embedding_weights_path)

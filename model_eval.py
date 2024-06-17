@@ -828,52 +828,53 @@ def sample_from(self, logits):
     return np.random.choice(indices, p=preds)
 
 
-def test_emiss_exp():
+def generate_emiss_estimation():
     model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-14_23-14-15", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
     data = get_data_for_inversion(model_res_path, test_dataset_path)
     model = get_inversion_model(
         model_res_path, name_w=model_weights_name)
     # metrics = get_inv_metrics_model_on_data(model, data)
 
-    maxlen = 64
-    max_tokens = maxlen-1
+    max_tokens = 1
     x = tf.convert_to_tensor(data.x.eval, np.float32)
-    import pdb;pdb.set_trace()
-    model.trans.predict(x)
-    start_tokens = [x[0, 0]]
-    num_tokens_generated = 0
-    tokens_generated = []
-    while num_tokens_generated <= max_tokens:
-        # pad_len = maxlen - len(start_tokens)
-        # if pad_len < 0:
-        #     x = start_tokens[:maxlen]
-        #     sample_index = maxlen - 1
-        # elif pad_len > 0:
-        #     x = start_tokens + [0] * pad_len
-        # else:
-        #     x = start_tokens
+    start_token = np.array([[x[0, 0]]])
+    import pdb; pdb.set_trace()
+    t_a = model.trans.embedding(start_token)
+    import pdb; pdb.set_trace()
+    t_b = model.trans.embedding(start_token)
+    # print(tf.math.reduce_all(tf.equal(t_a, t_b)))
+    print(t_a)
 
-        # x = np.array([x])
-        x = start_tokens
-        y, _ = model.predict(x, verbose=0)
-        tokens_generated.append(y)
-        start_tokens.append(sample_token)
-        num_tokens_generated = len(tokens_generated)
+    # num_tokens_generated = 0
+    # tokens_generated = []
+    # while num_tokens_generated < max_tokens:
+    #     import pdb; pdb.set_trace()
+    #     y = model.trans.predict(start_token, batch_size=1)
+    #     print(model.trans.get_weights())
+    #     tokens_generated.append(y)
+    #     start_token = y
+    #     num_tokens_generated = len(tokens_generated)
 
-    pred = tf.convert_to_tensor(model.predict(x), np.float32)
-    y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
+    # tokens_generated = tf.squeeze(tokens_generated, axis=1)
+    # print(tokens_generated)
+    # emisses = model.predictor.predict(tokens_generated)
+    # emisses = np.squeeze(emisses)
+    # print(emisses)
 
-    metrics = get_inv_metrics(y, pred)
-    print("mae:", np.mean(metrics["mae"]))
-    print("mape:", np.mean(metrics["mape"]))
+    # pred = tf.convert_to_tensor(model.predict(x), np.float32)
+    # y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
 
-    plot_inversion_examples(
-        data, metrics["mae"], metrics["mape"], model)
-    plot_inversion_examples(
-        data, metrics["mae"], metrics["mape"], model)
-    get_summary_histo_inversion(model, data)
+    # metrics = get_inv_metrics(y, pred)
+    # print("mae:", np.mean(metrics["mae"]))
+    # print("mape:", np.mean(metrics["mape"]))
+
+    # plot_inversion_examples(
+    #     data, metrics["mae"], metrics["mape"], model)
+    # plot_inversion_examples(
+    #     data, metrics["mae"], metrics["mape"], model)
+    # get_summary_histo_inversion(model, data)
 #     model_eval.get_histo_inversion(model, data)
 
 
 if __name__ == "__main__":
-    test_emiss_exp()
+    generate_emiss_estimation()

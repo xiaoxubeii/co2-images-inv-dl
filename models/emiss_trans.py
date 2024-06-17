@@ -25,23 +25,16 @@ class EmissionPredictor(keras.Model):
         ])
         self.bottom_layers = bottom_layers
 
-    def call(self, inputs):
-        x = inputs[0]
-        if self.bottom_layers is not None:
-            inputs = self.bottom_layers(x)
-        x = self.trans(x)
-        return self.predictor(x)
-
     def calculate_loss(self, inputs):
         x, y = inputs[0], inputs[1]
         if self.bottom_layers is not None:
             x = self.bottom_layers(x)
 
-        y1 = self.trans.embedding(x)
-        x = self.trans(x)
-        loss1 = self.compiled_loss(y1, x)
-        x = self.predictor(x)
-        loss2 = self.compiled_loss(y, x)
+        o1 = self.trans.embedding(x)
+        y1 = self.trans(x)
+        loss1 = self.compiled_loss(y1, o1)
+        o2 = self.predictor(y1)
+        loss2 = self.compiled_loss(y, o2,)
         return loss1+loss2, x, y
 
     def train_step(self, inputs):
@@ -91,11 +84,9 @@ class EmissTransformer(keras.Model):
         batch_size = input_shape[0]
         seq_len = input_shape[1]
         mask = compute_mask(batch_size, seq_len, seq_len, "bool")
-
-        embedding = self.embedding(inputs)
-
+        # embedding = self.embedding(inputs)
         # Apply layer normalization and dropout to the embedding.
-        outputs = self.layer_norm(embedding)
+        outputs = self.layer_norm(inputs)
         outputs = self.dropout(outputs)
 
         # Add a number of encoder blocks
@@ -119,7 +110,7 @@ class EmissTransformer(keras.Model):
             # Pass the unmaksed patch to the encoder.
             return encoder(unmasked_embeddings)
 
-        embedding = tf.vectorized_map(_embedding, inputs)
+        embedding = tf.map_fn(_embedding, inputs)
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
         embedding = embedding + positional_encoding
         embedding_shape = embedding.shape

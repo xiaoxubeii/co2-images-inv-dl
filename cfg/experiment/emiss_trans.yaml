@@ -10,9 +10,9 @@ data:
         shift: 1
     path:
         train:
-            name: all_hotspots_but_lip
+            name: boxberg
         valid:
-            name: all_hotspots_but_lip
+            name: boxberg
     # input:
     #     # chan_1: xco2_prec
     #     # chan_2: no2
@@ -23,6 +23,7 @@ data:
     #     chan_2: u_wind
 callbacks:
     model_checkpoint: false
+    early_stopping: false
 training:
     max_epochs: 1
     batch_size: 32
