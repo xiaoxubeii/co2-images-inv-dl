@@ -10,9 +10,9 @@ from dataclasses import dataclass, field
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
+import keras
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
 
 from models.my_efficientnet import EfficientNet
 from models.my_essential_inversors import (essential_regressor,
@@ -24,7 +24,7 @@ from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
 from models.mae import mae
-from models.emiss_trans import EmissionPredictor
+from models.emiss_trans import emission_predictor
 
 
 def get_preprocessing_layers(
@@ -36,8 +36,6 @@ def get_preprocessing_layers(
         chans = [None] * n_chans
         for idx in range(n_chans):
             if noisy_chans[idx]:
-                import pdb
-                pdb.set_trace()
                 if window_length > 0:
                     chans[idx] = tf.keras.layers.GaussianNoise(
                         stddev=0.7, name=f"noise_{idx}"
@@ -128,14 +126,13 @@ def get_core_model(
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                          top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "emiss_trans":
-        import pdb; pdb.set_trace()
-        autoencoder = mae(input_shape=input_shape, image_size=input_shape[1], channel_size=input_shape[-1], patch_size=config.model.patch_size,
+        autoencoder = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                           top_layers=top_layers, bottom_layers=bottom_layers)
-        autoencoder.load_weights(config.model.embedding_weights_path)
-        # core_model = EmissTransformer(autoencoder)
-        core_model = EmissionPredictor(
-            autoencoder, bottom_layers=bottom_layers)
-
+        autoencoder.load_weights(config.model.embedding_path)
+        # model = keras.saving.load_model(config.model.embedding_path)
+        autoencoder.freeze_all_layers()
+        core_model = emission_predictor(
+            input_shape, config.model.image_size,  autoencoder, bottom_layers=bottom_layers)
     else:
         sys.exit()
 

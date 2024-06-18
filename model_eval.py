@@ -10,6 +10,7 @@ import os
 import sys
 import hydra
 
+import keras_nlp
 import joblib
 import matplotlib.pyplot as plt
 import matplotlib_functions as mympf
@@ -310,15 +311,16 @@ def get_inversion_model(
     optimiser: str = "adam",
     loss=tf.keras.losses.MeanAbsoluteError(),
 ):
+    model = tf.keras.models.load_model(
+        os.path.join(dir_res, name_w), compile=False)
+    model.compile(optimiser, loss=loss)
+    return model
+
+
+def get_inversion_model_from_weights(dir_res, name_w="w_last.weights.h5"):
     cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
-    if cfg.model.name in ("mae", "emiss_trans"):
-        model_trainer = Model_training_manager(cfg)
-        model = model_trainer.model
-        model.load_weights(os.path.join(dir_res, name_w))
-    else:
-        model = tf.keras.models.load_model(
-            os.path.join(dir_res, name_w), compile=False)
-        model.compile(optimiser, loss=loss)
+    model = Model_training_manager(cfg).model
+    model.load_weights(os.path.join(dir_res, name_w))
     return model
 
 
@@ -829,37 +831,60 @@ def sample_from(self, logits):
 
 
 def generate_emiss_estimation():
-    model_res_path, model_weights_name, test_dataset_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-14_23-14-15", "w_last.keras", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
-    data = get_data_for_inversion(model_res_path, test_dataset_path)
-    model = get_inversion_model(
-        model_res_path, name_w=model_weights_name)
+    test_dataset_path = "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc"
+    # model_name = "w_last.keras"
+    predictor_model_res_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-18_03-04-27"
+    data = get_data_for_inversion(predictor_model_res_path, test_dataset_path)
+    predictor = get_inversion_model_from_weights(predictor_model_res_path)
+    cfg = OmegaConf.load(os.path.join(predictor_model_res_path, "config.yaml"))
+    embedding_path = "/".join(cfg.model.embedding_path.split("/")[:-1])
+    embedding_layer = get_inversion_model_from_weights(embedding_path)
+    embedding_layer.patch_encoder.downstream = True
     # metrics = get_inv_metrics_model_on_data(model, data)
+    # predictor.mae = embedding
+
+    def do_embedding(inputs):
+        input_shape = ops.shape(inputs)
+        batch_size = input_shape[0]
+        seq_len = input_shape[1]
+
+        def _embedding(inputs):
+            outputs = keras.layers.Resizing(
+                cfg.model.image_size, cfg.model.image_size)(inputs)
+            patch_layer = embedding_layer.patch_layer
+            patch_encoder = embedding_layer.patch_encoder
+            encoder = embedding_layer.encoder
+
+            patches = patch_layer(outputs)
+            unmasked_embeddings = patch_encoder(patches)
+            # Pass the unmaksed patch to the encoder.
+            return encoder(unmasked_embeddings)
+
+        embedding = tf.map_fn(_embedding, inputs)
+        positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
+        embedding = embedding + positional_encoding
+        embedding_shape = embedding.shape
+        return tf.reshape(
+            embedding, [batch_size, seq_len, embedding_shape[-1]*embedding_shape[-2]])
 
     max_tokens = 1
     x = tf.convert_to_tensor(data.x.eval, np.float32)
     start_token = np.array([[x[0, 0]]])
-    import pdb; pdb.set_trace()
-    t_a = model.trans.embedding(start_token)
-    import pdb; pdb.set_trace()
-    t_b = model.trans.embedding(start_token)
-    # print(tf.math.reduce_all(tf.equal(t_a, t_b)))
-    print(t_a)
+    # start_token = predictor.embedding(start_token)
+    start_token = do_embedding(start_token)
+    num_tokens_generated = 0
+    tokens_generated = []
+    while num_tokens_generated < max_tokens:
+        y = predictor.trans.predict(start_token, batch_size=1)
+        tokens_generated.append(y)
+        start_token = y
+        num_tokens_generated = len(tokens_generated)
 
-    # num_tokens_generated = 0
-    # tokens_generated = []
-    # while num_tokens_generated < max_tokens:
-    #     import pdb; pdb.set_trace()
-    #     y = model.trans.predict(start_token, batch_size=1)
-    #     print(model.trans.get_weights())
-    #     tokens_generated.append(y)
-    #     start_token = y
-    #     num_tokens_generated = len(tokens_generated)
-
-    # tokens_generated = tf.squeeze(tokens_generated, axis=1)
-    # print(tokens_generated)
-    # emisses = model.predictor.predict(tokens_generated)
-    # emisses = np.squeeze(emisses)
-    # print(emisses)
+    tokens_generated = tf.squeeze(tokens_generated, axis=1)
+    print(tokens_generated)
+    emisses = predictor.predictor.predict(tokens_generated)
+    emisses = np.squeeze(emisses)
+    print(emisses)
 
     # pred = tf.convert_to_tensor(model.predict(x), np.float32)
     # y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
@@ -878,3 +903,16 @@ def generate_emiss_estimation():
 
 if __name__ == "__main__":
     generate_emiss_estimation()
+    # model_res_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/mae/mae_2024-06-18_01-01-26"
+
+    # cfg = OmegaConf.load(os.path.join(model_res_path, "config.yaml"))
+    # model = Model_training_manager(cfg).model
+    # model.load_weights(os.path.join(model_res_path, "w_last.weights.h5"))
+    # import pdb
+    # pdb.set_trace()
+
+    # import h5py
+    # f = h5py.File(
+    #     "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/mae/mae_2024-06-17_15-08-59/w_last.weights.h5", "r")
+
+    # print(f.keys())

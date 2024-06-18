@@ -4,8 +4,8 @@ defaults:
     - override /model: mae
 
 data:
-    # init:
-    #     cutoff_size: 500
+    init:
+        cutoff_size: 64
     # window_length: 3
     # shift: 1
     path:
@@ -28,7 +28,7 @@ model:
     name: mae
     type: mae
 training:
-    max_epochs: 100
+    max_epochs: 1
     batch_size: 32
 
 sweep: true

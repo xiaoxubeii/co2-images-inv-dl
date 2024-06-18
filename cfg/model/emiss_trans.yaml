@@ -3,5 +3,6 @@ name: emiss_trans
 loss_func: MeanAbsoluteError
 dropout_rate: 0.2
 scaling_coefficient: 1
-embedding_weights_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/mae/pretrained_mae/w_last.keras"
+embedding_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/mae/mae_2024-06-18_03-02-55/w_last.weights.h5"
 patch_size: 16
+image_size: 48

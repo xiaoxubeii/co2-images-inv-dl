@@ -15,6 +15,7 @@ import numpy as np
 import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn import preprocessing
+import keras
 
 
 class Saver:
@@ -23,9 +24,13 @@ class Saver:
     def __init__(self):
         """Prepare directory to store results of the experiments."""
 
-    def save_model_and_weights(self, model: tf.keras.Model):
+    def save_model_and_weights(self, model: keras.Model):
         """Save model and weights using keras built_in functions."""
         model.save("w_last.keras")
+
+    def save_weights(self, model: keras.Model):
+        """Save model and weights using keras built_in functions."""
+        model.save_weights("w_last.weights.h5")
 
     def save_data_shuffle_indices(self, ds_indices: dict):
         """Save shuffle indices."""

@@ -136,8 +136,6 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         for idx, chan in enumerate(self.chans_for_scale):
             if chan:
                 if self.window_length > 0:
-                    import pdb
-                    pdb.set_trace()
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         plume_scaling.reshape(plume_scaling.shape + (1,) * 3)
                         * self.plume[idx][batches]

@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+import keras
+from keras import layers
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -29,6 +29,7 @@ DEC_TRANSFORMER_UNITS = [
 ]
 
 
+@keras.saving.register_keras_serializable()
 class Patches(layers.Layer):
     def __init__(self, patch_size, channel_size, **kwargs):
         super().__init__(**kwargs)
@@ -94,7 +95,8 @@ class Patches(layers.Layer):
         return reconstructed
 
 
-class PatchEncoder(layers.Layer):
+@keras.saving.register_keras_serializable()
+class PatchEncoder(keras.Layer):
     def __init__(
         self,
         patch_size,
@@ -117,6 +119,19 @@ class PatchEncoder(layers.Layer):
             tf.random.normal([1, self.patch_size * self.patch_size * self.channel_size]), trainable=True
         )
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "patch_size": self.patch_size,
+                "channel_size": self.channel_size,
+                "projection_dim": self.projection_dim,
+                "mask_proportion": self.mask_proportion,
+                "downstream": self.downstream,
+            }
+        )
+        return config
+
     def build(self, input_shape):
         (_, self.num_patches, self.patch_area) = input_shape
 
@@ -130,6 +145,7 @@ class PatchEncoder(layers.Layer):
 
         # Number of patches that will be masked.
         self.num_mask = int(self.mask_proportion * self.num_patches)
+        super(PatchEncoder, self).build(input_shape)
 
     def call(self, patches):
         # Get the positional embeddings.
@@ -275,10 +291,10 @@ def create_decoder(image_size, patch_size, channel_size, num_layers=DEC_LAYERS, 
     pre_final = layers.Dense(
         units=image_size * image_size * channel_size, activation="sigmoid")(x)
     outputs = layers.Reshape((image_size, image_size, channel_size))(pre_final)
-
     return keras.Model(inputs, outputs, name="mae_decoder")
 
 
+@keras.saving.register_keras_serializable()
 class MaskedAutoencoder(keras.Model):
     def __init__(
         self,
@@ -288,7 +304,6 @@ class MaskedAutoencoder(keras.Model):
         patch_encoder,
         encoder,
         decoder,
-        input_shape,
         top_layers,
         bottom_layers,
         **kwargs
@@ -302,6 +317,22 @@ class MaskedAutoencoder(keras.Model):
         self.decoder = decoder
         self.bottom_layers = bottom_layers
         self.top_layers = top_layers
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "train_augmentation_model": self.train_augmentation_model,
+                "test_augmentation_model": self.test_augmentation_model,
+                "patch_layer": self.patch_layer,
+                "patch_encoder": self.patch_encoder,
+                "encoder": self.encoder,
+                "decoder": self.decoder,
+                "bottom_layers": self.bottom_layers,
+                "top_layers": self.top_layers,
+            }
+        )
+        return config
 
     def calculate_loss(self, images, test=False):
         if self.bottom_layers is not None:
@@ -383,6 +414,19 @@ class MaskedAutoencoder(keras.Model):
         self.compiled_metrics.update_state(loss_patch, loss_output)
         return {m.name: m.result() for m in self.metrics}
 
+    def freeze_all_layers(self):
+        self.trainable = False
+        self.patch_layer.trainable = False
+        self.patch_encoder.trainable = False
+        self.encoder.trainable = False
+        self.decoder.trainable = False
+
+    @classmethod
+    def from_config(cls, config):
+        for k in ["patch_encoder", "encoder", "decoder", "patch_layer"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
+
 
 def get_train_augmentation_model(input_shape, image_size):
     model = keras.Sequential(
@@ -422,8 +466,15 @@ def mae(input_shape, image_size, patch_size, channel_size, top_layers=None, bott
     train_augmentation_model = get_train_augmentation_model(
         input_shape, image_size)
     test_augmentation_model = get_test_augmentation_model(image_size)
+
     patch_layer = Patches(patch_size, channel_size)
     patch_encoder = PatchEncoder(patch_size, channel_size)
+
+    inputs = layers.Input(
+        (input_shape[-2], input_shape[-2], channel_size))
+    outputs = layers.Resizing(image_size, image_size)(inputs)
+    outputs = patch_layer(outputs)
+    outputs = patch_encoder(outputs)
     encoder = create_encoder()
     decoder = create_decoder(image_size, patch_size, channel_size)
     return MaskedAutoencoder(
