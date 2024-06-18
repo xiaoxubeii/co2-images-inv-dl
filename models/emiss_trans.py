@@ -28,7 +28,6 @@ class EmissionPredictor(keras.Model):
         self.image_size = image_size
 
     def call(self, inputs):
-        # inputs = keras.Input(shape=input_shape)
         if self.bottom_layers is not None:
             outputs = self.bottom_layers(inputs)
         outputs = self.embedding(outputs)

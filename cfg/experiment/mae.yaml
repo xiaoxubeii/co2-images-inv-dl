@@ -4,8 +4,8 @@ defaults:
     - override /model: mae
 
 data:
-    init:
-        cutoff_size: 64
+    # init:
+    #     cutoff_size: 64
     # window_length: 3
     # shift: 1
     path:
