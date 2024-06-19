@@ -293,7 +293,7 @@ def get_data_for_inversion(
 
     cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
     if 'window_length' not in cfg.data.init:
-        data = Data_eval(path_eval_nc)
+        data = Data_eval(path_eval_nc, 0, 0)
     else:
         data = Data_eval(path_eval_nc, cfg.data.init.window_length,
                          cfg.data.init.shift)
