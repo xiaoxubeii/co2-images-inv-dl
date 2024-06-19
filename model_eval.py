@@ -292,8 +292,12 @@ def get_data_for_inversion(
     """Prepare Data_eval object with name_dataset."""
 
     cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
-    data = Data_eval(path_eval_nc, cfg.data.init.window_length,
-                     cfg.data.init.shift)
+    if 'window_length' not in cfg.data.init:
+        data = Data_eval(path_eval_nc)
+    else:
+        data = Data_eval(path_eval_nc, cfg.data.init.window_length,
+                         cfg.data.init.shift)
+
     data.prepare_input(
         cfg.data.input.chan_0,
         cfg.data.input.chan_1,
