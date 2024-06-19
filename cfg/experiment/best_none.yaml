@@ -1,0 +1,66 @@
+# @package _global_
+
+defaults:
+  - override /model: inversion
+
+data:
+  input:
+    dir_seg_models: /cerea_raid/users/dumontj/dev/coco2/dl/res/models
+    chan_0: xco2
+    chan_1: u_wind
+    chan_2: v_wind
+    chan_3: None
+    chan_4: None
+  output:
+    N_emissions: 1
+  path:
+    directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
+    train:
+      name: boxberg
+    valid:
+      name: boxberg
+dir_res: res/${model.type}
+seed: 42
+sweep: true
+model:
+  type: inversion
+  name: essential
+  loss_func: MeanAbsolutePercentageError
+  dropout_rate: 0.2
+  scaling_coefficient: 1
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  max_epochs: 1000
+  init_weights: random
+  optimiser: adam
+augmentations:
+  shuffle: true
+  rot:
+    range: 180
+  shift:
+    range: 0
+  flip:
+    bool: true
+  shear:
+    range: 90
+  zoom:
+    range: 0.2
+callbacks:
+  model_checkpoint:
+    __target__: true
+  learning_rate_monitor:
+    __target__: true
+    factor: 0.5
+    patience: 20
+    min_delta: 0.005
+    min_lr: 5.0e-05
+    cooldown: 0
+  early_stopping:
+    __target__: true
+  wandb:
+    __target__: true
+
+wandb:
+  project_name: co2-emission-estimation
+  key: 69fea85817147f437d88815d733f3e2ed9799c12
