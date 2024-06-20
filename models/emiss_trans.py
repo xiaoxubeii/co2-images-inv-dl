@@ -43,7 +43,7 @@ class EmissionPredictor(keras.Model):
         y1 = self.trans(o1)
         loss1 = self.compiled_loss(y1, o1)
         o2 = self.predictor(y1)
-        loss2 = self.compiled_loss(y, o2,)
+        loss2 = self.compiled_loss(y, o2)
         return loss1+loss2, x, y
 
     def train_step(self, inputs):

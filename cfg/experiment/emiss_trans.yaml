@@ -22,11 +22,11 @@ data:
     #     chan_1: v_wind
     #     chan_2: u_wind
 callbacks:
-    model_checkpoint: false
-    early_stopping: false
+    model_checkpoint: true
+    early_stopping: true
 training:
     max_epochs: 1
-    batch_size: 32
+    batch_size: 8
 
 sweep: true
 wandb:

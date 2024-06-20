@@ -183,9 +183,8 @@ class Model_training_manager:
         else:
             sys.exit()
 
-        cbs = callbacks.get_modelcheckpoint(cfg.callbacks.model_checkpoint, [])
         cbs = callbacks.get_lrscheduler(
-            cfg.callbacks.learning_rate_monitor, cbs)
+            cfg.callbacks.learning_rate_monitor, [])
         cbs = callbacks.get_earlystopping(cfg.callbacks.early_stopping, cbs)
         self.trainer = Trainer(
             generator,
@@ -200,6 +199,9 @@ class Model_training_manager:
         config = OmegaConf.to_container(self.cfg, resolve=True)
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
+
+            self.trainer.callbacks.append(
+                callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, []))
             self.trainer.callbacks.append(WandbMetricsLogger())
             # self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
