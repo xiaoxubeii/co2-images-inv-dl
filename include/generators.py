@@ -109,7 +109,10 @@ class ScaleDataGen(tf.keras.utils.Sequence):
     window_length: int = 0
 
     def __post_init__(self):
-        self.N_data = self.x.shape[0]
+        if self.x_indexes is None:
+            self.N_data = self.x.shape[0]
+        else:
+            self.N_data = self.x_indexes.shape[0]
         self.list_idx = np.arange(self.N_data)
         self.list_idx_back = np.arange(self.N_data)
         self.list_idx_alt = np.arange(self.N_data)
