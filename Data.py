@@ -352,6 +352,7 @@ class Input_train:
         )
         self.train_data, self.train_data_indexes, input_shape = filler.fill_data(
             self.ds_train, self.train_list_chans)
+        import pdb;pdb.set_trace()
         self.valid_data, _, input_shape = filler.fill_data(
             self.ds_valid, self.list_chans, False)
 
