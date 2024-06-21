@@ -96,6 +96,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
     """
 
     x: np.ndarray
+    x_indexes: np.ndarray
     plume: np.ndarray
     xco2_back: np.ndarray
     xco2_alt_anthro: np.ndarray
@@ -131,7 +132,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
     ):
         """Get input batches with random scaling."""
         # x_batch = np.empty(shape=(self.batch_size,) + tuple(self.input_size))
-        x_batch = self.x[batches]
+        x_batch = self.x[self.x_indexes[batches]]
 
         for idx, chan in enumerate(self.chans_for_scale):
             if chan:
@@ -184,13 +185,17 @@ class ScaleDataGen(tf.keras.utils.Sequence):
 
     def __get_output(self, batches: list, plume_scaling: np.ndarray):
         """Get output batches with random scaling."""
-        # TODO
-        # y_batch = (
-        #     self.y[batches]
-        #     + plume_scaling.reshape(plume_scaling.shape +
-        #                             (1,) * 1) * self.y[batches]
-        # )
-        return self.y[batches]
+        if self.window_length > 0:
+            y_batch = tf.map_fn(lambda x: (
+                x + plume_scaling.reshape(plume_scaling.shape + (1,) * 1) * x), self.y[batches])
+        else:
+            y_batch = (
+                self.y[batches]
+                + plume_scaling.reshape(plume_scaling.shape +
+                                        (1,) * 1) * self.y[batches]
+            )
+        # return self.y[batches]
+        return y_batch
 
     def __get_data(self, batches: list, batches_back: list, batches_alt: list):
         """Get random batches, drawing random scaling."""
@@ -223,8 +228,8 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         ]
         x, y = self.__get_data(batches, batches_back, batches_alt)
         with tf.device('/cpu:0'):
-            x = tf.convert_to_tensor(x, np.float32)
-            y = tf.convert_to_tensor(y, np.float32)
+            x = tf.convert_to_tensor(x, np.float64)
+            y = tf.convert_to_tensor(y, np.float64)
         return x, y
 
     def __len__(self):

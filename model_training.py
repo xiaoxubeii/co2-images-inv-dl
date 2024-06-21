@@ -44,7 +44,7 @@ class Trainer:
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=(data.x.valid, data.y.valid),
+            validation_data=(data.x.valid_data, data.y.valid),
             verbose=1,
             # steps_per_epoch=int(
             #     np.floor(data.x.train.shape[0] / self.batch_size)),
@@ -167,7 +167,8 @@ class Model_training_manager:
             generator = gen_machine.flow(self.data.x.train, self.data.y.train)
         elif cfg.model.type in ("inversion", "mae", "transformer"):
             generator = generators.ScaleDataGen(
-                self.data.x.train,
+                self.data.x.train_data,
+                self.data.x.train_data_indexes,
                 self.data.x.plumes_train,
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,

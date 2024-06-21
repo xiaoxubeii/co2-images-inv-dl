@@ -209,25 +209,39 @@ class Input_filler:
     window_length: int = 0
     shift: int = 0
 
-    def fill_data(self, ds: xr.Dataset, list_chans: list) -> np.ndarray:
+    def fill_data(self, ds: xr.Dataset, list_chans: list, index=True) -> np.ndarray:
         """Fill input data according to chan_0,1,2"""
         data = self.fill_chan(list_chans[0], ds)
         for chan in [x for x in list_chans[1:] if x != "None"]:
             data = np.concatenate((data, self.fill_chan(chan, ds)), axis=-1)
-
-        if self.window_length > 0:
-            num_batches = int(
-                np.floor((len(data) - self.window_length)/self.shift)) + 1
-            num_features = reduce(lambda x, y: x * y, data.shape[1:])
-            output_data = np.repeat(np.nan, repeats=num_batches * self.window_length * num_features).reshape(num_batches, self.window_length,
-                                                                                                             *data.shape[1:])
-            for batch in range(num_batches):
-                output_data[batch, :, :] = data[(
-                    0+self.shift*batch):(0+self.shift*batch+self.window_length), :]
-
-            return output_data
+        if not index:
+            shape = data.shape
+            if self.window_length > 0:
+                num_batches = int(
+                    np.floor((len(data) - self.window_length)/self.shift)) + 1
+                num_features = reduce(lambda x, y: x * y, data.shape[1:])
+                output_data = np.repeat(np.nan, repeats=num_batches * self.window_length * num_features).reshape(num_batches, self.window_length,
+                                                                                                                 *data.shape[1:])
+                for batch in range(num_batches):
+                    output_data[batch, :, :] = data[(
+                        0+self.shift*batch):(0+self.shift*batch+self.window_length), :]
+                return output_data, None, output_data.shape
+            else:
+                return data, None, data.shape
         else:
-            return data
+            indexes = list(range(data.shape[0]))
+            shape = data.shape
+            if self.window_length > 0:
+                num_batches = int(
+                    np.floor((len(data) - self.window_length)/self.shift)) + 1
+                indexes = np.zeros(
+                    (num_batches, self.window_length), dtype=int)
+                for batch in range(num_batches):
+                    indexes[batch] = np.array(
+                        range(self.shift*batch, self.shift*batch+self.window_length), dtype=int)
+
+                shape = (num_batches, self.window_length, *shape[1:])
+            return data, indexes, shape
 
     def fill_chan(self, chan: str, ds: xr.Dataset) -> np.ndarray:
         """Return array depending on chan type specified."""
@@ -336,16 +350,18 @@ class Input_train:
             self.window_length,
             self.shift
         )
-        self.train = filler.fill_data(self.ds_train, self.train_list_chans)
-        self.valid = filler.fill_data(self.ds_valid, self.list_chans)
+        self.train_data, self.train_data_indexes, input_shape = filler.fill_data(
+            self.ds_train, self.train_list_chans)
+        self.valid_data, _, input_shape = filler.fill_data(
+            self.ds_valid, self.list_chans, False)
 
-        self.fields_input_shape = list(self.train.shape[1:])
+        self.fields_input_shape = input_shape[1:]
 
     def get_norm_layer(self):
         """Get normalisation layer and adapt it to data.x.train."""
         self.n_layer = tf.keras.layers.Normalization(
             axis=-1, name="preproc_norm")
-        self.n_layer.adapt(self.train)
+        self.n_layer.adapt(self.train_data)
 
     def prepare_for_scaling(self):
         """Prepare for scaling. Get plume in independant array and boolean channels."""
