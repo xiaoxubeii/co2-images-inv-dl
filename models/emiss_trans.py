@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import keras_nlp
 from keras import ops
+import include.loss as loss
 
 # Model params.
 NUM_LAYERS = 3
@@ -41,16 +42,16 @@ class EmissionPredictor(keras.Model):
 
         o1 = self.embedding(x)
         y1 = self.trans(o1)
-        loss1 = self.compiled_loss(y1, o1)
+        loss1 = keras.losses.MeanSquaredError()(y1, o1)
         o2 = self.predictor(y1)
-        loss2 = self.compiled_loss(y, o2)
-        return loss1+loss2, x, y
+        loss2 = keras.losses.MeanAbsoluteError()(y, o2)
+        return 20*loss1+loss2, y, o2
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
-            total_loss, x, y = self.calculate_loss(inputs)
+            total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
 
-        # Apply gradients.
+         # Apply gradients.
         train_vars = [
             self.predictor.trainable_variables,
             self.trans.trainable_variables,
@@ -63,14 +64,13 @@ class EmissionPredictor(keras.Model):
         self.optimizer.apply_gradients(tv_list)
 
         # Report progress.
-        self.compiled_metrics.update_state(x, y)
+        self.compiled_metrics.update_state(loss_pred, loss_y)
         return {m.name: m.result() for m in self.metrics}
 
     def test_step(self, inputs):
-        total_loss, x, y = self.calculate_loss(inputs)
-
+        total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
         # Update the trackers.
-        self.compiled_metrics.update_state(x, y)
+        self.compiled_metrics.update_state(loss_y, loss_pred)
         return {m.name: m.result() for m in self.metrics}
 
     def embedding(self, inputs):

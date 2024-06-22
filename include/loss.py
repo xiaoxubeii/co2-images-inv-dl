@@ -74,8 +74,9 @@ def define_metrics(exp_purpose: str):
     metrics = []
     if exp_purpose == "segmentation":
         metrics = []
-    elif exp_purpose == "inversion":
-        metrics = [tf.keras.losses.MeanAbsolutePercentageError(), tf.keras.losses.MeanAbsoluteError()]
+    elif exp_purpose in ("inversion", "mae", "transformer"):
+        metrics = [tf.keras.losses.MeanAbsolutePercentageError(),
+                   tf.keras.losses.MeanAbsoluteError()]
     return metrics
 
 
@@ -110,7 +111,8 @@ def calculate_weighted_plume(
             + weight_max
             - A_0 * (np.exp(param_curve * y_min) + np.exp(param_curve * y_max))
         ) / 2
-        y_data = A_0 * np.exp(param_curve * plume) + b * np.where(plume > 0, 1, 0)
+        y_data = A_0 * np.exp(param_curve * plume) + \
+            b * np.where(plume > 0, 1, 0)
         y_data = np.where(plume > 0, y_data, 0)
     else:
         sys.exit()

@@ -229,7 +229,7 @@ class Input_filler:
             else:
                 return data, None, data.shape
         else:
-            indexes = list(range(data.shape[0]))
+            indexes = np.array(range(data.shape[0]))
             shape = data.shape
             if self.window_length > 0:
                 num_batches = int(
