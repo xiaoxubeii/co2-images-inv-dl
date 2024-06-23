@@ -64,7 +64,7 @@ class EmissionPredictor(keras.Model):
         self.optimizer.apply_gradients(tv_list)
 
         # Report progress.
-        self.compiled_metrics.update_state(loss_pred, loss_y)
+        self.compiled_metrics.update_state(loss_y, loss_pred)
         return {m.name: m.result() for m in self.metrics}
 
     def test_step(self, inputs):
