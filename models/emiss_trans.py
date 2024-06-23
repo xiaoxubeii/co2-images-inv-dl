@@ -45,7 +45,7 @@ class EmissionPredictor(keras.Model):
         loss1 = keras.losses.MeanSquaredError()(y1, o1)
         o2 = self.predictor(y1)
         loss2 = keras.losses.MeanAbsoluteError()(y, o2)
-        return 20*loss1+loss2, y, o2
+        return 0.2*loss1+0.8*loss2, y, o2
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
@@ -145,9 +145,6 @@ class EmissTransformer(keras.Model):
         for i in range(NUM_LAYERS):
             outputs = self.transformer_encoder(outputs, attention_mask=mask)
         return outputs
-
-    # def calculate_loss(self, inputs):
-    #     return self.loss_func(embedding, outputs), outputs
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):
