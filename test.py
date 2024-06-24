@@ -22,5 +22,5 @@ def test_exp(model_res_path, model_weights_name, test_dataset_path):
 #     config["data.path.directory"], config["data.path.train.name"], "test_dataset.nc")
 # download_model(config["apikey"], run_path)
 # run_path = "/kaggle/working/res/transformer/2024-06-13_21-10-26"
-test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_none",
+test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
