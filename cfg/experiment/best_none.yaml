@@ -31,7 +31,7 @@ model:
 training:
   batch_size: 32
   learning_rate: 0.001
-  max_epochs: 1000
+  max_epochs: 100
   init_weights: random
   optimiser: adam
 augmentations:

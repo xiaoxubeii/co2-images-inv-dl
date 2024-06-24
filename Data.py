@@ -506,11 +506,11 @@ class Input_eval:
             self.shift
         )
 
-        self.eval = filler.fill_data(
+        self.eval, _, shape = filler.fill_data(
             self.ds,
             self.list_chans,
         )
-        self.fields_input_shape = list(self.eval.shape[1:])
+        self.fields_input_shape = list(shape[1:])
 
 
 @dataclass
