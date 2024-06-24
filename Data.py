@@ -506,7 +506,7 @@ class Input_eval:
             self.shift
         )
 
-        self.eval, _, shape = filler.fill_data(
+        self.eval_data, self.eval_data_indexes, shape = filler.fill_data(
             self.ds,
             self.list_chans,
         )

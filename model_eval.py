@@ -367,11 +367,15 @@ def get_inv_metrics(y: tf.Tensor, pred: tf.Tensor):
     return {"mae": all_mae, "mape": all_mape}
 
 
-def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval) -> dict:
+def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval, sample_num=10) -> dict:
     """Get inversion scores by inversion model applied on data."""
-    x = tf.convert_to_tensor(data.x.eval, np.float32)[:10]
+    data_index = data.x.eval_data_indexes[:sample_num]
+    x = tf.convert_to_tensor(data.x.eval_data[data_index], np.float32)
     pred = tf.convert_to_tensor(model.predict(x), np.float32)
-    y = tf.convert_to_tensor(data.y.eval, np.float32)[:10]
+    y = tf.convert_to_tensor(data.y.eval, np.float32)[:sample_num]
+    if data.window_length > 0:
+        y = tf.reshape(y, (y.shape[0]*y.shape[1], y.shape[2]))
+        pred = tf.reshape(pred, (pred.shape[0]*pred.shape[1], pred.shape[2]))
     return get_inv_metrics(y, pred)
 
 
@@ -415,29 +419,15 @@ def draw_idx(
     return [idx, ds_idx]
 
 
-def get_summary_histo_inversion(
-    model: tf.keras.Model, data: Data_eval, dir_save: str = "None"
-) -> None:
-    """Get various histograms summing up the inversion results."""
-    metrics = get_inv_metrics_model_on_data(model, data)
-    mean_metrics = get_inv_mean_loss(data)
+def get_summary_histo_inversion1(metrics):
+    df_mae = [pd.DataFrame({"loss": m["mae"], "method": m["method"]})
+              for m in metrics]
+    df_mape = [pd.DataFrame(
+        {"loss": m["mape"], "method": m["method"]}) for m in metrics]
 
-    df_mae_1 = pd.DataFrame({"loss": metrics["mae"], "method": "CNN"})
-    df_mae_2 = pd.DataFrame({"loss": mean_metrics["mae"], "method": "mean"})
-    df_mae = pd.concat([df_mae_1, df_mae_2])
-
-    df_mape_1 = pd.DataFrame({"loss": metrics["mape"], "method": "CNN"})
-    df_mape_2 = pd.DataFrame({"loss": mean_metrics["mape"], "method": "mean"})
-    df_mape = pd.concat([df_mape_1, df_mape_2])
-
-    pred = np.squeeze(model.predict(
-        tf.convert_to_tensor(data.x.eval, np.float32)))
-    y = data.y.eval[:, -1]
-    df_emiss_1 = pd.DataFrame({"emiss": y, "origin": "truth"})
-    df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
-    df_emiss = pd.concat([df_emiss_1, df_emiss_2])
-
-    N_rows = 2
+    df_mae = pd.concat(df_mae)
+    df_mape = pd.concat(df_mape)
+    N_rows = 1
     N_cols = 2
     mympf.setMatplotlibParam()
     plt.viridis()
@@ -473,23 +463,94 @@ def get_summary_histo_inversion(
         alpha=0.2,
         ax=axs[1],
     )
+    titles = [
+        "Mean absolute error",
+        "Mean absolute percentage error",
+    ]
+
+    for i_ax, ax in enumerate(axs):
+        ax.set_yticklabels([])
+        ax.set_xlabel("")
+        ax.set_xlabel(titles[i_ax])
+
+
+def get_summary_histo_inversion(
+    model: tf.keras.Model, data: Data_eval, dir_save: str = "None"
+
+
+) -> None:
+    """Get various histograms summing up the inversion results."""
+    metrics = get_inv_metrics_model_on_data(model, data)
+    # mean_metrics = get_inv_mean_loss(data)
+
+    df_mae = pd.DataFrame({"loss": metrics["mae"], "method": "CNN"})
+    # df_mae_2 = pd.DataFrame({"loss": mean_metrics["mae"], "method": "mean"})
+    # df_mae = pd.concat([df_mae_1, df_mae_2])
+
+    df_mape = pd.DataFrame({"loss": metrics["mape"], "method": "CNN"})
+    # df_mape_2 = pd.DataFrame({"loss": mean_metrics["mape"], "method": "mean"})
+    # df_mape = pd.concat([df_mape_1, df_mape_2])
+
+    # pred = np.squeeze(model.predict(
+    #     tf.convert_to_tensor(data.x.eval, np.float32)))
+    # y = data.y.eval[:, -1]
+    # df_emiss_1 = pd.DataFrame({"emiss": y, "origin": "truth"})
+    # df_emiss_2 = pd.DataFrame({"emiss": pred, "origin": "prediction"})
+    # df_emiss = pd.concat([df_emiss_1, df_emiss_2])
+
+    N_rows = 1
+    N_cols = 2
+    mympf.setMatplotlibParam()
+    plt.viridis()
+    axs = mympf.set_figure_axs(
+        N_rows,
+        N_cols,
+        wratio=0.35,
+        hratio=0.75,
+        pad_w_ext_left=0.25,
+        pad_w_ext_right=0.25,
+        pad_w_int=0.3,
+        pad_h_ext=0.3,
+        pad_h_int=0.35,
+    )
+
     sns.kdeplot(
-        data=df_emiss,
-        x="emiss",
+        data=df_mae,
+        x="loss",
         common_norm=True,
-        hue="origin",
+        hue="method",
         color="firebrick",
         fill=True,
         alpha=0.2,
-        ax=axs[2],
+        ax=axs[0],
     )
-    sns.kdeplot(pred / y, color="firebrick", fill=True, alpha=0.2, ax=axs[3])
+    sns.kdeplot(
+        data=df_mape,
+        x="loss",
+        common_norm=True,
+        hue="method",
+        color="firebrick",
+        fill=True,
+        alpha=0.2,
+        ax=axs[1],
+    )
+    # sns.kdeplot(
+    #     data=df_emiss,
+    #     x="emiss",
+    #     common_norm=True,
+    #     hue="origin",
+    #     color="firebrick",
+    #     fill=True,
+    #     alpha=0.2,
+    #     ax=axs[2],
+    # )
+    # sns.kdeplot(pred / y, color="firebrick", fill=True, alpha=0.2, ax=axs[3])
 
     titles = [
         "Mean absolute error",
         "Mean absolute percentage error",
-        "Emission rate",
-        "Prediction/Truth",
+        # "Emission rate",
+        # "Prediction/Truth",
     ]
 
     for i_ax, ax in enumerate(axs):
