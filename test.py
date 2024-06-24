@@ -28,7 +28,7 @@ def compare_exps(models, test_dataset_path):
 model1 = {
     "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/transformer/weight_changed",
     "model_weights_name": "w_best.weights.h5",
-    "method": "emiss_trans",
+    "method": "emiss_trans_weight_changed",
     "sample_num": 10
 }
 model2 = {
@@ -37,5 +37,12 @@ model2 = {
     "method": "essential",
     "sample_num": 10*84
 }
-compare_exps([model1, model2],
+model3 = {
+    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/transformer/v1",
+    "model_weights_name": "w_best.weights.h5",
+    "method": "emiss_trans_v1",
+    "sample_num": 10
+}
+
+compare_exps([model1, model2, model3],
              "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
