@@ -45,7 +45,7 @@ class EmissionPredictor(keras.Model):
         loss1 = keras.losses.MeanSquaredError()(y1, o1)
         o2 = self.predictor(y1)
         loss2 = keras.losses.MeanAbsoluteError()(y, o2)
-        return 0.2*loss1+0.8*loss2, y, o2
+        return 0.8*loss1+0.2*loss2, y, o2
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
