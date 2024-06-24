@@ -26,13 +26,13 @@ def compare_exps(models, test_dataset_path):
 # test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
 #          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
 model1 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_tran_5",
+    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/transformer/weight_changed",
     "model_weights_name": "w_best.weights.h5",
     "method": "emiss_trans",
     "sample_num": 10
 }
 model2 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
+    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/essential/best_none",
     "model_weights_name": "w_best.weights.h5",
     "method": "essential",
     "sample_num": 10*84
