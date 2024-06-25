@@ -128,8 +128,8 @@ def get_core_model(
     elif name == "emiss_trans":
         autoencoder = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                           top_layers=top_layers, bottom_layers=bottom_layers)
-        autoencoder.load_weights(config.model.embedding_path)
-        # model = keras.saving.load_model(config.model.embedding_path)
+        # autoencoder.load_weights(config.model.embedding_path)
+        autoencoder = keras.saving.load_model(config.model.embedding_path)
         autoencoder.freeze_all_layers()
         core_model = emission_predictor(
             input_shape, config.model.image_size,  autoencoder, bottom_layers=bottom_layers)

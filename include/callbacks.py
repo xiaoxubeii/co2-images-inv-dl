@@ -209,12 +209,12 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
         return self._is_old_tf_keras_version
 
 
-def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.weights.h5") -> list:
+def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras") -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
         modelcheckpoint_cb = WandbModelCheckpoint(
             filepath=filepath,
-            save_weights_only=True,
+            save_weights_only=False,
             monitor="val_loss",
             mode="auto",
             save_best_only=True,

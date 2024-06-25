@@ -1,16 +1,20 @@
+import collections.abc
+import pdb
 import model_eval
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import yaml
+from omegaconf import OmegaConf
 
 
 def compare_exps(models, test_dataset_path):
     metrics = []
     for m in models:
         data = model_eval.get_data_for_inversion(
-            m["model_res_path"], test_dataset_path)
+            m["model_res_path"], test_dataset_path, m["config"])
         model = model_eval.get_inversion_model_from_weights(
-            m["model_res_path"], name_w=m["model_weights_name"])
+            m["model_res_path"], name_w=m["model_weights_name"], cfg=m["config"])
         metric = model_eval.get_inv_metrics_model_on_data(
             model, data, sample_num=m["sample_num"])
         metric["method"] = m["method"]
@@ -25,24 +29,44 @@ def compare_exps(models, test_dataset_path):
 # run_path = "/kaggle/working/res/transformer/2024-06-13_21-10-26"
 # test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
 #          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
+
+window_length = 48
+sample_num = 10
 model1 = {
     "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/transformer/weight_changed",
     "model_weights_name": "w_best.weights.h5",
     "method": "emiss_trans_weight_changed",
-    "sample_num": 10
+    "sample_num": sample_num,
+    "config": {
+        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"}, "init": {"window_length": window_length}}
+    },
 }
 model2 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/essential/best_none",
+    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/essential/chan_none_epoch_1000",
     "model_weights_name": "w_best.weights.h5",
     "method": "essential",
-    "sample_num": 10*84
-}
-model3 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/transformer/v1",
-    "model_weights_name": "w_best.weights.h5",
-    "method": "emiss_trans_v1",
-    "sample_num": 10
+    "sample_num": sample_num*window_length,
+    "config": {
+        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"}}
+    }
 }
 
-compare_exps([model1, model2, model3],
+
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
+
+models = [model1, model2]
+for m in models:
+    with open(os.path.join(m["model_res_path"], "config.yaml"), 'r') as file:
+        config = yaml.safe_load(file)
+        config = update(config, m["config"])
+        m["config"] = OmegaConf.create(yaml.dump(config))
+
+compare_exps(models,
              "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")

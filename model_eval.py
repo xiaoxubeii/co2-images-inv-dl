@@ -287,11 +287,12 @@ def plot_segmentation_examples(
 
 def get_data_for_inversion(
     dir_res: str,
-    path_eval_nc: str,
+    path_eval_nc: str, cfg: OmegaConf = None
 ) -> Data_eval:
     """Prepare Data_eval object with name_dataset."""
 
-    cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
+    if cfg is None:
+        cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
     if 'window_length' not in cfg.data.init:
         data = Data_eval(path_eval_nc, 0, 0)
     else:
@@ -321,8 +322,9 @@ def get_inversion_model(
     return model
 
 
-def get_inversion_model_from_weights(dir_res, name_w="w_last.weights.h5"):
-    cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
+def get_inversion_model_from_weights(dir_res, name_w="w_last.weights.h5", cfg: OmegaConf = None):
+    if cfg is None:
+        cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
     model = Model_training_manager(cfg).model
     model.load_weights(os.path.join(dir_res, name_w))
     return model
@@ -435,7 +437,7 @@ def get_summary_histo_inversion1(metrics):
         N_rows,
         N_cols,
         wratio=0.35,
-        hratio=0.75,
+        hratio=1,
         pad_w_ext_left=0.25,
         pad_w_ext_right=0.25,
         pad_w_int=0.3,
@@ -472,6 +474,7 @@ def get_summary_histo_inversion1(metrics):
         ax.set_yticklabels([])
         ax.set_xlabel("")
         ax.set_xlabel(titles[i_ax])
+        plt.setp(ax.get_legend().get_texts(), fontsize='4')  # for legend text
 
 
 def get_summary_histo_inversion(

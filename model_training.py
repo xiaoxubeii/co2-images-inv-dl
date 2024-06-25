@@ -212,5 +212,5 @@ class Model_training_manager:
     def save(self) -> None:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
-        # self.saver.save_model_and_weights(self.model)
-        self.saver.save_weights(self.model)
+        self.saver.save_model_and_weights(self.model)
+        # self.saver.save_weights(self.model)
