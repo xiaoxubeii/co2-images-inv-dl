@@ -410,7 +410,6 @@ class MaskedAutoencoder(keras.Model):
         total_loss, loss_patch, loss_output = self.calculate_loss(
             images, test=True)
 
-        import pdb;pdb.set_trace()
         # Update the trackers.
         self.compiled_metrics.update_state(loss_patch, loss_output)
         return {m.name: m.result() for m in self.metrics}
