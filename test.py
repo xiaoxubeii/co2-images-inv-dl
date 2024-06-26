@@ -36,7 +36,7 @@ sample_num = 80
 model1 = {
     "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-window12-patch16-64",
     "model_weights_name": "w_best.keras",
-    "method": "emiss_trans_weight_changed",
+    "method": "co2et-window12-patch16-64",
     "sample_num": sample_num,
     "config": {
         "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
@@ -44,7 +44,20 @@ model1 = {
         "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"}
     },
 }
+
 model2 = {
+    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-window12-patch16-chan5-64",
+    "model_weights_name": "w_best.keras",
+    "method": "co2et-window12-patch16-chan5-64",
+    "sample_num": sample_num,
+    "config": {
+        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
+                 "init": {"window_length": window_length, "shift": shift}, },
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-chan5-64/w_best.keras"}
+    },
+}
+
+model3 = {
     "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/essential/chan_none_epoch_1000",
     "model_weights_name": "w_best.weights.h5",
     "method": "essential",
@@ -64,7 +77,7 @@ def update(d, u):
     return d
 
 
-models = [model1, model2]
+models = [model1, model2, model3]
 for m in models:
     with open(os.path.join(m["model_res_path"], "config.yaml"), 'r') as file:
         config = yaml.safe_load(file)
