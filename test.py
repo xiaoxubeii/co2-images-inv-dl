@@ -30,9 +30,9 @@ def compare_exps(models, test_dataset_path):
 # test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
 #          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
 
-window_length = 12
+window_length = 84
 shift = 1
-sample_num = 80
+sample_num = 10
 model1 = {
     "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-window12-patch16-64",
     "model_weights_name": "w_best.keras",
