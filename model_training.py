@@ -93,7 +93,7 @@ class Model_training_manager:
                 cfg.data.output.max_w,
                 cfg.data.output.param_curve,
             )
-        if cfg.model.type in ("inversion", "mae", "transformer"):
+        if cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
             self.data.prepare_input(
                 cfg.data.input.chan_0,
                 cfg.data.input.chan_1,
@@ -126,7 +126,7 @@ class Model_training_manager:
                 )
                 self.model = seg_builder.get_model()
 
-            elif cfg.model.type in ("inversion", "mae", "transformer"):
+            elif cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
                 reg_builder = rm.Reg_model_builder(
                     cfg.model.name,
                     self.data.x.fields_input_shape,
@@ -165,7 +165,7 @@ class Model_training_manager:
                 cfg.augmentations.shuffle,
             )
             generator = gen_machine.flow(self.data.x.train, self.data.y.train)
-        elif cfg.model.type in ("inversion", "mae", "transformer"):
+        elif cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,

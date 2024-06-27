@@ -108,11 +108,11 @@ class EmissionPredictor(keras.Model):
         )
         return config
 
-    @classmethod
-    def from_config(cls, config):
-        for k in ["mae"]:
-            config[k] = keras.saving.deserialize_keras_object(config[k])
-        return cls(**config)
+    # @classmethod
+    # def from_config(cls, config):
+    #     for k in ["mae", "bottom_layers"]:
+    #         config[k] = keras.saving.deserialize_keras_object(config[k])
+    #     return cls(**config)
 
 
 @keras.saving.register_keras_serializable()
@@ -159,9 +159,9 @@ def compute_mask(batch_size, n_dest, n_src, dtype):
     return ops.tile(mask, mult)
 
 
-def emission_predictor(input_shape, image_size, autoencoder, bottom_layers=None):
+def emission_predictor(input_shape, image_size, xco2_transformer, bottom_layers=None):
     inputs = keras.Input(shape=input_shape)
     predictor = EmissionPredictor(
-        image_size,  autoencoder, bottom_layers=bottom_layers)
+        image_size,  xco2_transformer, bottom_layers=bottom_layers)
     predictor(inputs)
     return predictor

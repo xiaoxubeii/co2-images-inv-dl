@@ -909,7 +909,7 @@ def generate_emiss_estimation():
     # model_name = "w_last.keras"
     predictor_model_res_path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/transformer/emiss_trans_2024-06-18_03-04-27"
     data = get_data_for_inversion(predictor_model_res_path, test_dataset_path)
-    predictor = get_inversion_model_from_weights(predictor_model_res_path)
+    predictor = get_inversion_model(predictor_model_res_path)
     cfg = OmegaConf.load(os.path.join(predictor_model_res_path, "config.yaml"))
     embedding_path = "/".join(cfg.model.embedding_path.split("/")[:-1])
     embedding_layer = get_inversion_model_from_weights(embedding_path)

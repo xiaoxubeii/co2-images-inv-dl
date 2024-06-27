@@ -23,15 +23,14 @@ from models.my_mobilenet import MobileNet
 from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
-from models.mae import mae
-from models.emiss_trans import emission_predictor
+from models.xco2_transformer import xco2_transformer
+from models.co2emission_transformer import emission_predictor
 
 
 def get_preprocessing_layers(
     n_layer: tf.keras.layers.Normalization, n_chans: int, noisy_chans: list, window_length: int
 ):
     """Return preprocessing layers for regression model."""
-
     def preproc_layers(x):
         chans = [None] * n_chans
         for idx in range(n_chans):
@@ -122,17 +121,18 @@ def get_core_model(
         core_model = ShuffleNet(input_shape, scaling_coefficient=0.75)
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
-    elif name == "mae":
-        core_model = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
-                         top_layers=top_layers, bottom_layers=bottom_layers)
-    elif name == "emiss_trans":
-        autoencoder = mae(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
-                          top_layers=top_layers, bottom_layers=bottom_layers)
-        # autoencoder.load_weights(config.model.embedding_path)
-        autoencoder = keras.saving.load_model(config.model.embedding_path)
-        autoencoder.freeze_all_layers()
+    elif name == "xco2_transformer":
+        core_model = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
+                                      top_layers=top_layers, bottom_layers=bottom_layers)
+    elif name == "co2emission_transformer":
+        xco2t = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
+                                 top_layers=top_layers, bottom_layers=bottom_layers)
+        xco2t.load_weights(config.model.embedding_path)
+        # xco2t = keras.saving.load_model(config.model.embedding_path)
+        xco2t.freeze_all_layers()
         core_model = emission_predictor(
-            input_shape, config.model.image_size,  autoencoder, bottom_layers=bottom_layers)
+            input_shape, config.model.image_size, xco2t, bottom_layers=bottom_layers)
+
     else:
         sys.exit()
 
@@ -172,7 +172,7 @@ class Reg_model_builder:
             bottom_layers,
             self.config
         )
-        if self.name not in ("mae", "emiss_trans"):
+        if self.name not in ("xco2_transformer", "co2emission_transformer"):
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)

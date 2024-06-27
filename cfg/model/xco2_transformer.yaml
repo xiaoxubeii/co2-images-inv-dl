@@ -1,5 +1,5 @@
-type: mae
-name: mae
+type: xco2_transformer
+name: xco2_transformer
 loss_func: MeanSquaredError
 dropout_rate: 0.2
 scaling_coefficient: 1

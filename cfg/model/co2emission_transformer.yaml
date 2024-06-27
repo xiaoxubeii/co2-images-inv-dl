@@ -1,5 +1,5 @@
-type: transformer
-name: emiss_trans
+type: co2emission_transformer
+name: co2emission_transformer
 loss_func: MeanAbsoluteError
 dropout_rate: 0.2
 scaling_coefficient: 1
