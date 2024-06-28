@@ -125,10 +125,10 @@ def get_core_model(
         core_model = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                                       top_layers=top_layers, bottom_layers=bottom_layers)
     elif name == "co2emission_transformer":
-        xco2t = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
-                                 top_layers=top_layers, bottom_layers=bottom_layers)
-        xco2t.load_weights(config.model.embedding_path)
-        # xco2t = keras.saving.load_model(config.model.embedding_path)
+        # xco2t = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
+        #                          top_layers=top_layers, bottom_layers=bottom_layers)
+        # xco2t.load_weights(config.model.embedding_path)
+        xco2t = keras.saving.load_model(config.model.embedding_path)
         xco2t.freeze_all_layers()
         core_model = emission_predictor(
             input_shape, config.model.image_size, xco2t, bottom_layers=bottom_layers)

@@ -12,15 +12,13 @@ def compare_exps(models, test_dataset_path):
     metrics = []
     for m in models:
         data = model_eval.get_data_for_inversion(
-            m["model_res_path"], test_dataset_path, m["config"])
-        # model = model_eval.get_inversion_model_from_weights(
-        #     m["model_res_path"], name_w=m["model_weights_name"], cfg=m["config"])
+            os.path.join(m["model_res_path"], m["model_type"], m["model_name"]), test_dataset_path, m["config"])
         model = model_eval.get_inversion_model_from_weights(
-            m["model_res_path"], name_w=m["model_weights_name"])
+            os.path.join(m["model_res_path"], m["model_type"], m["model_name"]), name_w=m["model_weights_name"], cfg=m["config"])
 
         metric = model_eval.get_inv_metrics_model_on_data(
             model, data, sample_num=m["sample_num"])
-        metric["method"] = m["method"]
+        metric["method"] = m["model_name"]
         metrics.append(metric)
     model_eval.get_summary_histo_inversion1(metrics)
     plt.show()
@@ -33,59 +31,57 @@ def compare_exps(models, test_dataset_path):
 # test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
 #          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
 
-window_length = 12
+window_length = 6
 shift = 1
-sample_num = 80
+sample_num = 160
+data_dir = "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"
+res_dir = ""
 model1 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-window12-patch16-64",
+    "model_type": "co2emissiontransformer",
     "model_weights_name": "w_best.keras",
-    "method": "co2et-window12-patch16-64",
+    "model_name": "co2et-window12-patch16-64",
     "sample_num": sample_num,
     "config": {
-        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
-                 "init": {"window_length": window_length, "shift": shift}, },
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
         "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"}
     },
 }
 
 model2 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-window12-patch16-chan5-64",
+    "model_type": "co2emissiontransformer",
     "model_weights_name": "w_best.keras",
-    "method": "co2et-window12-patch16-chan5-64",
+    "model_name": "co2et-window12-patch16-chan5-64",
     "sample_num": sample_num,
     "config": {
-        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
-                 "init": {"window_length": window_length, "shift": shift}, },
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
         "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-chan5-64/w_best.keras"}
     },
 }
 model3 = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/co2emissiontransformer/co2et-win84-patch16-64",
+    "model_type": "co2emissiontransformer",
     "model_weights_name": "w_best.keras",
-    "method": "co2et-win84-patch16-64",
+    "model_name": "co2et-win84-patch16-64",
     "sample_num": sample_num,
     "config": {
-        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
-                 "init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-chan5-64/w_best.keras"}
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"}
     },
 }
-model_test = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/co2emission_transformer/co2emission_transformer_2024-06-27_12-49-13",
+model4 = {
+    "model_type": "co2emissiontransformer",
     "model_weights_name": "w_best.keras",
-    "method": "co2et-win84-patch16-64",
+    "model_name": "co2et-win12-patch8-64",
     "sample_num": sample_num,
     "config": {
-        "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"},
-                 "init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-chan5-64/w_best.keras"}
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch8-64/w_best.keras"}
     },
 }
 
-model_essen = {
-    "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/essential/chan_none_epoch_1000",
+model_cnn = {
+    "model_type": "cnn",
     "model_weights_name": "w_best.weights.h5",
-    "method": "essential",
+    "model_name": "cnn-baseline",
     "sample_num": sample_num*window_length,
     "config": {
         "data": {"path": {"directory": "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"}}
@@ -102,10 +98,14 @@ def update(d, u):
     return d
 
 
-# models = [model2, model3]
-models = [model_test]
+models = [model1, model2, model3, model4, model_cnn]
+# models = [model4]
+# models = [model3]
 for m in models:
-    with open(os.path.join(m["model_res_path"], "config.yaml"), 'r') as file:
+    m = update(m, {
+        "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments", "config": {"data": {"path": {"directory": data_dir}}}})
+
+    with open(os.path.join(m["model_res_path"], m["model_type"], m["model_name"], "config.yaml"), 'r') as file:
         config = yaml.safe_load(file)
         config = update(config, m["config"])
         m["config"] = OmegaConf.create(yaml.dump(config))

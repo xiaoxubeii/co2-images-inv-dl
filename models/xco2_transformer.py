@@ -421,11 +421,11 @@ class MaskedAutoencoder(keras.Model):
         self.encoder.trainable = False
         self.decoder.trainable = False
 
-    # @classmethod
-    # def from_config(cls, config):
-    #     for k in ["patch_encoder", "encoder", "decoder", "patch_layer"]:
-    #         config[k] = keras.saving.deserialize_keras_object(config[k])
-    #     return cls(**config)
+    @classmethod
+    def from_config(cls, config):
+        for k in ["patch_encoder", "encoder", "decoder", "patch_layer"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
 
 
 def get_train_augmentation_model(input_shape, image_size):

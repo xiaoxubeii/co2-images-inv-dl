@@ -68,6 +68,7 @@ class Model_training_manager:
 
     def __init__(self, cfg: DictConfig) -> None:
         self.prepare_data(cfg)
+        import pdb;pdb.set_trace()
         self.build_model(cfg)
         self.prepare_training(cfg)
         self.saver = Saver()
