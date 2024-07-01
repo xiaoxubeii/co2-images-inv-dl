@@ -70,7 +70,7 @@ class Generator:
             self.train_generator = zip(
                 self.image_generator, self.mask_generator)
 
-        elif self.model_purpose == "inversion":
+        elif self.model_purpose in ("inversion", "xco2_transformer"):
             self.train_generator = self.image_datagen.flow(
                 x_data,
                 y_data,

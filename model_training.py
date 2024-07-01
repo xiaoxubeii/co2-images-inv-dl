@@ -153,7 +153,7 @@ class Model_training_manager:
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""
-        if cfg.model.type.startswith("segmentation"):
+        if cfg.model.type.startswith("segmentation") or cfg.model.type == "xco2_transformer":
             gen_machine = generators.Generator(
                 cfg.model.type,
                 cfg.training.batch_size,
@@ -165,7 +165,7 @@ class Model_training_manager:
                 cfg.augmentations.shuffle,
             )
             generator = gen_machine.flow(self.data.x.train, self.data.y.train)
-        elif cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
+        elif cfg.model.type in ("inversion", "co2emission_transformer"):
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,
