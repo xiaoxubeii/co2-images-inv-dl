@@ -164,7 +164,7 @@ class Model_training_manager:
                 cfg.augmentations.zoom.range,
                 cfg.augmentations.shuffle,
             )
-            generator = gen_machine.flow(self.data.x.train, self.data.y.train)
+            generator = gen_machine.flow(self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train)
         elif cfg.model.type in ("inversion", "co2emission_transformer"):
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
