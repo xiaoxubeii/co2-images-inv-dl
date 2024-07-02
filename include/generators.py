@@ -70,7 +70,7 @@ class Generator:
             self.train_generator = zip(
                 self.image_generator, self.mask_generator)
 
-        elif self.model_purpose in ("inversion", "xco2_transformer"):
+        elif self.model_purpose.startswith("inversion"):
             self.train_generator = self.image_datagen.flow(
                 x_data,
                 y_data,
@@ -78,7 +78,14 @@ class Generator:
                 batch_size=self.batch_size,
                 shuffle=self.shuffle,
             )
-
+        elif self.model_purpose == "embedding":
+            self.train_generator = self.image_datagen.flow(
+                x_data,
+                y_data,
+                seed=seed,
+                batch_size=self.batch_size,
+                shuffle=self.shuffle,
+            )
         else:
             print("Unknown model purpose in Generator")
 

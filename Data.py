@@ -398,18 +398,18 @@ class Output_train:
 
     def get_segmentation(self, curve, min_w, max_w, param_curve):
         """Get segmentation train and valid."""
-        self.train = get_weighted_plume(
+        self.train_data = get_weighted_plume(
             self.ds_train, curve, min_w, max_w, param_curve)
-        self.valid = get_weighted_plume(
+        self.valid_data = get_weighted_plume(
             self.ds_valid, curve, min_w, max_w, param_curve)
         print("data.y.train.shape", self.train.shape)
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
-        self.train = get_emiss(self.ds_train, N_hours_prec,
-                               window_length=self.window_length, shift=self.shift)
-        self.valid = get_emiss(self.ds_valid, N_hours_prec,
-                               window_length=self.window_length, shift=self.shift)
+        self.train_data = get_emiss(self.ds_train, N_hours_prec,
+                                    window_length=self.window_length, shift=self.shift)
+        self.valid_data = get_emiss(self.ds_valid, N_hours_prec,
+                                    window_length=self.window_length, shift=self.shift)
 
 
 @dataclass
@@ -465,6 +465,11 @@ class Data_train:
             self.ds_train, self.ds_valid, classes=1
         )
         self.y.get_segmentation(curve, min_w, max_w, param_curve)
+
+    def prepare_output_embedding(
+        self,
+    ):
+        self.y = self.x
 
     def prepare_output_inversion(self, N_hours_prec: int = 1):
         """Prepare output object for inversion."""

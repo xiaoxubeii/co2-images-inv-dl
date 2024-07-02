@@ -1,4 +1,4 @@
-type: co2emission_transformer
+type: inversion
 name: co2emission_transformer
 loss_func: MeanAbsoluteError
 dropout_rate: 0.2

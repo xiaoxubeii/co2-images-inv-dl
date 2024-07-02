@@ -23,7 +23,7 @@ from models.my_mobilenet import MobileNet
 from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
-from models.xco2_transformer import xco2_transformer
+from models.xco2_transformer import xco2_transformer, autoencoder
 from models.co2emission_transformer import emission_predictor
 
 
@@ -124,6 +124,8 @@ def get_core_model(
     elif name == "xco2_transformer":
         core_model = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
                                       top_layers=top_layers, bottom_layers=bottom_layers)
+    elif name == "xco2_autoencoder":
+        core_model = autoencoder(input_shape=input_shape)
     elif name == "co2emission_transformer":
         # xco2t = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
         #                          top_layers=top_layers, bottom_layers=bottom_layers)
@@ -134,9 +136,29 @@ def get_core_model(
             input_shape, config.model.image_size, xco2t, bottom_layers=bottom_layers)
 
     else:
+        print(f"Unknown model name: {name}")
         sys.exit()
 
     return core_model
+
+
+@dataclass
+class Emb_model_builder:
+    name: str = ""
+    input_shape: list = field(default_factory=lambda: [64, 64, 3])
+    config: DictConfig = None
+
+    def get_model(self):
+        """Return regression model, keras or locals."""
+        core_model = get_core_model(
+            self.name,
+            self.input_shape,
+            config=self.config
+        )
+        inputs = tf.keras.layers.Input(
+            self.input_shape, name="input_layer")
+        outputs = core_model(inputs)
+        return tf.keras.Model(inputs, outputs)
 
 
 @dataclass
@@ -172,7 +194,7 @@ class Reg_model_builder:
             bottom_layers,
             self.config
         )
-        if self.name not in ("xco2_transformer", "co2emission_transformer"):
+        if self.name == "co2emission_transformer":
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)

@@ -489,3 +489,28 @@ def xco2_transformer(input_shape, image_size, patch_size, channel_size, top_laye
         top_layers=top_layers,
         bottom_layers=bottom_layers,
     )
+
+
+class Autoencoder(keras.Model):
+    def __init__(self, latent_dim, shape):
+        super(Autoencoder, self).__init__()
+        self.latent_dim = latent_dim
+        self.shape = shape
+        self.encoder = tf.keras.Sequential([
+            layers.Flatten(),
+            layers.Dense(latent_dim, activation='relu'),
+        ])
+        self.decoder = tf.keras.Sequential([
+            layers.Dense(tf.math.reduce_prod(
+                shape).numpy(), activation='sigmoid'),
+            layers.Reshape(shape)
+        ])
+
+    def call(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded
+
+
+def autoencoder(input_shape, **kwargs):
+    return Autoencoder(64, input_shape)

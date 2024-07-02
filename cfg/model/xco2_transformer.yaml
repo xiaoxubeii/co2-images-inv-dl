@@ -1,4 +1,4 @@
-type: xco2_transformer
+type: embedding
 name: xco2_transformer
 loss_func: MeanSquaredError
 dropout_rate: 0.2

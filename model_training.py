@@ -44,7 +44,7 @@ class Trainer:
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=(data.x.valid_data, data.y.valid),
+            validation_data=(data.x.valid_data, data.y.valid_data),
             verbose=1,
             # steps_per_epoch=int(
             #     np.floor(data.x.train.shape[0] / self.batch_size)),
@@ -86,14 +86,22 @@ class Model_training_manager:
                 cfg.data.input.chan_3,
                 cfg.data.input.chan_4,
             )
-
             self.data.prepare_output_segmentation(
                 cfg.data.output.curve,
                 cfg.data.output.min_w,
                 cfg.data.output.max_w,
                 cfg.data.output.param_curve,
             )
-        if cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
+        if cfg.model.type == "embedding":
+            self.data.prepare_input(
+                cfg.data.input.chan_0,
+                cfg.data.input.chan_1,
+                cfg.data.input.chan_2,
+                cfg.data.input.chan_3,
+                cfg.data.input.chan_4,
+            )
+            self.data.prepare_output_embedding()
+        if cfg.model.type in ("inversion"):
             self.data.prepare_input(
                 cfg.data.input.chan_0,
                 cfg.data.input.chan_1,
@@ -125,8 +133,15 @@ class Model_training_manager:
                     cfg.model.dropout_rate,
                 )
                 self.model = seg_builder.get_model()
+            elif cfg.model.type == "embedding":
+                reg_builder = rm.Emb_model_builder(
+                    cfg.model.name,
+                    self.data.x.fields_input_shape,
+                    cfg
+                )
+                self.model = reg_builder.get_model()
 
-            elif cfg.model.type in ("inversion", "xco2_transformer", "co2emission_transformer"):
+            elif cfg.model.type == "inversion":
                 reg_builder = rm.Reg_model_builder(
                     cfg.model.name,
                     self.data.x.fields_input_shape,
@@ -140,6 +155,7 @@ class Model_training_manager:
                 )
                 self.model = reg_builder.get_model()
             else:
+                print(f"Unknown model type: {cfg.model.type}")
                 sys.exit()
 
             self.model.compile(
@@ -153,7 +169,7 @@ class Model_training_manager:
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""
-        if cfg.model.type.startswith("segmentation") or cfg.model.type == "xco2_transformer":
+        if cfg.model.type.startswith("segmentation"):
             gen_machine = generators.Generator(
                 cfg.model.type,
                 cfg.training.batch_size,
@@ -164,8 +180,22 @@ class Model_training_manager:
                 cfg.augmentations.zoom.range,
                 cfg.augmentations.shuffle,
             )
-            generator = gen_machine.flow(self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train)
-        elif cfg.model.type in ("inversion", "co2emission_transformer"):
+            generator = gen_machine.flow(
+                self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train)
+        if cfg.model.type == "embedding":
+            gen_machine = generators.Generator(
+                cfg.model.type,
+                cfg.training.batch_size,
+                cfg.augmentations.rot.range,
+                cfg.augmentations.shift.range,
+                cfg.augmentations.flip.bool,
+                cfg.augmentations.shear.range,
+                cfg.augmentations.zoom.range,
+                cfg.augmentations.shuffle,
+            )
+            generator = gen_machine.flow(
+                self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train_data[self.data.y.train_data_indexes])
+        elif cfg.model.type == "inversion":
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,
@@ -182,6 +212,7 @@ class Model_training_manager:
                 window_length=self.data.x.window_length,
             )
         else:
+            print(f"Unknown model type: {cfg.model.type}")
             sys.exit()
 
         cbs = callbacks.get_lrscheduler(
