@@ -155,10 +155,7 @@ class Emb_model_builder:
             self.input_shape,
             config=self.config
         )
-        inputs = tf.keras.layers.Input(
-            self.input_shape, name="input_layer")
-        outputs = core_model(inputs)
-        return tf.keras.Model(inputs, outputs)
+        return core_model
 
 
 @dataclass

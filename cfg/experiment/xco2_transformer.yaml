@@ -2,6 +2,7 @@
 
 defaults:
     - override /model: xco2_transformer
+    - override /data/output: embedding
 
 data:
     path:
@@ -38,3 +39,5 @@ augmentations:
         range: 0
     zoom:
         range: 0.2
+    plume_scaling_max: 0
+    plume_scaling_min: 0
