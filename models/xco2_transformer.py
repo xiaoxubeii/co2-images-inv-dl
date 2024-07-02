@@ -8,7 +8,8 @@ import numpy as np
 # IMAGE_SIZE = 64  # We'll resize input images to this size.
 # PATCH_SIZE = 8  # Size of the patches to be extract from the input images.
 # NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
-MASK_PROPORTION = 0.75
+# MASK_PROPORTION = 0.75
+MASK_PROPORTION = 1
 
 # ENCODER and DECODER
 LAYER_NORM_EPS = 1e-6
