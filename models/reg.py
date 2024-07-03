@@ -23,7 +23,8 @@ from models.my_mobilenet import MobileNet
 from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
-from models.xco2_transformer import xco2_transformer, autoencoder
+from models.mae import mae, autoencoder
+from models.vae import vae
 from models.co2emission_transformer import emission_predictor
 
 
@@ -88,15 +89,14 @@ def get_top_layers(classes: int, choice_top: str = "linear"):
 
 
 def get_core_model(
-    name: str,
-    input_shape: list,
-    classes: int = 1,
-    dropout_rate: float = 0.2,
-    scaling_coefficient: float = 1,
-    top_layers=None,
-    bottom_layers=None,
-    config=None,
-):
+        name: str,
+        input_shape: list,
+        classes: int = 1,
+        dropout_rate: float = 0.2,
+        scaling_coefficient: float = 1,
+        bottom_layers=None,
+        top_layers=None,
+        config=None):
     """Get core model for regression model."""
     if name == "efficientnet":
         core_model = EfficientNet(
@@ -121,19 +121,18 @@ def get_core_model(
         core_model = ShuffleNet(input_shape, scaling_coefficient=0.75)
     elif name == "cnn-lstm":
         core_model = cnn_lstm(input_shape)
-    elif name == "xco2_transformer":
-        core_model = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
-                                      top_layers=top_layers, bottom_layers=bottom_layers)
-    elif name == "xco2_autoencoder":
-        core_model = autoencoder(input_shape=input_shape)
+    elif name == "xco2_mae":
+        core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
+                         channel_size=input_shape[-1], patch_size=config.model.patch_size, bottom_layers=bottom_layers, top_layers=None)
+    # elif name == "xco2_ae":
+    #     core_model = autoencoder(input_shape=input_shape)
+    # elif name == "xco2_vae":
+    #     core_model = vae(input_shape=input_shape)
     elif name == "co2emission_transformer":
-        # xco2t = xco2_transformer(input_shape=input_shape, image_size=config.model.image_size, channel_size=input_shape[-1], patch_size=config.model.patch_size,
-        #                          top_layers=top_layers, bottom_layers=bottom_layers)
-        # xco2t.load_weights(config.model.embedding_path)
-        xco2t = keras.saving.load_model(config.model.embedding_path)
-        xco2t.freeze_all_layers()
+        xco2_emd = keras.saving.load_model(config.model.embedding_path)
+        xco2_emd.freeze_all_layers()
         core_model = emission_predictor(
-            input_shape, config.model.image_size, xco2t, bottom_layers=bottom_layers)
+            input_shape, config.model.image_size, xco2_emd)
 
     else:
         print(f"Unknown model name: {name}")
@@ -142,20 +141,20 @@ def get_core_model(
     return core_model
 
 
-@dataclass
-class Emb_model_builder:
-    name: str = ""
-    input_shape: list = field(default_factory=lambda: [64, 64, 3])
-    config: DictConfig = None
+# @dataclass
+# class Emb_model_builder:
+#     name: str = ""
+#     input_shape: list = field(default_factory=lambda: [64, 64, 3])
+#     config: DictConfig = None
 
-    def get_model(self):
-        """Return regression model, keras or locals."""
-        core_model = get_core_model(
-            self.name,
-            self.input_shape,
-            config=self.config
-        )
-        return core_model
+#     def get_model(self):
+#         """Return regression model, keras or locals."""
+#         core_model = get_core_model(
+#             self.name,
+#             self.input_shape,
+#             config=self.config
+#         )
+#         return core_model
 
 
 @dataclass
@@ -187,16 +186,17 @@ class Reg_model_builder:
             self.classes,
             self.dropout_rate,
             self.scaling_coefficient,
-            top_layers,
             bottom_layers,
+            top_layers,
             self.config
+
         )
-        if self.name == "co2emission_transformer":
+        if self.config.model.custom_model:
+            return core_model
+        else:
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)
             x = core_model(x)
             outputs = top_layers(x)
             return tf.keras.Model(inputs, outputs)
-        else:
-            return core_model

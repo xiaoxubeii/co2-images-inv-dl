@@ -134,11 +134,13 @@ class Model_training_manager:
                 )
                 self.model = seg_builder.get_model()
             elif cfg.model.type == "embedding":
-                reg_builder = rm.Emb_model_builder(
+                reg_builder = rm.Reg_model_builder(
                     cfg.model.name,
                     self.data.x.fields_input_shape,
-                    cfg
+                    noisy_chans=self.data.x.xco2_noisy_chans,
+                    config=cfg
                 )
+                import pdb;pdb.set_trace()
                 self.model = reg_builder.get_model()
 
             elif cfg.model.type == "inversion":

@@ -163,5 +163,5 @@ def emission_predictor(input_shape, image_size, xco2_transformer, bottom_layers=
     inputs = keras.Input(shape=input_shape)
     predictor = EmissionPredictor(
         image_size,  xco2_transformer, bottom_layers=bottom_layers)
-    predictor(inputs)
-    return predictor
+    outputs = predictor(inputs)
+    return tf.keras.Model(inputs, outputs)

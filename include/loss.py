@@ -65,8 +65,8 @@ def define_loss(name_loss):
         "MeanSquaredError": tf.keras.losses.MeanSquaredError(),
         "MeanAbsoluteError": tf.keras.losses.MeanAbsoluteError(),
     }
-    loss = call_dict[name_loss]
-    return loss
+    if name_loss in call_dict:
+        return call_dict[name_loss]
 
 
 def define_metrics(exp_purpose: str):

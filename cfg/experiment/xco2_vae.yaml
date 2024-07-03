@@ -1,7 +1,7 @@
 # @package _global_
 
 defaults:
-    - override /model: xco2_transformer
+    - override /model: xco2_vae
     - override /data/output: embedding
 
 data:

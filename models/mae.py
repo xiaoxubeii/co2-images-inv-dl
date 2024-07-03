@@ -8,8 +8,8 @@ import numpy as np
 # IMAGE_SIZE = 64  # We'll resize input images to this size.
 # PATCH_SIZE = 8  # Size of the patches to be extract from the input images.
 # NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
-# MASK_PROPORTION = 0.75
-MASK_PROPORTION = 1
+MASK_PROPORTION = 0.9
+# MASK_PROPORTION = 1
 
 # ENCODER and DECODER
 LAYER_NORM_EPS = 1e-6
@@ -305,8 +305,8 @@ class MaskedAutoencoder(keras.Model):
         patch_encoder,
         encoder,
         decoder,
-        top_layers,
         bottom_layers,
+        top_layers,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -329,16 +329,13 @@ class MaskedAutoencoder(keras.Model):
                 "patch_encoder": self.patch_encoder,
                 "encoder": self.encoder,
                 "decoder": self.decoder,
-                "bottom_layers": self.bottom_layers,
-                "top_layers": self.top_layers,
             }
         )
         return config
 
     def calculate_loss(self, images, test=False):
-        if self.bottom_layers is not None:
+        if self.bottom_layers:
             images = self.bottom_layers(images)
-
         # Augment the input images.
         if test:
             augmeneted_images = self.test_augmentation_model(images)
@@ -368,8 +365,6 @@ class MaskedAutoencoder(keras.Model):
         # Decode the inputs.
         decoder_outputs = self.decoder(decoder_inputs)
         decoder_patches = self.patch_layer(decoder_outputs)
-        if self.top_layers is not None:
-            decoder_patches = self.top_layers(decoder_patches)
 
         loss_patch = tf.gather(patches, mask_indices, axis=1, batch_dims=1)
         loss_output = tf.gather(
@@ -463,21 +458,22 @@ def get_test_augmentation_model(image_size):
     return model
 
 
-def xco2_transformer(input_shape, image_size, patch_size, channel_size, top_layers=None, bottom_layers=None):
+def mae(input_shape, image_size, patch_size, channel_size, bottom_layers, top_layers):
     train_augmentation_model = get_train_augmentation_model(
         input_shape, image_size)
     test_augmentation_model = get_test_augmentation_model(image_size)
-
     patch_layer = Patches(patch_size, channel_size)
     patch_encoder = PatchEncoder(patch_size, channel_size)
-
-    inputs = layers.Input(
-        (input_shape[-2], input_shape[-2], channel_size))
-    outputs = layers.Resizing(image_size, image_size)(inputs)
-    outputs = patch_layer(outputs)
-    outputs = patch_encoder(outputs)
     encoder = create_encoder()
     decoder = create_decoder(image_size, patch_size, channel_size)
+
+    inputs = layers.Input(input_shape)
+    x = layers.Resizing(image_size, image_size)(inputs)
+    if bottom_layers:
+        x = bottom_layers(x)
+    x = patch_layer(x)
+    x = patch_encoder(x)
+
     return MaskedAutoencoder(
         train_augmentation_model=train_augmentation_model,
         test_augmentation_model=test_augmentation_model,
@@ -486,11 +482,12 @@ def xco2_transformer(input_shape, image_size, patch_size, channel_size, top_laye
         encoder=encoder,
         decoder=decoder,
         input_shape=input_shape,
-        top_layers=top_layers,
         bottom_layers=bottom_layers,
+        top_layers=top_layers,
     )
 
 
+@keras.saving.register_keras_serializable()
 class Autoencoder(keras.Model):
     def __init__(self, latent_dim, shape):
         super(Autoencoder, self).__init__()
@@ -510,6 +507,18 @@ class Autoencoder(keras.Model):
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
         return decoded
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "latent_dim": self.latent_dim,
+                "shape": self.shape,
+                "encoder": self.encoder,
+                "decoder": self.decoder,
+            }
+        )
+        return config
 
 
 def autoencoder(input_shape, **kwargs):
