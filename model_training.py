@@ -140,7 +140,6 @@ class Model_training_manager:
                     noisy_chans=self.data.x.xco2_noisy_chans,
                     config=cfg
                 )
-                import pdb;pdb.set_trace()
                 self.model = reg_builder.get_model()
 
             elif cfg.model.type == "inversion":
