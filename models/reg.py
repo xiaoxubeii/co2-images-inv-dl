@@ -191,6 +191,7 @@ class Reg_model_builder:
             self.config
 
         )
+        import pdb;pdb.set_trace()
         if self.config.model.custom_model:
             return core_model
         else:
