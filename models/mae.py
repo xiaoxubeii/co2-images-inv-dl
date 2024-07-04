@@ -327,7 +327,7 @@ class MaskedAutoencoder(keras.Model):
                 "patch_encoder": self.patch_encoder,
                 "encoder": self.encoder,
                 "decoder": self.decoder,
-                # "bottom_layers": self.bottom_layers,
+                "bottom_layers": self.bottom_layers,
             }
         )
         return config
