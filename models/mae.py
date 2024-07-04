@@ -95,6 +95,16 @@ class Patches(layers.Layer):
         reconstructed = tf.concat(rows, axis=0)
         return reconstructed
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "patch_size": self.patch_size,
+                "channel_size": self.channel_size,
+            }
+        )
+        return config
+
 
 @keras.saving.register_keras_serializable()
 class PatchEncoder(keras.Layer):
@@ -119,19 +129,6 @@ class PatchEncoder(keras.Layer):
         self.mask_token = tf.Variable(
             tf.random.normal([1, self.patch_size * self.patch_size * self.channel_size]), trainable=True
         )
-
-    def get_config(self):
-        config = super().get_config()
-        config.update(
-            {
-                "patch_size": self.patch_size,
-                "channel_size": self.channel_size,
-                "projection_dim": self.projection_dim,
-                "mask_proportion": self.mask_proportion,
-                "downstream": self.downstream,
-            }
-        )
-        return config
 
     def build(self, input_shape):
         (_, self.num_patches, self.patch_area) = input_shape
@@ -225,6 +222,19 @@ class PatchEncoder(keras.Layer):
             new_patch[unmask_index[i]] = patch[unmask_index[i]]
         return new_patch, idx
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "patch_size": self.patch_size,
+                "channel_size": self.channel_size,
+                "projection_dim": self.projection_dim,
+                "mask_proportion": self.mask_proportion,
+                "downstream": self.downstream,
+            }
+        )
+        return config
+
 
 def mlp(x, dropout_rate, hidden_units):
     for units in hidden_units:
@@ -301,33 +311,39 @@ class MaskedAutoencoder(keras.Model):
         self,
         train_augmentation_model,
         test_augmentation_model,
-        patch_layer,
-        patch_encoder,
-        encoder,
-        decoder,
-        bottom_layers,
+        patch_size,
+        image_size,
+        bottom_layers=None,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.train_augmentation_model = train_augmentation_model
         self.test_augmentation_model = test_augmentation_model
-        self.patch_layer = patch_layer
-        self.patch_encoder = patch_encoder
-        self.encoder = encoder
-        self.decoder = decoder
+        self.patch_size = patch_size
+        self.image_size = image_size
         self.bottom_layers = bottom_layers
+
+    def build(self, input_shape):
+        (_, _, channel_size) = input_shape
+        inputs = layers.Input(input_shape)
+        self.patch_layer = Patches(self.patch_size, channel_size)
+        self.patch_encoder = PatchEncoder(self.patch_size, channel_size)
+        x = self.patch_layer(inputs)
+        self.patch_encoder(x)
+
+        self.encoder = create_encoder()
+        self.decoder = create_decoder(
+            self.image_size, self.patch_size, channel_size)
 
     def get_config(self):
         config = super().get_config()
         config.update(
             {
-                "train_augmentation_model": self.train_augmentation_model,
-                "test_augmentation_model": self.test_augmentation_model,
-                "patch_layer": self.patch_layer,
-                "patch_encoder": self.patch_encoder,
-                "encoder": self.encoder,
-                "decoder": self.decoder,
-                "bottom_layers": self.bottom_layers,
+                "patch_size": self.patch_size,
+                "image_size": self.image_size,
+                "train_augmentation_model": keras.saving.serialize_keras_object(self.train_augmentation_model),
+                "test_augmentation_model": keras.saving.serialize_keras_object(self.test_augmentation_model),
+                "bottom_layers": keras.saving.serialize_keras_object(self.bottom_layers),
             }
         )
         return config
@@ -382,7 +398,6 @@ class MaskedAutoencoder(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            self.train_augmentation_model.trainable_variables,
             self.patch_layer.trainable_variables,
             self.patch_encoder.trainable_variables,
             self.encoder.trainable_variables,
@@ -418,7 +433,7 @@ class MaskedAutoencoder(keras.Model):
 
     @classmethod
     def from_config(cls, config):
-        for k in ["patch_encoder", "encoder", "decoder", "patch_layer"]:
+        for k in ["train_augmentation_model", "test_augmentation_model", "bottom_layers"]:
             config[k] = keras.saving.deserialize_keras_object(config[k])
         return cls(**config)
 
@@ -433,22 +448,10 @@ def get_train_augmentation_model(input_shape, image_size):
         ],
         name="train_data_augmentation",
     )
-    # model = keras.Sequential(
-    #     [layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
-    #         layers.RandomCrop(IMAGE_SIZE, IMAGE_SIZE),
-    #         layers.RandomFlip("horizontal"),
-    #      ],
-    #     name="train_data_augmentation",
-    # )
     return model
 
 
 def get_test_augmentation_model(image_size):
-    # model = keras.Sequential(
-    #     [layers.Rescaling(1 / 255.0),
-    #      layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),],
-    #     name="test_data_augmentation",
-    # )
     model = keras.Sequential(
         [layers.Resizing(image_size, image_size),],
         name="test_data_augmentation",
@@ -457,32 +460,18 @@ def get_test_augmentation_model(image_size):
     return model
 
 
-def mae(input_shape, image_size, patch_size, channel_size, bottom_layers):
-    train_augmentation_model = get_train_augmentation_model(
-        input_shape, image_size)
-    test_augmentation_model = get_test_augmentation_model(image_size)
-    patch_layer = Patches(patch_size, channel_size)
-    patch_encoder = PatchEncoder(patch_size, channel_size)
-    encoder = create_encoder()
-    decoder = create_decoder(image_size, patch_size, channel_size)
-
-    inputs = layers.Input(input_shape)
-    x = layers.Resizing(image_size, image_size)(inputs)
-    if bottom_layers:
-        x = bottom_layers(x)
-    x = patch_layer(x)
-    x = patch_encoder(x)
-
-    return MaskedAutoencoder(
-        train_augmentation_model=train_augmentation_model,
-        test_augmentation_model=test_augmentation_model,
-        patch_layer=patch_layer,
-        patch_encoder=patch_encoder,
-        encoder=encoder,
-        decoder=decoder,
+def mae(input_shape, image_size, patch_size, bottom_layers):
+    mae = MaskedAutoencoder(
+        train_augmentation_model=get_train_augmentation_model(
+            input_shape, image_size),
+        test_augmentation_model=get_test_augmentation_model(image_size),
+        patch_size=patch_size,
+        image_size=image_size,
         input_shape=input_shape,
         bottom_layers=bottom_layers,
     )
+    mae.build(input_shape)
+    return mae
 
 
 @keras.saving.register_keras_serializable()

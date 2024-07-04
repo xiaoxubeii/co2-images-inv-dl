@@ -5,6 +5,8 @@ defaults:
     - override /data/output: embedding
 
 data:
+    init:
+        cutoff_size: 64
     path:
         train:
             name: all_hotspots_but_box

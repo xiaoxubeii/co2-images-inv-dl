@@ -587,7 +587,6 @@ class Data_eval:
         self.y = Output_eval(
             self.ds, classes=1, window_length=self.window_length, shift=self.shift)
         self.y.get_inversion(N_hours_prec=N_hours_prec)
-        self.y.get_inversion(N_hours_prec=N_hours_prec)
 
 
 @hydra.main(config_path="cfg", config_name="config")

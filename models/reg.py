@@ -58,6 +58,52 @@ def get_preprocessing_layers(
     return preproc_layers
 
 
+@keras.saving.register_keras_serializable()
+class BottomLayers():
+
+    def __init__(self, n_layer, n_chans, noisy_chans, window_length):
+        self.n_layer = n_layer
+        self.n_chans = n_chans
+        self.noisy_chans = noisy_chans
+        self.window_length = window_length
+
+    def get_config(self):
+        return {
+            "n_layer": keras.saving.serialize_keras_object(self.n_layer),
+            "n_chans": self.n_chans,
+            "noisy_chans": self.noisy_chans,
+            "window_length": self.window_length,
+        }
+
+    @classmethod
+    def from_config(cls, config):
+        for k in ["n_layer"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
+
+    def __call__(self, x):
+        chans = [None] * self.n_chans
+        for idx in range(self.n_chans):
+            if self.noisy_chans[idx]:
+                if self.window_length > 0:
+                    chans[idx] = tf.keras.layers.GaussianNoise(
+                        stddev=0.7, name=f"noise_{idx}"
+                    )(x[:, :, :, :, idx: idx + 1])
+                else:
+                    chans[idx] = tf.keras.layers.GaussianNoise(
+                        stddev=0.7, name=f"noise_{idx}"
+                    )(x[:, :, :, idx: idx + 1])
+            else:
+                if self.window_length > 0:
+                    # layer = tf.keras.layers.Layer()
+                    chans[idx] = x[:, :, :, :, idx: idx + 1]
+                else:
+                    chans[idx] = x[:, :, :, idx: idx + 1]
+
+        concatted = tf.keras.layers.Concatenate()(chans)
+        return self.n_layer(concatted)
+
+
 def get_top_layers(classes: int, choice_top: str = "linear"):
     """Return top layers for regression model."""
 
@@ -123,13 +169,15 @@ def get_core_model(
         core_model = cnn_lstm(input_shape)
     elif name == "xco2_mae":
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
-                         channel_size=input_shape[-1], patch_size=config.model.patch_size, bottom_layers=bottom_layers)
+                         patch_size=config.model.patch_size, bottom_layers=bottom_layers)
     # elif name == "xco2_ae":
     #     core_model = autoencoder(input_shape=input_shape)
     # elif name == "xco2_vae":
     #     core_model = vae(input_shape=input_shape)
     elif name == "co2emission_transformer":
-        xco2_emd = keras.saving.load_model(config.model.embedding_path)
+        import pdb
+        pdb.set_trace()
+        xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
         core_model = emission_predictor(
@@ -177,9 +225,8 @@ class Reg_model_builder:
 
     def get_model(self):
         """Return regression model, keras or locals."""
-        bottom_layers = get_preprocessing_layers(
-            self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length
-        )
+        bottom_layers = BottomLayers(
+            self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
         top_layers = get_top_layers(self.classes, self.name)
         core_model = get_core_model(
             self.name,

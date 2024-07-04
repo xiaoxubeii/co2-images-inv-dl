@@ -19,20 +19,37 @@ class EmissionPredictor(keras.Model):
     def __init__(self, image_size, embedding_layer, bottom_layers, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
-        self.emiss_trans = EmissTransformer()
+        self.bottom_layers = bottom_layers
+        self.image_size = image_size
+
+    def build(self, input_shape):
         self.predictor = keras.Sequential([
             keras.layers.Dense(1, activation='linear'),
             keras.layers.Dense(1, activation='relu')
         ])
-        self.bottom_layers = bottom_layers
-        self.image_size = image_size
+        self.emiss_trans = EmissTransformer()
+        patch_layer = self.embedding_layer.patch_layer
+        patch_encoder = self.embedding_layer.patch_encoder
+        encoder = self.embedding_layer.encoder
+
+        inputs = keras.Input(shape=input_shape[1:])
+        x = keras.layers.Resizing(
+            self.image_size, self.image_size)(inputs)
+        x = patch_layer(inputs)
+        x = patch_encoder(x)
+        x = encoder(x)
+
+        embedding_shape = x.shape
+        inputs = keras.Input(
+            shape=(input_shape[0], embedding_shape[1]*embedding_shape[2]))
+        self.predictor(inputs)
 
     def call(self, inputs):
         x = inputs
         if self.bottom_layers is not None:
             x = self.bottom_layers(inputs)
         x = self.embedding(x)
-        outputs = self.trans(x)
+        outputs = self.emiss_trans(x)
         return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
@@ -101,27 +118,26 @@ class EmissionPredictor(keras.Model):
         config = super().get_config()
         config.update(
             {
-                "embedding_layer": self.embedding_layer,
-                "bottom_layers": self.bottom_layers,
-                "emiss_trans": self.emiss_trans,
+                "embedding_layer": keras.saving.serialize_keras_object(self.embedding_layer),
+                "bottom_layers": keras.saving.serialize_keras_object(self.bottom_layers),
                 "image_size": self.image_size,
-                "predictor": self.predictor
             }
         )
         return config
 
-    # @classmethod
-    # def from_config(cls, config):
-    #     for k in ["mae", "bottom_layers"]:
-    #         config[k] = keras.saving.deserialize_keras_object(config[k])
-    #     return cls(**config)
+    @classmethod
+    def from_config(cls, config):
+        for k in ["embedding_layer", "bottom_layers"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
 
 
 @keras.saving.register_keras_serializable()
 class EmissTransformer(keras.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.mae = mae
+
+    def build(self, input_shape):
         self.layer_norm = keras.layers.LayerNormalization(
             epsilon=NORM_EPSILON)
         self.dropout = keras.layers.Dropout(rate=DROPOUT)
@@ -157,4 +173,5 @@ def compute_mask(batch_size, n_dest, n_src, dtype):
 
 def emission_predictor(input_shape, image_size, embedding, bottom_layers):
     predictor = EmissionPredictor(image_size, embedding, bottom_layers)
+    predictor.build(input_shape)
     return predictor

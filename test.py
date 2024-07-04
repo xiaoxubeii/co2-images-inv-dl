@@ -31,55 +31,68 @@ def compare_exps(models, test_dataset_path):
 # test_exp("/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/best_essen_none",
 #          "w_best.weights.h5", "/Users/xiaoxubeii/Downloads/data_paper_inv_pp/boxberg/test_dataset.nc")
 
-window_length = 6
+window_length = 12
 shift = 1
-sample_num = 160
+sample_num = 83
 data_dir = "/Users/xiaoxubeii/Downloads/data_paper_inv_pp"
 res_dir = ""
 model1 = {
-    "model_type": "co2emissiontransformer",
+    "model_type": "inversion",
     "model_weights_name": "w_best.keras",
     "model_name": "co2et-window12-patch16-64",
     "sample_num": sample_num,
     "config": {
         "data": {"init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"}
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2t-small-patch16-64/w_best.keras"}
     },
 }
 
 model2 = {
-    "model_type": "co2emissiontransformer",
+    "model_type": "inversion",
     "model_weights_name": "w_best.keras",
     "model_name": "co2et-window12-patch16-chan5-64",
     "sample_num": sample_num,
     "config": {
         "data": {"init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-chan5-64/w_best.keras"}
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2t-small-patch16-chan5-64/w_best.keras"}
     },
 }
+
 model3 = {
-    "model_type": "co2emissiontransformer",
+    "model_type": "inversion",
     "model_weights_name": "w_best.keras",
     "model_name": "co2et-win84-patch16-64",
     "sample_num": sample_num,
     "config": {
         "data": {"init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"}
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2t-small-patch16-64/w_best.keras"}
     },
 }
+
 model4 = {
-    "model_type": "co2emissiontransformer",
+    "model_type": "inversion",
     "model_weights_name": "w_best.keras",
     "model_name": "co2et-win12-patch8-64",
     "sample_num": sample_num,
     "config": {
         "data": {"init": {"window_length": window_length, "shift": shift}, },
-        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch8-64/w_best.keras"}
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2t-small-patch8-64/w_best.keras"}
+    },
+}
+
+model5 = {
+    "model_type": "inversion",
+    "model_weights_name": "w_best.keras",
+    "model_name": "co2et-win12-patch16-norm",
+    "sample_num": sample_num,
+    "config": {
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/embedding/xco2_mae_2024-07-04_19-48-32/w_best.keras"}
     },
 }
 
 model_cnn = {
-    "model_type": "cnn",
+    "model_type": "inversion",
     "model_weights_name": "w_best.weights.h5",
     "model_name": "cnn-baseline",
     "sample_num": sample_num*window_length,
@@ -98,9 +111,8 @@ def update(d, u):
     return d
 
 
-models = [model1, model2, model3, model4, model_cnn]
-# models = [model4]
-# models = [model3]
+# models = [model1, model2, model3, model4, model5, model_cnn]
+models = [model5, model_cnn]
 for m in models:
     m = update(m, {
         "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments", "config": {"data": {"path": {"directory": data_dir}}}})

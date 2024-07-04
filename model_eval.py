@@ -445,7 +445,7 @@ def get_summary_histo_inversion1(metrics):
         pad_w_ext_left=0.25,
         pad_w_ext_right=0.25,
         pad_w_int=0.3,
-        pad_h_ext=1,
+        pad_h_ext=0.7,
         pad_h_int=0.35,
     )
 
