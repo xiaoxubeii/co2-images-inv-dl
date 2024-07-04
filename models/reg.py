@@ -123,7 +123,7 @@ def get_core_model(
         core_model = cnn_lstm(input_shape)
     elif name == "xco2_mae":
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
-                         channel_size=input_shape[-1], patch_size=config.model.patch_size, bottom_layers=bottom_layers, top_layers=None)
+                         channel_size=input_shape[-1], patch_size=config.model.patch_size, bottom_layers=bottom_layers)
     # elif name == "xco2_ae":
     #     core_model = autoencoder(input_shape=input_shape)
     # elif name == "xco2_vae":

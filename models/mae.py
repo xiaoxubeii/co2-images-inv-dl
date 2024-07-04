@@ -457,7 +457,7 @@ def get_test_augmentation_model(image_size):
     return model
 
 
-def mae(input_shape, image_size, patch_size, channel_size, bottom_layers, top_layers):
+def mae(input_shape, image_size, patch_size, channel_size, bottom_layers):
     train_augmentation_model = get_train_augmentation_model(
         input_shape, image_size)
     test_augmentation_model = get_test_augmentation_model(image_size)
@@ -482,7 +482,6 @@ def mae(input_shape, image_size, patch_size, channel_size, bottom_layers, top_la
         decoder=decoder,
         input_shape=input_shape,
         bottom_layers=bottom_layers,
-        top_layers=top_layers,
     )
 
 
