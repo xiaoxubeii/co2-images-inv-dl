@@ -130,9 +130,10 @@ def get_core_model(
     #     core_model = vae(input_shape=input_shape)
     elif name == "co2emission_transformer":
         xco2_emd = keras.saving.load_model(config.model.embedding_path)
+        xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
         core_model = emission_predictor(
-            input_shape, config.model.image_size, xco2_emd)
+            input_shape, config.model.image_size, xco2_emd, bottom_layers)
 
     else:
         print(f"Unknown model name: {name}")

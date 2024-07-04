@@ -16,11 +16,10 @@ NORM_EPSILON = 1e-5
 
 @keras.saving.register_keras_serializable()
 class EmissionPredictor(keras.Model):
-    def __init__(self, image_size, mae, bottom_layers, **kwargs):
+    def __init__(self, image_size, embedding_layer, bottom_layers, **kwargs):
         super().__init__(**kwargs)
-        self.mae = mae
-        self.mae.patch_encoder.downstream = True
-        self.trans = EmissTransformer()
+        self.embedding_layer = embedding_layer
+        self.emiss_trans = EmissTransformer()
         self.predictor = keras.Sequential([
             keras.layers.Dense(1, activation='linear'),
             keras.layers.Dense(1, activation='relu')
@@ -29,10 +28,11 @@ class EmissionPredictor(keras.Model):
         self.image_size = image_size
 
     def call(self, inputs):
+        x = inputs
         if self.bottom_layers is not None:
-            outputs = self.bottom_layers(inputs)
-        outputs = self.embedding(outputs)
-        outputs = self.trans(outputs)
+            x = self.bottom_layers(inputs)
+        x = self.embedding(x)
+        outputs = self.trans(x)
         return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
@@ -41,7 +41,7 @@ class EmissionPredictor(keras.Model):
             x = self.bottom_layers(x)
 
         o1 = self.embedding(x)
-        y1 = self.trans(o1)
+        y1 = self.emiss_trans(o1)
         loss1 = keras.losses.MeanSquaredError()(y1, o1)
         o2 = self.predictor(y1)
         loss2 = keras.losses.MeanAbsoluteError()(y, o2)
@@ -54,7 +54,7 @@ class EmissionPredictor(keras.Model):
          # Apply gradients.
         train_vars = [
             self.predictor.trainable_variables,
-            self.trans.trainable_variables,
+            self.emiss_trans.trainable_variables,
         ]
         grads = tape.gradient(total_loss, train_vars)
         tv_list = []
@@ -81,9 +81,9 @@ class EmissionPredictor(keras.Model):
         def _embedding(inputs):
             outputs = keras.layers.Resizing(
                 self.image_size, self.image_size)(inputs)
-            patch_layer = self.mae.patch_layer
-            patch_encoder = self.mae.patch_encoder
-            encoder = self.mae.encoder
+            patch_layer = self.embedding_layer.patch_layer
+            patch_encoder = self.embedding_layer.patch_encoder
+            encoder = self.embedding_layer.encoder
 
             patches = patch_layer(outputs)
             unmasked_embeddings = patch_encoder(patches)
@@ -101,9 +101,11 @@ class EmissionPredictor(keras.Model):
         config = super().get_config()
         config.update(
             {
-                "mae": self.mae,
+                "embedding_layer": self.embedding_layer,
                 "bottom_layers": self.bottom_layers,
+                "emiss_trans": self.emiss_trans,
                 "image_size": self.image_size,
+                "predictor": self.predictor
             }
         )
         return config
@@ -135,12 +137,6 @@ class EmissTransformer(keras.Model):
         batch_size = input_shape[0]
         seq_len = input_shape[1]
         mask = compute_mask(batch_size, seq_len, seq_len, "bool")
-        # embedding = self.embedding(inputs)
-        # Apply layer normalization and dropout to the embedding.
-        # outputs = self.layer_norm(inputs)
-        # outputs = self.dropout(outputs)
-
-        # Add a number of encoder blocks
         outputs = inputs
         for i in range(NUM_LAYERS):
             outputs = self.transformer_encoder(outputs, attention_mask=mask)
@@ -159,9 +155,6 @@ def compute_mask(batch_size, n_dest, n_src, dtype):
     return ops.tile(mask, mult)
 
 
-def emission_predictor(input_shape, image_size, xco2_transformer, bottom_layers=None):
-    inputs = keras.Input(shape=input_shape)
-    predictor = EmissionPredictor(
-        image_size,  xco2_transformer, bottom_layers=bottom_layers)
-    outputs = predictor(inputs)
-    return tf.keras.Model(inputs, outputs)
+def emission_predictor(input_shape, image_size, embedding, bottom_layers):
+    predictor = EmissionPredictor(image_size, embedding, bottom_layers)
+    return predictor

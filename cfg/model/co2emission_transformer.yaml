@@ -3,6 +3,7 @@ name: co2emission_transformer
 loss_func: MeanAbsoluteError
 dropout_rate: 0.2
 scaling_coefficient: 1
-embedding_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2transformer/xco2t-small-patch16-64/w_best.keras"
+embedding_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/xco2/xco2mae-small-patch16-norm/w_best.keras"
 patch_size: 16
-image_size: 48
+image_size: 64
+custom_model: true

@@ -203,7 +203,7 @@ class Model_training_manager:
                 self.data.x.plumes_train,
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
-                self.data.y.train,
+                self.data.y.train_data,
                 [False]*5,
                 # self.data.x.scale_bool,
                 self.data.x.fields_input_shape,

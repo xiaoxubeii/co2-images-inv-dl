@@ -2,6 +2,7 @@
 
 defaults:
     - override /model: co2emission_transformer
+    - override /data/output: inversion
 
 data:
     init:
