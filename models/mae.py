@@ -305,7 +305,7 @@ class MaskedAutoencoder(keras.Model):
         patch_encoder,
         encoder,
         decoder,
-        bottom_layers,
+        # bottom_layers,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -315,7 +315,7 @@ class MaskedAutoencoder(keras.Model):
         self.patch_encoder = patch_encoder
         self.encoder = encoder
         self.decoder = decoder
-        self.bottom_layers = bottom_layers
+        # self.bottom_layers = bottom_layers
 
     def get_config(self):
         config = super().get_config()
@@ -327,7 +327,7 @@ class MaskedAutoencoder(keras.Model):
                 "patch_encoder": self.patch_encoder,
                 "encoder": self.encoder,
                 "decoder": self.decoder,
-                "bottom_layers": self.bottom_layers,
+                # "bottom_layers": self.bottom_layers,
             }
         )
         return config
