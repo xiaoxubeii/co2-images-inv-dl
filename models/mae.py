@@ -443,8 +443,8 @@ def get_train_augmentation_model(input_shape, image_size):
         [
             layers.Resizing(image_size, image_size),
             # layers.Rescaling(1 / 255.0),
-            # layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
-            # layers.RandomCrop(image_size, image_size),
+            layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
+            layers.RandomCrop(image_size, image_size),
             # layers.RandomFlip("horizontal"),
         ],
         name="train_data_augmentation",
