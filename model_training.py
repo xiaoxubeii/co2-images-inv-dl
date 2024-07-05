@@ -135,8 +135,9 @@ class Model_training_manager:
                 self.model = seg_builder.get_model()
             elif cfg.model.type == "embedding":
                 reg_builder = rm.Reg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
+                    name=cfg.model.name,
+                    input_shape=self.data.x.fields_input_shape,
+                    n_layer=self.data.x.n_layer,
                     noisy_chans=self.data.x.xco2_noisy_chans,
                     config=cfg
                 )

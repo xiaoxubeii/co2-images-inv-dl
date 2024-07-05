@@ -313,7 +313,7 @@ class MaskedAutoencoder(keras.Model):
         test_augmentation_model,
         patch_size,
         image_size,
-        bottom_layers=None,
+        bottom_layers,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -441,10 +441,11 @@ class MaskedAutoencoder(keras.Model):
 def get_train_augmentation_model(input_shape, image_size):
     model = keras.Sequential(
         [
+            layers.Resizing(image_size, image_size),
             # layers.Rescaling(1 / 255.0),
-            layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
-            layers.RandomCrop(image_size, image_size),
-            layers.RandomFlip("horizontal"),
+            # layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
+            # layers.RandomCrop(image_size, image_size),
+            # layers.RandomFlip("horizontal"),
         ],
         name="train_data_augmentation",
     )

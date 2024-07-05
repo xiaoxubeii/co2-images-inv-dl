@@ -13,10 +13,11 @@ data:
         valid:
             name: all_hotspots_but_box
     input:
+        chan_0: xco2
         chan_1: v_wind
         chan_2: u_wind
-        chan_3: None
-        chan_4: None
+        chan_3: no2
+        chan_4: weighted_plume
 callbacks:
     model_checkpoint: true
     early_stopping: true

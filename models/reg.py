@@ -60,7 +60,6 @@ def get_preprocessing_layers(
 
 @keras.saving.register_keras_serializable()
 class BottomLayers():
-
     def __init__(self, n_layer, n_chans, noisy_chans, window_length):
         self.n_layer = n_layer
         self.n_chans = n_chans
@@ -95,7 +94,6 @@ class BottomLayers():
                     )(x[:, :, :, idx: idx + 1])
             else:
                 if self.window_length > 0:
-                    # layer = tf.keras.layers.Layer()
                     chans[idx] = x[:, :, :, :, idx: idx + 1]
                 else:
                     chans[idx] = x[:, :, :, idx: idx + 1]
@@ -175,8 +173,6 @@ def get_core_model(
     # elif name == "xco2_vae":
     #     core_model = vae(input_shape=input_shape)
     elif name == "co2emission_transformer":
-        import pdb
-        pdb.set_trace()
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
