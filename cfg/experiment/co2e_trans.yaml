@@ -14,14 +14,12 @@ data:
             name: boxberg
         valid:
             name: boxberg
-    # input:
-    #     # chan_1: xco2_prec
-    #     # chan_2: no2
-    #     # chan_3: v_wind
-    #     # chan_4: u_wind
-    #     # chan_5: weighted_plume
-    #     chan_1: v_wind
-    #     chan_2: u_wind
+    input:
+        chan_0: xco2
+        chan_1: v_wind
+        chan_2: u_wind
+        chan_3: no2
+        chan_4: weighted_plume
 callbacks:
     model_checkpoint: true
     early_stopping: true
