@@ -18,8 +18,8 @@ data:
         chan_0: xco2
         chan_1: v_wind
         chan_2: u_wind
-        chan_3: no2
-        chan_4: weighted_plume
+        chan_3: None
+        chan_4: None
 callbacks:
     model_checkpoint: true
     early_stopping: true
