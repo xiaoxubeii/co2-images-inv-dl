@@ -91,6 +91,17 @@ model5 = {
     },
 }
 
+model6 = {
+    "model_type": "inversion",
+    "model_weights_name": "w_best.keras",
+    "model_name": "co2et-win12-patch8-chan5",
+    "sample_num": sample_num,
+    "config": {
+        "data": {"init": {"window_length": window_length, "shift": shift}, },
+        "model": {"embedding_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2mae-small-patch8-chan5/w_best.keras"}
+    },
+}
+
 model_cnn = {
     "model_type": "inversion",
     "model_weights_name": "w_best.weights.h5",
@@ -112,7 +123,7 @@ def update(d, u):
 
 
 # models = [model1, model2, model3, model4, model5, model_cnn]
-models = [model5, model_cnn]
+models = [model6, model_cnn]
 for m in models:
     m = update(m, {
         "model_res_path": "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments", "config": {"data": {"path": {"directory": data_dir}}}})
