@@ -516,6 +516,13 @@ class Input_eval:
             self.list_chans,
         )
         self.fields_input_shape = list(shape[1:])
+        self.get_norm_layer()
+
+    def get_norm_layer(self):
+        """Get normalisation layer and adapt it to data.x.train."""
+        self.n_layer = tf.keras.layers.Normalization(
+            axis=-1, name="preproc_norm")
+        self.n_layer.adapt(self.eval_data)
 
 
 @dataclass
