@@ -398,7 +398,6 @@ class MaskedAutoencoder(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            self.patch_layer.trainable_variables,
             self.patch_encoder.trainable_variables,
             self.encoder.trainable_variables,
             self.decoder.trainable_variables,
@@ -442,10 +441,9 @@ def get_train_augmentation_model(input_shape, image_size):
     model = keras.Sequential(
         [
             layers.Resizing(image_size, image_size),
-            # layers.Rescaling(1 / 255.0),
             layers.Resizing(input_shape[0] + 20, input_shape[0] + 20),
             layers.RandomCrop(image_size, image_size),
-            # layers.RandomFlip("horizontal"),
+            layers.RandomFlip("horizontal"),
         ],
         name="train_data_augmentation",
     )

@@ -7,11 +7,7 @@
 
 import itertools
 import os
-import sys
-import hydra
-
 import keras_nlp
-import joblib
 import matplotlib.pyplot as plt
 import matplotlib_functions as mympf
 import numpy as np
@@ -23,12 +19,9 @@ import xarray as xr
 from keras import ops
 
 from cmcrameri import cm
-from hydra import compose, initialize
 from omegaconf import OmegaConf
 from scipy.optimize import differential_evolution
-from sklearn import preprocessing
 
-from cfg.convert_cfg_to_yaml import save_myyaml_from_mycfg
 from Data import Data_eval
 from include.loss import pixel_weighted_cross_entropy
 from model_training import Model_training_manager
@@ -43,6 +36,7 @@ def get_data_for_segmentation(
     region_extrapol: bool = True,
 ) -> Data_eval:
     """Prepare Data object with name_dataset, and train or test mode."""
+    from cfg.convert_cfg_to_yaml import save_myyaml_from_mycfg
 
     if not os.path.exists(os.path.join(dir_res, "config.yaml")):
         save_myyaml_from_mycfg(dir_res)
@@ -170,7 +164,7 @@ def plot_segmentation_examples(
 
     mympf.setMatplotlibParam()
     plt.viridis()
-    axs = mympf.set_figure_axs(
+    fig, axs = mympf.set_figure_axs(
         N_idx,
         N_cols,
         wratio=0.35,
@@ -426,10 +420,10 @@ def draw_idx(
 
 
 def get_summary_histo_inversion1(metrics):
-    df_mae = [pd.DataFrame({"loss": m["mae"], "method": m["method"]})
+    df_mae = [pd.DataFrame({"loss": m["mae"], "method": f'{m["method"]}: mean {np.mean(m["mae"]):.2f}, median {np.median(m["mae"]):.2f}, total {len(m["mae"]):d}'})
               for m in metrics]
     df_mape = [pd.DataFrame(
-        {"loss": m["mape"], "method": m["method"]}) for m in metrics]
+        {"loss": m["mape"], "method": f'{m["method"]}: mean {np.mean(m["mape"]):.2f}, median {np.median(m["mape"]):.2f} total {len(m["mae"]):d}'}) for m in metrics]
 
     df_mae = pd.concat(df_mae)
     df_mape = pd.concat(df_mape)
@@ -437,7 +431,7 @@ def get_summary_histo_inversion1(metrics):
     N_cols = 2
     mympf.setMatplotlibParam()
     plt.viridis()
-    axs = mympf.set_figure_axs(
+    fig, axs = mympf.set_figure_axs(
         N_rows,
         N_cols,
         wratio=0.35,
@@ -480,7 +474,9 @@ def get_summary_histo_inversion1(metrics):
         ax.set_xlabel(titles[i_ax])
         plt.setp(ax.get_legend().get_texts(), fontsize='4')  # for legend text
         ax.get_legend().set_loc("upper center")
-        ax.get_legend().set_bbox_to_anchor((0.5, 1.5))
+        ax.get_legend().set_bbox_to_anchor((0.5, 1))
+
+    return fig
 
 
 def get_summary_histo_inversion(
@@ -511,7 +507,7 @@ def get_summary_histo_inversion(
     N_cols = 2
     mympf.setMatplotlibParam()
     plt.viridis()
-    axs = mympf.set_figure_axs(
+    fig, axs = mympf.set_figure_axs(
         N_rows,
         N_cols,
         wratio=0.35,
@@ -570,6 +566,8 @@ def get_summary_histo_inversion(
     if dir_save != "None":
         plt.savefig(os.path.join(dir_save, "summary_inv.png"))
 
+    return fig
+
 
 def plot_inversion_examples(
     data: Data_eval,
@@ -604,7 +602,7 @@ def plot_inversion_examples(
 
     mympf.setMatplotlibParam()
     plt.viridis()
-    axs = mympf.set_figure_axs(
+    fig, axs = mympf.set_figure_axs(
         N_idx,
         N_cols,
         wratio=0.35,
@@ -850,7 +848,7 @@ def get_histo_inversion(
     N_cols = 2
     mympf.setMatplotlibParam()
     plt.viridis()
-    axs = mympf.set_figure_axs(
+    fig, axs = mympf.set_figure_axs(
         N_rows,
         N_cols,
         wratio=.6,

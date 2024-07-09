@@ -41,8 +41,9 @@ def setMatplotlibParam():
     plt.rc("ytick", labelsize="x-small")
     plt.rc("xtick.major", pad=0)
     plt.rc("ytick.major", pad=0)
-    plt.rc('grid', linewidth = 0.6)
-    plt.rc('grid', alpha = 0.6)
+    plt.rc('grid', linewidth=0.6)
+    plt.rc('grid', alpha=0.6)
+
 
 def setMatplotlibParam_KdePlot():
     """Set matplotlib parameters for nice kde plots."""
@@ -50,24 +51,25 @@ def setMatplotlibParam_KdePlot():
     sns.set_context('paper')
     sns.set_style('whitegrid')
 
-    plt.rc('lines',         linewidth           = 0.5)
-    plt.rc('font',          family              = 'sans-serif')
-    plt.rc('savefig',       facecolor           = 'white')
-    plt.rc('axes',          linewidth           = 1.2)
-    plt.rc('axes',          edgecolor           = 'k')
-    plt.rc('axes',          facecolor           = [0.96, 0.96, 0.96])
-    plt.rc('axes',          labelsize           = 15)
-    plt.rc('axes',          titlesize           = 15)
-    plt.rc('legend',        fontsize            = 10)
-    plt.rc('legend',        frameon             = True)
-    plt.rc('legend',        framealpha          = 1)
-    plt.rc('legend',        handlelength        = 3)
-    plt.rc('legend',        numpoints           = 3)
-    plt.rc('legend',        markerscale         = 1)
-    plt.rc('xtick',         labelsize           = 'x-small')
-    plt.rc('ytick',         labelsize           = 'x-small')
-    plt.rc('xtick.major',   pad                 = 0)
-    plt.rc('ytick.major',   pad                 = 0)
+    plt.rc('lines',         linewidth=0.5)
+    plt.rc('font',          family='sans-serif')
+    plt.rc('savefig',       facecolor='white')
+    plt.rc('axes',          linewidth=1.2)
+    plt.rc('axes',          edgecolor='k')
+    plt.rc('axes',          facecolor=[0.96, 0.96, 0.96])
+    plt.rc('axes',          labelsize=15)
+    plt.rc('axes',          titlesize=15)
+    plt.rc('legend',        fontsize=10)
+    plt.rc('legend',        frameon=True)
+    plt.rc('legend',        framealpha=1)
+    plt.rc('legend',        handlelength=3)
+    plt.rc('legend',        numpoints=3)
+    plt.rc('legend',        markerscale=1)
+    plt.rc('xtick',         labelsize='x-small')
+    plt.rc('ytick',         labelsize='x-small')
+    plt.rc('xtick.major',   pad=0)
+    plt.rc('ytick.major',   pad=0)
+
 
 def set_figure_axs(
     nrows: int = 1,
@@ -94,7 +96,8 @@ def set_figure_axs(
     ax_w = wratio * linewidth
     ax_h = hratio * ax_w
 
-    fig_w = pad_w_ext_left + pad_w_ext_right + ncols * ax_w + (ncols - 1) * pad_w_int
+    fig_w = pad_w_ext_left + pad_w_ext_right + \
+        ncols * ax_w + (ncols - 1) * pad_w_int
     fig_h = 2 * pad_h_ext + nrows * ax_h + (nrows - 1) * pad_h_int
 
     axs_x = np.zeros(ncols)
@@ -118,7 +121,7 @@ def set_figure_axs(
                 [axs_x[i_col], axs_y[i_row], ax_dx, ax_dy], projection=projection
             )
 
-    return axs
+    return figure, axs
 
 
 # ------------------------------------------------------------------------

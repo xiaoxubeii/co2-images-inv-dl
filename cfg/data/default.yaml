@@ -11,3 +11,6 @@ path:
     valid:
         name: ${data.path.train.name}
         nc: valid_dataset.nc
+    test:
+        name: ${data.path.train.name}
+        nc: test_dataset.nc

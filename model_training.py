@@ -8,17 +8,11 @@
 import os
 import sys
 from dataclasses import dataclass, field
-from typing import Any
-import hydra
-
 import numpy as np
 import tensorflow as tf
-from hydra import compose, initialize
-from hydra.utils import call, instantiate
+from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
-from tensorflow import keras
 import models.reg as rm
-
 import include.callbacks as callbacks
 import include.generators as generators
 import include.loss as loss
@@ -231,6 +225,7 @@ class Model_training_manager:
         """Train the model with the training data."""
         wandb.login(key=self.cfg.wandb.key)
         config = OmegaConf.to_container(self.cfg, resolve=True)
+        import pdb;pdb.set_trace()
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, config=config) as run:
 
@@ -246,4 +241,4 @@ class Model_training_manager:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
         self.saver.save_model_and_weights(self.model)
-        # self.saver.save_weights(self.model)
+        # self.saver.save_weights(self.model)_util

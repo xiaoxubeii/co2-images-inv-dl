@@ -19,6 +19,7 @@ class EmissionPredictor(keras.Model):
     def __init__(self, image_size, embedding_layer, bottom_layers, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
+        self.embedding_layer.patch_encoder.downstream = True
         self.bottom_layers = bottom_layers
         self.image_size = image_size
 
@@ -42,7 +43,8 @@ class EmissionPredictor(keras.Model):
         embedding_shape = x.shape
         inputs = keras.Input(
             shape=(input_shape[0], embedding_shape[1]*embedding_shape[2]))
-        self.predictor(inputs)
+        outputs = self.emiss_trans(inputs)
+        self.predictor(outputs)
 
     def call(self, inputs):
         x = inputs

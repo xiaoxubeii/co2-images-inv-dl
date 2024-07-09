@@ -65,6 +65,8 @@ class BottomLayers():
         self.n_chans = n_chans
         self.noisy_chans = noisy_chans
         self.window_length = window_length
+        self.gaussian_noise = tf.keras.layers.GaussianNoise(stddev=0.7)
+        self.concatenate_layer = tf.keras.layers.Concatenate()
 
     def get_config(self):
         return {
@@ -85,20 +87,18 @@ class BottomLayers():
         for idx in range(self.n_chans):
             if self.noisy_chans[idx]:
                 if self.window_length > 0:
-                    chans[idx] = tf.keras.layers.GaussianNoise(
-                        stddev=0.7, name=f"noise_{idx}"
-                    )(x[:, :, :, :, idx: idx + 1])
+                    chans[idx] = self.gaussian_noise(
+                        x[:, :, :, :, idx: idx + 1])
                 else:
-                    chans[idx] = tf.keras.layers.GaussianNoise(
-                        stddev=0.7, name=f"noise_{idx}"
-                    )(x[:, :, :, idx: idx + 1])
+                    chans[idx] = self.gaussian_noise(
+                        x[:, :, :, idx: idx + 1])
             else:
                 if self.window_length > 0:
                     chans[idx] = x[:, :, :, :, idx: idx + 1]
                 else:
                     chans[idx] = x[:, :, :, idx: idx + 1]
 
-        concatted = tf.keras.layers.Concatenate()(chans)
+        concatted = self.concatenate_layer(chans)
         return self.n_layer(concatted)
 
 

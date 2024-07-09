@@ -5,24 +5,17 @@
 # project: Prototype system for a Copernicus C02 monitoring service (CoCO2)
 # ----------------------------------------------------------------------------
 
-import math
-import hydra
-from omegaconf import DictConfig, OmegaConf
-from pympler import asizeof
-import os
 import sys
+from omegaconf import DictConfig
 from dataclasses import dataclass, field
 from functools import reduce
-from hydra.utils import call, instantiate
-
-
-import joblib
 import numpy as np
 import tensorflow as tf
 import xarray as xr
-from sklearn import preprocessing
-
 from include.loss import calculate_weighted_plume, pixel_weighted_cross_entropy
+import hydra
+from hydra.utils import instantiate
+from pympler import asizeof
 
 
 def get_xco2_noisy(ds: xr.Dataset, noise_level: float = 0.7):
@@ -418,6 +411,7 @@ class Data_train:
 
     path_train_ds: str
     path_valid_ds: str
+    path_test_ds: str
     window_length: int = 0
     shift: int = 0
     cutoff_size: int = 0
@@ -516,7 +510,7 @@ class Input_eval:
             self.list_chans,
         )
         self.fields_input_shape = list(shape[1:])
-        self.get_norm_layer()
+        # self.get_norm_layer()
 
     def get_norm_layer(self):
         """Get normalisation layer and adapt it to data.x.train."""
@@ -623,7 +617,7 @@ def bytesto(bytes, to, bsize=1024):
     """convert bytes to megabytes, etc.
        sample code:
            print('mb= ' + str(bytesto(314575262000000, 'm')))
-       sample output: 
+       sample output:
            mb= 300002347.946
     """
 
