@@ -225,8 +225,10 @@ class Model_training_manager:
         """Train the model with the training data."""
         wandb.login(key=self.cfg.wandb.key)
         config = OmegaConf.to_container(self.cfg, resolve=True)
+        run_tags = [self.cfg.model.type]
+        run_tags.extend(self.cfg.run_tags)
         with wandb.init(project=self.cfg.wandb.project_name,
-                        name=self.cfg.exp_name, tags=[self.cfg.model.type, self.cfg.related_run], config=config) as run:
+                        name=self.cfg.exp_name, tags=run_tags, config=config) as run:
 
             self.trainer.callbacks.append(
                 callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, []))
