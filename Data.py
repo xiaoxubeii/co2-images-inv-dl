@@ -405,6 +405,11 @@ class Output_train:
                                     window_length=self.window_length, shift=self.shift)
 
 
+def concat_dataset(dataset_path):
+    ds = [xr.open_dataset(d) for d in dataset_path.split(',')]
+    return xr.concat(ds, dim='idx_img')
+
+
 @dataclass
 class Data_train:
     """Object for containing Input and Output data and all other informations."""
@@ -417,8 +422,10 @@ class Data_train:
     cutoff_size: int = 0
 
     def __post_init__(self):
-        self.ds_train = xr.open_dataset(self.path_train_ds)
-        self.ds_valid = xr.open_dataset(self.path_valid_ds)
+        # self.ds_train = xr.open_dataset(self.path_train_ds)
+        # self.ds_valid = xr.open_dataset(self.path_valid_ds)
+        self.ds_train = concat_dataset(self.path_train_ds)
+        self.ds_valid = concat_dataset(self.path_valid_ds)
         if self.cutoff_size > 0:
             self.ds_train = cutoff_ds(self.ds_train, self.cutoff_size)
             self.ds_valid = cutoff_ds(self.ds_valid, self.cutoff_size)
@@ -548,7 +555,8 @@ class Data_eval:
     shift: int = 0
 
     def __post_init__(self):
-        self.ds = xr.open_dataset(self.path_eval_nc)
+        # self.ds = xr.open_dataset(self.path_eval_nc)
+        self.ds = concat_dataset(self.path_eval_nc)
 
     def prepare_input(
         self,

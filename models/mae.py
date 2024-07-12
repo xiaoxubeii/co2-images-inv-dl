@@ -369,7 +369,7 @@ class MaskedAutoencoder(keras.Model):
             unmask_indices,
         ) = self.patch_encoder(patches)
 
-        # Pass the unmaksed patche to the encoder.
+        # Pass the unmaksed patches to the encoder.
         encoder_outputs = self.encoder(unmasked_embeddings)
 
         # Create the decoder inputs.
