@@ -111,11 +111,7 @@ class Model_training_manager:
 
         if "load_weights" in cfg:
             self.model = tf.keras.models.load_model(
-                os.path.join(cfg.dir_res, cfg.load_weights,
-                             "weights_cp_best.h5"),
-                compile=True,
-            )
-
+                cfg.load_weights, "w_best.keras", compile=True)
         else:
             if cfg.model.type.startswith("segmentation"):
                 seg_builder = sm.Seg_model_builder(

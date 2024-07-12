@@ -140,8 +140,6 @@ class EmissTransformer(keras.Model):
         super().__init__(**kwargs)
 
     def build(self, input_shape):
-        self.layer_norm = keras.layers.LayerNormalization(
-            epsilon=NORM_EPSILON)
         self.dropout = keras.layers.Dropout(rate=DROPOUT)
         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
             intermediate_dim=INTERMEDIATE_DIM,
