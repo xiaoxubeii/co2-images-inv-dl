@@ -116,6 +116,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
     plume_scaling_max: float = 2
     window_length: int = 0
     scale_y: bool = True
+    shuffle: bool = True
 
     def __post_init__(self):
         self.N_data = self.x_indexes.shape[0]
