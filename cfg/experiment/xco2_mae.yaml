@@ -9,17 +9,17 @@ data:
         cutoff_size: 64
     path:
         train:
-            - name: boxberg
+            - name: all_hotspots_but_box
               nc: train_dataset.nc
             - name: lippendorf
               nc: train_dataset.nc
         valid:
-            - name: boxberg
+            - name: all_hotspots_but_box
               nc: valid_dataset.nc
             - name: lippendorf
               nc: valid_dataset.nc
         test:
-            - name: boxberg
+            - name: all_hotspots_but_box
               nc: test_dataset.nc
             - name: lippendorf
               nc: test_dataset.nc
@@ -54,6 +54,6 @@ augmentations:
     shear:
         range: 0
     zoom:
-        range: 0.2
+        range: 0
     plume_scaling_max: 0
     plume_scaling_min: 0
