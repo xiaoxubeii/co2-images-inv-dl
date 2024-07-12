@@ -179,19 +179,19 @@ class Model_training_manager:
             generator = gen_machine.flow(
                 self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train)
         if cfg.model.type == "embedding":
-            gen_machine = generators.Generator(
-                cfg.model.type,
-                cfg.training.batch_size,
-                cfg.augmentations.rot.range,
-                cfg.augmentations.shift.range,
-                cfg.augmentations.flip.bool,
-                cfg.augmentations.shear.range,
-                cfg.augmentations.zoom.range,
-                cfg.augmentations.shuffle,
-            )
-            generator = gen_machine.flow(
-                self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train_data[self.data.y.train_data_indexes])
-        elif cfg.model.type == "inversion":
+            # gen_machine = generators.Generator(
+            #     cfg.model.type,
+            #     cfg.training.batch_size,
+            #     cfg.augmentations.rot.range,
+            #     cfg.augmentations.shift.range,
+            #     cfg.augmentations.flip.bool,
+            #     cfg.augmentations.shear.range,
+            #     cfg.augmentations.zoom.range,
+            #     cfg.augmentations.shuffle,
+            # )
+            # generator = gen_machine.flow(
+            #     self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train_data[self.data.y.train_data_indexes])
+
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,
@@ -199,8 +199,25 @@ class Model_training_manager:
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
                 self.data.y.train_data,
-                [False]*5,
-                # self.data.x.scale_bool,
+                self.data.x.train_data_indexes,
+                self.data.x.scale_bool,
+                self.data.x.fields_input_shape,
+                cfg.training.batch_size,
+                plume_scaling_min=cfg.augmentations.plume_scaling_min,
+                plume_scaling_max=cfg.augmentations.plume_scaling_max,
+                window_length=self.data.x.window_length,
+                scale_y=False
+            )
+        elif cfg.model.type in "inversion":
+            generator = generators.ScaleDataGen(
+                self.data.x.train_data,
+                self.data.x.train_data_indexes,
+                self.data.x.plumes_train,
+                self.data.x.xco2_back_train,
+                self.data.x.xco2_alt_anthro_train,
+                self.data.y.train_data,
+                self.data.x.train_data_indexes,
+                self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
                 cfg.training.batch_size,
                 plume_scaling_min=cfg.augmentations.plume_scaling_min,

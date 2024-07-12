@@ -6,6 +6,7 @@
 # ----------------------------------------------------------------------------
 
 import sys
+import os
 from omegaconf import DictConfig
 from dataclasses import dataclass, field
 from functools import reduce
@@ -149,9 +150,6 @@ def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int)
         for batch in range(num_batches):
             output_targets[batch, :, :] = emiss[shift *
                                                 batch:shift*batch+window_length, :]
-        # for batch in range(num_batches):
-        #     output_targets[batch] = emiss[(
-        #         shift*batch + (window_length-1))]
         return output_targets
     else:
         return emiss
@@ -395,7 +393,6 @@ class Output_train:
             self.ds_train, curve, min_w, max_w, param_curve)
         self.valid_data = get_weighted_plume(
             self.ds_valid, curve, min_w, max_w, param_curve)
-        print("data.y.train.shape", self.train.shape)
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
@@ -405,8 +402,9 @@ class Output_train:
                                     window_length=self.window_length, shift=self.shift)
 
 
-def concat_dataset(dataset_path):
-    ds = [xr.open_dataset(d) for d in dataset_path.split(',')]
+def concat_dataset(data_dir, datasets):
+    ds = [xr.open_dataset(os.path.join(data_dir, d.name, d.nc))
+          for d in datasets]
     return xr.concat(ds, dim='idx_img')
 
 
@@ -416,7 +414,7 @@ class Data_train:
 
     path_train_ds: str
     path_valid_ds: str
-    path_test_ds: str
+    path_data_dir: str
     window_length: int = 0
     shift: int = 0
     cutoff_size: int = 0
@@ -424,8 +422,8 @@ class Data_train:
     def __post_init__(self):
         # self.ds_train = xr.open_dataset(self.path_train_ds)
         # self.ds_valid = xr.open_dataset(self.path_valid_ds)
-        self.ds_train = concat_dataset(self.path_train_ds)
-        self.ds_valid = concat_dataset(self.path_valid_ds)
+        self.ds_train = concat_dataset(self.path_data_dir, self.path_train_ds)
+        self.ds_valid = concat_dataset(self.path_data_dir, self.path_valid_ds)
         if self.cutoff_size > 0:
             self.ds_train = cutoff_ds(self.ds_train, self.cutoff_size)
             self.ds_valid = cutoff_ds(self.ds_valid, self.cutoff_size)
@@ -551,12 +549,13 @@ class Output_eval:
 class Data_eval:
 
     path_eval_nc: str
+    data_dir: str
     window_length: int = 0
     shift: int = 0
 
     def __post_init__(self):
         # self.ds = xr.open_dataset(self.path_eval_nc)
-        self.ds = concat_dataset(self.path_eval_nc)
+        self.ds = concat_dataset(self.data_dir, self.path_eval_nc)
 
     def prepare_input(
         self,
@@ -610,8 +609,6 @@ def estimate_data_size(cfg: DictConfig):
         cfg.data.input.dir_seg_models
     )
     data.prepare_output_inversion(cfg.data.output.N_emissions)
-    print(
-        f'data_shape={data.x.train.shape}|memory={asizeof.asizeof(data.x.train)}')
 
 
 def cutoff_ds(ds, num):

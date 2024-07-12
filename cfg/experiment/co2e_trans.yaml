@@ -11,9 +11,14 @@ data:
         shift: 1
     path:
         train:
-            name: boxberg
+            - name: boxberg
+              nc: train_dataset.nc
         valid:
-            name: boxberg
+            - name: boxberg
+              nc: valid_dataset.nc
+        test:
+            - name: boxberg
+              nc: test_dataset.nc
     input:
         chan_0: xco2
         chan_1: v_wind

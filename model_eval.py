@@ -280,17 +280,16 @@ def plot_segmentation_examples(
 
 
 def get_data_for_inversion(
-    dir_res: str,
-    path_eval_nc: str, cfg: OmegaConf = None
+    dir_res: str, data_dir: str, path_eval_nc: str, cfg: OmegaConf = None
 ) -> Data_eval:
     """Prepare Data_eval object with name_dataset."""
 
     if cfg is None:
         cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
     if 'window_length' not in cfg.data.init:
-        data = Data_eval(path_eval_nc, 0, 0)
+        data = Data_eval(data_dir, path_eval_nc, 0, 0)
     else:
-        data = Data_eval(path_eval_nc, cfg.data.init.window_length,
+        data = Data_eval(data_dir, path_eval_nc, cfg.data.init.window_length,
                          cfg.data.init.shift)
 
     data.prepare_input(

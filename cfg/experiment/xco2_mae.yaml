@@ -9,9 +9,20 @@ data:
         cutoff_size: 64
     path:
         train:
-            name: all_hotspots_but_box
+            - name: boxberg
+              nc: train_dataset.nc
+            - name: lippendorf
+              nc: train_dataset.nc
         valid:
-            name: all_hotspots_but_box
+            - name: boxberg
+              nc: valid_dataset.nc
+            - name: lippendorf
+              nc: valid_dataset.nc
+        test:
+            - name: boxberg
+              nc: test_dataset.nc
+            - name: lippendorf
+              nc: test_dataset.nc
     input:
         chan_0: xco2
         chan_1: v_wind

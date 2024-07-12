@@ -11,5 +11,6 @@ defaults:
     - hydra: default
 dir_res: res/${model.type}
 exp_name: ${model.name}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+run_tags: ${model.type}
 seed: 42
 sweep: false
