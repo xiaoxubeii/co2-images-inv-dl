@@ -150,20 +150,20 @@ class ScaleDataGen(tf.keras.utils.Sequence):
                 if self.window_length > 0:
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         plume_scaling.reshape(
-                            plume_scaling.shape + (1,) * 3)
+                            plume_scaling.shape + (1,) * 4)
                         * self.plume[idx][self.x_indexes[batches]]
                     )
 
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         back_scaling.reshape(
-                            back_scaling.shape + (1,) * 3)
+                            back_scaling.shape + (1,) * 4)
                         - self.xco2_back[idx][self.x_indexes[batches]]
                         + self.xco2_back[idx][self.x_indexes[batches_back]]
                     )
 
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         alt_anthro_scaling.reshape(
-                            alt_anthro_scaling.shape + (1,) * 3)
+                            alt_anthro_scaling.shape + (1,) * 4)
                         * self.xco2_alt_anthro[idx][self.x_indexes[batches_alt]]
                         - self.xco2_alt_anthro[idx][self.x_indexes[batches]]
                     )
