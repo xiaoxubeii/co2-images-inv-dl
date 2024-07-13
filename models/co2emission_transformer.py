@@ -58,6 +58,7 @@ class EmissionPredictor(keras.Model):
         return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
+        import pdb; pdb.set_trace()
         x, y1, y2 = inputs[0], inputs[1], inputs[2]
         if self.bottom_layers is not None:
             x = self.bottom_layers(x)
