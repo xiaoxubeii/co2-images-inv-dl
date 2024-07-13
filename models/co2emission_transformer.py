@@ -25,17 +25,16 @@ class EmissionPredictor(keras.Model):
 
     def build(self, input_shape):
         self.predictor = keras.Sequential([
-            keras.layers.Dense(1, activation='linear'),
-            keras.layers.Dense(1, activation='relu')
+            keras.layers.Dense(INTERMEDIATE_DIM, activation='relu'),
+            keras.layers.Dense(1)
         ])
-        self.emiss_trans = EmissTransformer()
         patch_layer = self.embedding_layer.patch_layer
         patch_encoder = self.embedding_layer.patch_encoder
         encoder = self.embedding_layer.encoder
-
         inputs = keras.Input(shape=input_shape[1:])
         x = keras.layers.Resizing(
             self.image_size, self.image_size)(inputs)
+
         x = patch_layer(inputs)
         x = patch_encoder(x)
         x = encoder(x)
@@ -43,15 +42,18 @@ class EmissionPredictor(keras.Model):
         embedding_shape = x.shape
         inputs = keras.Input(
             shape=(input_shape[0], embedding_shape[1]*embedding_shape[2]))
+
+        self.emiss_trans = EmissTransformer(
+            embedding_shape[1]*embedding_shape[2])
         outputs = self.emiss_trans(inputs)
         self.predictor(outputs)
 
-    def call(self, inputs):
+    def call(self, inputs, test=True):
         x = inputs
         if self.bottom_layers is not None:
             x = self.bottom_layers(inputs)
         x = self.embedding(x)
-        outputs = self.emiss_trans(x)
+        outputs = self.emiss_trans(x, test=test)
         return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
@@ -136,27 +138,33 @@ class EmissionPredictor(keras.Model):
 
 @keras.saving.register_keras_serializable()
 class EmissTransformer(keras.Model):
-    def __init__(self, **kwargs):
+    def __init__(self, embed_dim, **kwargs):
         super().__init__(**kwargs)
+        self.embed_dim = embed_dim
 
     def build(self, input_shape):
-        self.dropout = keras.layers.Dropout(rate=DROPOUT)
         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
             intermediate_dim=INTERMEDIATE_DIM,
             num_heads=NUM_HEADS,
             dropout=DROPOUT,
             layer_norm_epsilon=NORM_EPSILON,
         )
+        self.dense = keras.layers.Dense(self.embed_dim)
+        self.dropout = keras.layers.Dropout(DROPOUT)
+        self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
 
     def call(self, inputs):
         input_shape = ops.shape(inputs)
         batch_size = input_shape[0]
         seq_len = input_shape[1]
         mask = compute_mask(batch_size, seq_len, seq_len, "bool")
-        outputs = inputs
+        out1 = inputs
         for i in range(NUM_LAYERS):
-            outputs = self.transformer_encoder(outputs, attention_mask=mask)
-        return outputs
+            out1 = self.transformer_encoder(
+                out1, attention_mask=mask)
+        out2 = self.dense(out1)
+        out2 = self.dropout(out2)
+        return self.layernorm(out1 + out2)
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):

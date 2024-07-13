@@ -4,6 +4,7 @@ _target_: Data.Data_train
 # path_test_ds: ${data.path.directory}/${data.path.test.name}/${data.path.test.nc}
 path_train_ds: ${data.path.train}
 path_valid_ds: ${data.path.valid}
+path_test_ds: ${data.path.test}
 path_data_dir: ${data.path.directory}
 window_length: 0
 shift: 0

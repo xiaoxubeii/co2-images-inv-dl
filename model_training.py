@@ -38,7 +38,8 @@ class Trainer:
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=(data.x.valid_data, data.y.valid_data),
+            validation_data=(
+                data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes]),
             verbose=1,
             # steps_per_epoch=int(
             #     np.floor(data.x.train.shape[0] / self.batch_size)),
@@ -195,7 +196,7 @@ class Model_training_manager:
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
                 self.data.y.train_data,
-                self.data.x.train_data_indexes,
+                self.data.y.train_data_indexes,
                 self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
                 cfg.training.batch_size,
@@ -212,7 +213,7 @@ class Model_training_manager:
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
                 self.data.y.train_data,
-                self.data.x.train_data_indexes,
+                self.data.y.train_data_indexes,
                 self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
                 cfg.training.batch_size,

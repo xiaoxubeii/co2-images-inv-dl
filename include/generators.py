@@ -149,21 +149,23 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             if chan:
                 if self.window_length > 0:
                     x_batch[:, :, :, :, idx: idx + 1] += (
-                        plume_scaling.reshape(plume_scaling.shape + (1,) * 3)
-                        * self.plume[idx][batches]
+                        plume_scaling.reshape(
+                            plume_scaling.shape + (1,) * 3)
+                        * self.plume[idx][self.x_indexes[batches]]
                     )
 
                     x_batch[:, :, :, :, idx: idx + 1] += (
-                        back_scaling.reshape(back_scaling.shape + (1,) * 3)
-                        - self.xco2_back[idx][batches]
-                        + self.xco2_back[idx][batches_back]
+                        back_scaling.reshape(
+                            back_scaling.shape + (1,) * 3)
+                        - self.xco2_back[idx][self.x_indexes[batches]]
+                        + self.xco2_back[idx][self.x_indexes[batches_back]]
                     )
 
                     x_batch[:, :, :, :, idx: idx + 1] += (
                         alt_anthro_scaling.reshape(
                             alt_anthro_scaling.shape + (1,) * 3)
-                        * self.xco2_alt_anthro[idx][batches_alt]
-                        - self.xco2_alt_anthro[idx][batches]
+                        * self.xco2_alt_anthro[idx][self.x_indexes[batches_alt]]
+                        - self.xco2_alt_anthro[idx][self.x_indexes[batches]]
                     )
                 else:
                     x_batch[:, :, :, idx: idx + 1] += (
@@ -198,16 +200,11 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         """Get output batches with random scaling."""
         y_batch = self.y[self.y_indexes[batches]]
         if self.scale_y:
-            if self.window_length > 0:
-                y_batch = tf.map_fn(lambda x: (
-                    x + plume_scaling.reshape(plume_scaling.shape + (1,) * 1) * x), y_batch)
-
-            else:
-                y_batch = (
-                    y_batch
-                    + plume_scaling.reshape(plume_scaling.shape +
-                                            (1,) * 1) * y_batch
-                )
+            y_batch = (
+                y_batch
+                + plume_scaling.reshape(plume_scaling.shape +
+                                        (1,) * 1) * y_batch
+            )
         return y_batch
 
     def __get_data(self, batches: list, batches_back: list, batches_alt: list):
@@ -226,6 +223,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             alt_anthro_scaling,
         )
         y_batch = self.__get_output(batches, plume_scaling)
+        import pdb;pdb.set_trace()
         return x_batch, y_batch
 
     def __getitem__(self, index: int):

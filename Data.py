@@ -142,17 +142,17 @@ def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int)
     emiss = np.array(ds.emiss.values, dtype=float)
     emiss = emiss[:, 1: N_hours_prec + 1]
     if window_length > 0:
-        num_batches = int(np.floor((len(emiss) - window_length)/shift)) + 1
-        num_features = reduce(lambda x, y: x * y, emiss.shape[1:])
-        output_targets = np.repeat(
-            np.nan, repeats=num_batches * window_length * num_features).reshape(num_batches, window_length, *emiss.shape[1:])
-
+        # shift right
+        num_batches = int(
+            np.floor((len(emiss) - window_length)/shift)) + 1
+        indexes = []
         for batch in range(num_batches):
-            output_targets[batch, :, :] = emiss[shift *
-                                                batch:shift*batch+window_length, :]
-        return output_targets
+            if shift*batch+window_length >= len(emiss):
+                break
+            indexes.append(shift*batch+window_length)
+        return emiss, np.array(indexes)
     else:
-        return emiss
+        return emiss, np.arange(len(emiss))
 
 
 def get_bool_(ds: xr.Dataset, N_hours_prec: int) -> np.ndarray:
@@ -168,6 +168,8 @@ def get_weighted_plume(
     min_w: float = 0,
     max_w: float = 1,
     param_curve: float = 1,
+
+
 ):
     """Get modified plume matrices label output."""
     y_data = calculate_weighted_plume(
@@ -200,39 +202,26 @@ class Input_filler:
     window_length: int = 0
     shift: int = 0
 
-    def fill_data(self, ds: xr.Dataset, list_chans: list, index=True) -> np.ndarray:
+    def fill_data(self, ds: xr.Dataset, list_chans: list) -> np.ndarray:
         """Fill input data according to chan_0,1,2"""
         data = self.fill_chan(list_chans[0], ds)
         for chan in [x for x in list_chans[1:] if x != "None"]:
             data = np.concatenate((data, self.fill_chan(chan, ds)), axis=-1)
-        if not index:
-            shape = data.shape
-            if self.window_length > 0:
-                num_batches = int(
-                    np.floor((len(data) - self.window_length)/self.shift)) + 1
-                num_features = reduce(lambda x, y: x * y, data.shape[1:])
-                output_data = np.repeat(np.nan, repeats=num_batches * self.window_length * num_features).reshape(num_batches, self.window_length,
-                                                                                                                 *data.shape[1:])
-                for batch in range(num_batches):
-                    output_data[batch, :, :] = data[(
-                        0+self.shift*batch):(0+self.shift*batch+self.window_length), :]
-                return output_data, None, output_data.shape
-            else:
-                return data, None, data.shape
-        else:
-            indexes = np.array(range(data.shape[0]))
-            shape = data.shape
-            if self.window_length > 0:
-                num_batches = int(
-                    np.floor((len(data) - self.window_length)/self.shift)) + 1
-                indexes = np.zeros(
-                    (num_batches, self.window_length), dtype=int)
-                for batch in range(num_batches):
-                    indexes[batch] = np.array(
-                        range(self.shift*batch, self.shift*batch+self.window_length), dtype=int)
+        indexes = np.array(range(data.shape[0]))
+        shape = data.shape
+        if self.window_length > 0:
+            num_batches = int(
+                np.floor((len(data) - self.window_length)/self.shift)) + 1
+            indexes = []
 
-                shape = (num_batches, self.window_length, *shape[1:])
-            return data, indexes, shape
+            for batch in range(num_batches):
+                if self.shift*batch+self.window_length >= len(data):
+                    break
+                indexes.append(
+                    list(range(self.shift*batch, self.shift * batch+self.window_length)))
+            indexes = np.array(indexes)
+            shape = (num_batches, self.window_length, *shape[1:])
+        return data, indexes, shape
 
     def fill_chan(self, chan: str, ds: xr.Dataset) -> np.ndarray:
         """Return array depending on chan type specified."""
@@ -343,8 +332,8 @@ class Input_train:
         )
         self.train_data, self.train_data_indexes, input_shape = filler.fill_data(
             self.ds_train, self.train_list_chans)
-        self.valid_data, _, input_shape = filler.fill_data(
-            self.ds_valid, self.list_chans, False)
+        self.valid_data, self.valid_data_indexes, input_shape = filler.fill_data(
+            self.ds_valid, self.list_chans)
 
         self.fields_input_shape = input_shape[1:]
 
@@ -396,10 +385,10 @@ class Output_train:
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
-        self.train_data = get_emiss(self.ds_train, N_hours_prec,
-                                    window_length=self.window_length, shift=self.shift)
-        self.valid_data = get_emiss(self.ds_valid, N_hours_prec,
-                                    window_length=self.window_length, shift=self.shift)
+        self.train_data, self.train_data_indexes = get_emiss(self.ds_train, N_hours_prec,
+                                                             window_length=self.window_length, shift=self.shift)
+        self.valid_data, self.valid_data_indexes = get_emiss(self.ds_valid, N_hours_prec,
+                                                             window_length=self.window_length, shift=self.shift)
 
 
 def concat_dataset(data_dir, datasets):
@@ -414,6 +403,7 @@ class Data_train:
 
     path_train_ds: str
     path_valid_ds: str
+    path_test_ds: str
     path_data_dir: str
     window_length: int = 0
     shift: int = 0
@@ -547,9 +537,8 @@ class Output_eval:
 
 @dataclass
 class Data_eval:
-
-    path_eval_nc: str
     data_dir: str
+    path_eval_nc: str
     window_length: int = 0
     shift: int = 0
 

@@ -178,7 +178,6 @@ def get_core_model(
         xco2_emd.freeze_all_layers()
         core_model = emission_predictor(
             input_shape, config.model.image_size, xco2_emd, bottom_layers)
-
     else:
         print(f"Unknown model name: {name}")
         sys.exit()
