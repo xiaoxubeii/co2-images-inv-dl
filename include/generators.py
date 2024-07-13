@@ -200,8 +200,6 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         self.batches_back = batches_back
         self.batches_alt = batches_alt
         """
-        import pdb
-        pdb.set_trace()
         return x_batch
 
     def __get_output(self, batches: list, plume_scaling: np.ndarray):
