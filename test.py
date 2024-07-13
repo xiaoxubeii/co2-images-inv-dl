@@ -12,7 +12,7 @@ def run_test(cfg: DictConfig):
     wandb.login(key=cfg.wandb.key)
     config = OmegaConf.to_container(cfg, resolve=True)
     run_tags = [cfg.model.type]
-    run_tags.extend(cfg.run_tags.split(","))
+    run_tags.extend(cfg.run_tags)
     with wandb.init(project=cfg.wandb.project_name,
                     name=cfg.exp_name, tags=run_tags, config=config) as run:
         data = model_eval.get_data_for_inversion(

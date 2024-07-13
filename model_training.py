@@ -255,7 +255,7 @@ class Model_training_manager:
         wandb.login(key=self.cfg.wandb.key)
         config = OmegaConf.to_container(self.cfg, resolve=True)
         run_tags = [self.cfg.model.type]
-        run_tags.extend(self.cfg.run_tags.split(","))
+        run_tags.extend(self.cfg.run_tags)
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, tags=run_tags, config=config) as run:
 

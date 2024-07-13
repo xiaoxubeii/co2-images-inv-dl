@@ -151,7 +151,6 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         """Get input batches with random scaling."""
         # x_batch = np.empty(shape=(self.batch_size,) + tuple(self.input_size))
         x_batch = self.x[self.x_indexes[batches]]
-
         for idx, chan in enumerate(self.chans_for_scale):
             if chan:
                 if self.window_length > 0:
@@ -201,6 +200,8 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         self.batches_back = batches_back
         self.batches_alt = batches_alt
         """
+        import pdb
+        pdb.set_trace()
         return x_batch
 
     def __get_output(self, batches: list, plume_scaling: np.ndarray):
