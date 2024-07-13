@@ -139,7 +139,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             np.random.shuffle(self.list_idx_back)
             np.random.shuffle(self.list_idx_alt)
 
-    def get_input(
+    def __get_input(
         self,
         batches: list,
         batches_back: list,
@@ -203,7 +203,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         """
         return x_batch
 
-    def get_output(self, batches: list, plume_scaling: np.ndarray):
+    def __get_output(self, batches: list, plume_scaling: np.ndarray):
         """Get output batches with random scaling."""
         y_batch = self.y[self.y_indexes[batches]]
         if self.scale_y:
@@ -214,14 +214,14 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             )
         return y_batch
 
-    def get_data(self, batches: list, batches_back: list, batches_alt: list):
+    def __get_data(self, batches: list, batches_back: list, batches_alt: list):
         """Get random batches, drawing random scaling."""
         plume_scaling = np.random.uniform(
             self.plume_scaling_min - 1, self.plume_scaling_max, size=self.batch_size
         )
         back_scaling = np.random.uniform(-3.5, 3.5, size=self.batch_size)
         alt_anthro_scaling = np.random.uniform(0.33, 3, size=self.batch_size)
-        x_batch = self.get_input(
+        x_batch = self.__get_input(
             batches,
             batches_back,
             batches_alt,
@@ -229,7 +229,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             back_scaling,
             alt_anthro_scaling,
         )
-        y_batch = self.get_output(batches, plume_scaling)
+        y_batch = self.__get_output(batches, plume_scaling)
         return x_batch, y_batch
 
     def __getitem__(self, index: int):
@@ -243,7 +243,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         batches_alt = self.list_idx_alt[
             range(index * self.batch_size, (index + 1) * self.batch_size)
         ]
-        x, y = self.get_data(batches, batches_back, batches_alt)
+        x, y = self.__get_data(batches, batches_back, batches_alt)
         with tf.device('/cpu:0'):
             x = tf.convert_to_tensor(x, np.float64)
             y = tf.convert_to_tensor(y, np.float64)
@@ -258,8 +258,98 @@ class ScaleDataGen(tf.keras.utils.Sequence):
 
 
 @dataclass
-class ScaleDataGenTransformer(ScaleDataGen):
-    def get_output(self, batches: list, plume_scaling: np.ndarray):
+class ScaleDataGenTransformer(tf.keras.utils.Sequence):
+    x: np.ndarray
+    x_indexes: np.ndarray
+    valid_x: np.ndarray
+    valid_x_indexes: np.ndarray
+    plume: np.ndarray
+    xco2_back: np.ndarray
+    xco2_alt_anthro: np.ndarray
+    y: np.ndarray
+    y_indexes: np.ndarray
+    valid_y: np.ndarray
+    valid_y_indexes: np.ndarray
+    chans_for_scale: list
+    input_size: tuple
+    batch_size: int = 32
+    plume_scaling_min: float = 0.25
+    plume_scaling_max: float = 2
+    window_length: int = 0
+    scale_y: bool = True
+    shuffle: bool = True
+
+    def __post_init__(self):
+        self.N_data = self.x_indexes.shape[0]
+        self.N_data = self.x_indexes.shape[0]
+        self.list_idx = np.arange(self.N_data)
+        self.list_idx_back = np.arange(self.N_data)
+        self.list_idx_alt = np.arange(self.N_data)
+
+    def on_epoch_end(self):
+        """Shuffle data at the end of each epoch."""
+        if self.shuffle:
+            np.random.shuffle(self.list_idx)
+            np.random.shuffle(self.list_idx_back)
+            np.random.shuffle(self.list_idx_alt)
+
+    def __get_input(
+        self,
+        batches: list,
+        batches_back: list,
+        batches_alt: list,
+        plume_scaling: np.ndarray,
+        back_scaling: np.ndarray,
+        alt_anthro_scaling: np.ndarray,
+    ):
+        """Get input batches with random scaling."""
+        # x_batch = np.empty(shape=(self.batch_size,) + tuple(self.input_size))
+        x_batch = self.x[self.x_indexes[batches]]
+
+        for idx, chan in enumerate(self.chans_for_scale):
+            if chan:
+                if self.window_length > 0:
+                    x_batch[:, :, :, :, idx: idx + 1] += (
+                        plume_scaling.reshape(
+                            plume_scaling.shape + (1,) * 4)
+                        * self.plume[idx][self.x_indexes[batches]]
+                    )
+
+                    x_batch[:, :, :, :, idx: idx + 1] += (
+                        back_scaling.reshape(
+                            back_scaling.shape + (1,) * 4)
+                        - self.xco2_back[idx][self.x_indexes[batches]]
+                        + self.xco2_back[idx][self.x_indexes[batches_back]]
+                    )
+
+                    x_batch[:, :, :, :, idx: idx + 1] += (
+                        alt_anthro_scaling.reshape(
+                            alt_anthro_scaling.shape + (1,) * 4)
+                        * self.xco2_alt_anthro[idx][self.x_indexes[batches_alt]]
+                        - self.xco2_alt_anthro[idx][self.x_indexes[batches]]
+                    )
+                else:
+                    x_batch[:, :, :, idx: idx + 1] += (
+                        plume_scaling.reshape(plume_scaling.shape + (1,) * 3)
+                        * self.plume[idx][batches]
+                    )
+
+                    x_batch[:, :, :, idx: idx + 1] += (
+                        back_scaling.reshape(back_scaling.shape + (1,) * 3)
+                        - self.xco2_back[idx][batches]
+                        + self.xco2_back[idx][batches_back]
+                    )
+
+                    x_batch[:, :, :, idx: idx + 1] += (
+                        alt_anthro_scaling.reshape(
+                            alt_anthro_scaling.shape + (1,) * 3)
+                        * self.xco2_alt_anthro[idx][batches_alt]
+                        - self.xco2_alt_anthro[idx][batches]
+                    )
+
+        return x_batch
+
+    def __get_output(self, batches: list, plume_scaling: np.ndarray):
         """Get output batches with random scaling."""
         y_batch_0 = self.x[self.y_indexes[batches]]
         y_batch_1 = self.y[self.y_indexes[batches]]
@@ -282,21 +372,21 @@ class ScaleDataGenTransformer(ScaleDataGen):
         batches_alt = self.list_idx_alt[
             range(index * self.batch_size, (index + 1) * self.batch_size)
         ]
-        x, y0, y1 = self.get_data(batches, batches_back, batches_alt)
+        x, y0, y1 = self.__get_data(batches, batches_back, batches_alt)
         with tf.device('/cpu:0'):
             x = tf.convert_to_tensor(x, np.float64)
             y0 = tf.convert_to_tensor(y0, np.float64)
             y1 = tf.convert_to_tensor(y1, np.float64)
         return x, y0, y1
 
-    def get_data(self, batches: list, batches_back: list, batches_alt: list):
+    def __get_data(self, batches: list, batches_back: list, batches_alt: list):
         """Get random batches, drawing random scaling."""
         plume_scaling = np.random.uniform(
             self.plume_scaling_min - 1, self.plume_scaling_max, size=self.batch_size
         )
         back_scaling = np.random.uniform(-3.5, 3.5, size=self.batch_size)
         alt_anthro_scaling = np.random.uniform(0.33, 3, size=self.batch_size)
-        x_batch = self.get_input(
+        x_batch = self.__get_input(
             batches,
             batches_back,
             batches_alt,
@@ -304,8 +394,12 @@ class ScaleDataGenTransformer(ScaleDataGen):
             back_scaling,
             alt_anthro_scaling,
         )
-        y_0, y_1 = self.get_output(batches, plume_scaling)
+        y_0, y_1 = self.__get_output(batches, plume_scaling)
         return x_batch, y_0, y_1
+
+    def __len__(self):
+        """Get number of batches per epoch."""
+        return self.N_data // self.batch_size
 
     def get_valid_data(self):
         return (self.valid_x[self.valid_x_indexes], self.valid_x[self.valid_y_indexes], self.valid_y[self.valid_y_indexes])
