@@ -152,6 +152,7 @@ class EmissTransformer(keras.Model):
         self.dense = keras.layers.Dense(self.embed_dim)
         self.dropout = keras.layers.Dropout(DROPOUT)
         self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
+        self.flatten = keras.layers.Flatten()
 
     def call(self, inputs):
         input_shape = ops.shape(inputs)
@@ -162,9 +163,10 @@ class EmissTransformer(keras.Model):
         for i in range(NUM_LAYERS):
             out1 = self.transformer_encoder(
                 out1, attention_mask=mask)
+        out1 = self.flatten(out1)
         out2 = self.dense(out1)
         out2 = self.dropout(out2)
-        return self.layernorm(out1 + out2)
+        return self.layernorm(out2)
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):

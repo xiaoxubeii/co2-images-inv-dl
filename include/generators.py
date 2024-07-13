@@ -223,7 +223,6 @@ class ScaleDataGen(tf.keras.utils.Sequence):
             alt_anthro_scaling,
         )
         y_batch = self.__get_output(batches, plume_scaling)
-        import pdb;pdb.set_trace()
         return x_batch, y_batch
 
     def __getitem__(self, index: int):
