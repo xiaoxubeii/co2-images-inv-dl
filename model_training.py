@@ -40,6 +40,7 @@ class Trainer:
             valid_data = self.generator.get_valid_data()
 
         """Train model and evaluate validation."""
+        import pdb;pdb.set_trace()
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
