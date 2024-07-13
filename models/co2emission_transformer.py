@@ -24,6 +24,7 @@ class EmissionPredictor(keras.Model):
         self.image_size = image_size
 
     def build(self, input_shape):
+        self.flatten = keras.layers.Flatten()
         self.predictor = keras.Sequential([
             keras.layers.Dense(INTERMEDIATE_DIM, activation='relu'),
             keras.layers.Dense(1)
@@ -57,16 +58,18 @@ class EmissionPredictor(keras.Model):
         return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
-        x, y = inputs[0], inputs[1]
+        x, y1, y2 = inputs[0], inputs[1], inputs[2]
         if self.bottom_layers is not None:
             x = self.bottom_layers(x)
 
         o1 = self.embedding(x)
-        y1 = self.emiss_trans(o1)
-        loss1 = keras.losses.MeanSquaredError()(y1, o1)
-        o2 = self.predictor(y1)
-        loss2 = keras.losses.MeanAbsoluteError()(y, o2)
-        return 0.8*loss1+0.2*loss2, y, o2
+        o1 = self.emiss_trans(o1)
+        o1_y = self.do_embedding(y1)
+        loss1 = keras.losses.MeanSquaredError()(o1_y, o1)
+
+        o2 = self.predictor(o1)
+        loss2 = keras.losses.MeanAbsoluteError()(y2, o2)
+        return 0.8*loss1+0.2*loss2, y2, o2
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
@@ -94,29 +97,23 @@ class EmissionPredictor(keras.Model):
         self.compiled_metrics.update_state(loss_y, loss_pred)
         return {m.name: m.result() for m in self.metrics}
 
+    def do_embedding(self, input):
+        outputs = keras.layers.Resizing(
+            self.image_size, self.image_size)(input)
+        patch_layer = self.embedding_layer.patch_layer
+        patch_encoder = self.embedding_layer.patch_encoder
+        encoder = self.embedding_layer.encoder
+
+        patches = patch_layer(outputs)
+        unmasked_embeddings = patch_encoder(patches)
+        # Pass the unmaksed patch to the encoder.
+        embedding = encoder(unmasked_embeddings)
+        return self.flatten(embedding)
+
     def embedding(self, inputs):
-        input_shape = ops.shape(inputs)
-        batch_size = input_shape[0]
-        seq_len = input_shape[1]
-
-        def _embedding(inputs):
-            outputs = keras.layers.Resizing(
-                self.image_size, self.image_size)(inputs)
-            patch_layer = self.embedding_layer.patch_layer
-            patch_encoder = self.embedding_layer.patch_encoder
-            encoder = self.embedding_layer.encoder
-
-            patches = patch_layer(outputs)
-            unmasked_embeddings = patch_encoder(patches)
-            # Pass the unmaksed patch to the encoder.
-            return encoder(unmasked_embeddings)
-
-        embedding = tf.map_fn(_embedding, inputs)
+        embedding = tf.map_fn(lambda x: self.do_embedding(x), inputs)
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
-        embedding = embedding + positional_encoding
-        embedding_shape = embedding.shape
-        return tf.reshape(
-            embedding, [batch_size, seq_len, embedding_shape[-1]*embedding_shape[-2]])
+        return embedding + positional_encoding
 
     def get_config(self):
         config = super().get_config()

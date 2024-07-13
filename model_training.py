@@ -34,12 +34,16 @@ class Trainer:
     N_epochs: int = 10
 
     def train_model(self, model: tf.keras.Model, data: Data_train) -> tf.keras.Model:
+        valid_data = (
+            data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes])
+        if hasattr(self.generator, "get_valid_data"):
+            valid_data = self.generator.get_valid_data()
+
         """Train model and evaluate validation."""
         self.history = model.fit(
             self.generator,
             epochs=self.N_epochs,
-            validation_data=(
-                data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes]),
+            validation_data=valid_data,
             verbose=1,
             # steps_per_epoch=int(
             #     np.floor(data.x.train.shape[0] / self.batch_size)),
@@ -192,11 +196,15 @@ class Model_training_manager:
             generator = generators.ScaleDataGen(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,
+                self.data.x.valid_data,
+                self.data.x.valid_data_indexes,
                 self.data.x.plumes_train,
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
                 self.data.y.train_data,
                 self.data.y.train_data_indexes,
+                self.data.y.valid_data,
+                self.data.y.valid_data_indexes,
                 self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
                 cfg.training.batch_size,
@@ -206,14 +214,21 @@ class Model_training_manager:
                 scale_y=False
             )
         elif cfg.model.type in "inversion":
-            generator = generators.ScaleDataGen(
+            generator_cls = generators.ScaleDataGen
+            if cfg.model.name == "co2emission_transformer":
+                generator_cls = generators.ScaleDataGenTransformer
+            generator = generator_cls(
                 self.data.x.train_data,
                 self.data.x.train_data_indexes,
+                self.data.x.valid_data,
+                self.data.x.valid_data_indexes,
                 self.data.x.plumes_train,
                 self.data.x.xco2_back_train,
                 self.data.x.xco2_alt_anthro_train,
                 self.data.y.train_data,
                 self.data.y.train_data_indexes,
+                self.data.y.valid_data,
+                self.data.y.valid_data_indexes,
                 self.data.x.scale_bool,
                 self.data.x.fields_input_shape,
                 cfg.training.batch_size,
