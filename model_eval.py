@@ -368,8 +368,6 @@ def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval, sample
     if sample_num > 0:
         data_index = data_index[:sample_num]
     x = tf.convert_to_tensor(data.x.eval_data[data_index], np.float32)
-    import pdb
-    pdb.set_trace()
     pred = tf.convert_to_tensor(model.predict(x), np.float32)
     y = tf.convert_to_tensor(data.y.eval, np.float32)
     if sample_num > 0:
