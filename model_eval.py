@@ -372,6 +372,8 @@ def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval, sample
     y = tf.convert_to_tensor(data.y.eval[data.y.eval_indexes], np.float32)
     if sample_num > 0:
         y = y[:sample_num]
+    import pdb
+    pdb.set_trace()
     if data.window_length > 0:
         y = tf.reshape(y, (y.shape[0]*y.shape[1], y.shape[2]))
         pred = tf.reshape(pred, (pred.shape[0]*pred.shape[1], pred.shape[2]))
