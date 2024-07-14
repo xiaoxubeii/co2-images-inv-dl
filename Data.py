@@ -531,8 +531,8 @@ class Output_eval:
 
     def get_inversion(self, N_hours_prec):
         """Get inversion train and valid."""
-        self.eval = get_emiss(self.ds_eval, N_hours_prec,
-                              self.window_length, self.shift)
+        self.eval, self.eval_indexes = get_emiss(self.ds_eval, N_hours_prec,
+                                                 self.window_length, self.shift)
 
 
 @dataclass

@@ -364,12 +364,12 @@ def get_inv_metrics(y: tf.Tensor, pred: tf.Tensor):
 
 def get_inv_metrics_model_on_data(model: tf.keras.Model, data: Data_eval, sample_num=0) -> dict:
     """Get inversion scores by inversion model applied on data."""
-    data_index = data.x.eval_data_indexes
     if sample_num > 0:
         data_index = data_index[:sample_num]
-    x = tf.convert_to_tensor(data.x.eval_data[data_index], np.float32)
+    x = tf.convert_to_tensor(
+        data.x.eval_data[data.x.eval_data_indexes], np.float32)
     pred = tf.convert_to_tensor(model.predict(x), np.float32)
-    y = tf.convert_to_tensor(data.y.eval, np.float32)
+    y = tf.convert_to_tensor(data.y.eval[data.y.eval_indexes], np.float32)
     if sample_num > 0:
         y = y[:sample_num]
     if data.window_length > 0:
