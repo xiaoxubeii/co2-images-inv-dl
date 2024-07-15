@@ -148,6 +148,7 @@ class ScaleDataGen(tf.keras.utils.Sequence):
         back_scaling: np.ndarray,
         alt_anthro_scaling: np.ndarray,
     ):
+        import pdb;pdb.set_trace()
         """Get input batches with random scaling."""
         # x_batch = np.empty(shape=(self.batch_size,) + tuple(self.input_size))
         x_batch = self.x[self.x_indexes[batches]]
