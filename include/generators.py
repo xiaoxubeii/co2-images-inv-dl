@@ -371,10 +371,10 @@ class ScaleDataGenTransformer(tf.keras.utils.Sequence):
             range(index * self.batch_size, (index + 1) * self.batch_size)
         ]
         x, y0, y1 = self.__get_data(batches, batches_back, batches_alt)
-        with tf.device('/cpu:0'):
-            x = tf.convert_to_tensor(x, np.float64)
-            y0 = tf.convert_to_tensor(y0, np.float64)
-            y1 = tf.convert_to_tensor(y1, np.float64)
+        # with tf.device('/cpu:0'):
+        x = tf.convert_to_tensor(x, np.float64)
+        y0 = tf.convert_to_tensor(y0, np.float64)
+        y1 = tf.convert_to_tensor(y1, np.float64)
         return x, y0, y1
 
     def __get_data(self, batches: list, batches_back: list, batches_alt: list):
