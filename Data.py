@@ -268,6 +268,7 @@ class Input_filler:
         elif chan == "v_wind_prec":
             data_chan = get_v_wind_prec(ds)
         else:
+            print("Error: channel not found")
             sys.exit()
 
         return data_chan
