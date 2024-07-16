@@ -1,0 +1,40 @@
+# @package _global_
+
+defaults:
+  - override /model: inversion
+
+data:
+  init:
+    cutoff_size: 64
+    window_length: 4
+    shift: 1
+  input:
+    dir_seg_models: /cerea_raid/users/dumontj/dev/coco2/dl/res/models
+    chan_0: xco2
+    chan_1: u_wind
+    chan_2: v_wind
+    chan_3: None
+    chan_4: None
+  path:
+    directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
+    train:
+      - name: boxberg
+        nc: train_dataset.nc
+    valid:
+      - name: boxberg
+        nc: valid_dataset.nc
+    test:
+      - name: boxberg
+        nc: test_dataset.nc
+dir_res: res/${model.type}
+seed: 42
+sweep: true
+model:
+  type: inversion
+  name: cnn-lstm
+callbacks:
+  model_checkpoint: true
+  early_stopping: true
+wandb:
+  project_name: co2-emission-estimation
+  key: 69fea85817147f437d88815d733f3e2ed9799c12

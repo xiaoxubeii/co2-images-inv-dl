@@ -102,34 +102,40 @@ class BottomLayers():
         return self.n_layer(concatted)
 
 
-def get_top_layers(classes: int, choice_top: str = "linear"):
-    """Return top layers for regression model."""
-
-    def top_layers(x):
-        if choice_top in [
+class TopLayers():
+    def __init__(self, classes: int, choice_top: str = "linear"):
+        self.classes = classes
+        self.choice_top = choice_top
+        if self.choice_top in [
             "efficientnet",
             "squeezenet",
             "nasnet",
             "mobilenet",
             "shufflenet",
         ]:
-            x = tf.keras.layers.GlobalAveragePooling2D(name="pooling_layer")(x)
-            x = tf.keras.layers.Dense(classes, name="regressor")(x)
-            outputs = tf.keras.layers.LeakyReLU(
-                alpha=0.3, dtype=tf.float32, name="regressor_activ"
-            )(x)
-        elif choice_top == "linear":
-            outputs = tf.keras.layers.Dense(classes, name="regressor")(x)
-        elif choice_top.startswith("essential"):
-            x = tf.keras.layers.Dense(1)(x)
-            outputs = tf.keras.layers.LeakyReLU(alpha=0.3)(x)
-        elif choice_top == "cnn-lstm":
-            outputs = tf.keras.layers.Dense(1, activation='linear')(x)
+            self.layer = tf.keras.layers.sequntial([
+                tf.keras.layers.GlobalAveragePooling2D(name="pooling_layer"),
+                tf.keras.layers.Dense(self.classes, name="regressor"),
+                tf.keras.layers.LeakyReLU(
+                    alpha=0.3, dtype=tf.float32, name="regressor_activ"
+                )
+            ])
+        elif self.choice_top == "linear":
+            self.layer = tf.keras.layers.Dense(self.classes, name="regressor")
+        elif self.choice_top.startswith("essential"):
+            self.layer = tf.keras.sequentail([
+                tf.keras.layers.Dense(1),
+                tf.keras.layers.LeakyReLU(alpha=0.3)
+            ])
+        elif self.choice_top == "cnn-lstm":
+            self.layer = tf.keras.layers.Dense(1, activation='linear')
         else:
-            return x
-        return outputs
+            self.layer = None
 
-    return top_layers
+    def __call__(self, input, *args, **kwargs):
+        if self.layer:
+            return self.layer(input)
+        return input
 
 
 def get_core_model(
@@ -185,22 +191,6 @@ def get_core_model(
     return core_model
 
 
-# @dataclass
-# class Emb_model_builder:
-#     name: str = ""
-#     input_shape: list = field(default_factory=lambda: [64, 64, 3])
-#     config: DictConfig = None
-
-#     def get_model(self):
-#         """Return regression model, keras or locals."""
-#         core_model = get_core_model(
-#             self.name,
-#             self.input_shape,
-#             config=self.config
-#         )
-#         return core_model
-
-
 @dataclass
 class Reg_model_builder:
     """Return appropriate regression model."""
@@ -222,7 +212,7 @@ class Reg_model_builder:
         """Return regression model, keras or locals."""
         bottom_layers = BottomLayers(
             self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
-        top_layers = get_top_layers(self.classes, self.name)
+        top_layers = TopLayers(self.classes, self.name)
         core_model = get_core_model(
             self.name,
             self.input_shape,
