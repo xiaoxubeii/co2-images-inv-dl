@@ -1,7 +1,7 @@
 defaults:
   - init: default
-  - input: ${model}
-  - output: ${model}
+  - input: ${model.type}
+  - output: ${model.type}
 
 path:
   directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
