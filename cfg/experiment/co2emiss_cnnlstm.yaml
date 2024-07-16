@@ -1,8 +1,7 @@
 # @package _global_
 
 defaults:
-  - override /model: co2emiss-cnnlstm
-  - override /data/output: inversion
+  - override /model: co2emiss_cnnlstm
 
 data:
   init:
@@ -30,9 +29,6 @@ data:
 dir_res: res/${model.type}
 seed: 42
 sweep: true
-model:
-  type: inversion
-  name: cnn-lstm
 callbacks:
   model_checkpoint: true
   early_stopping: true

@@ -1,13 +1,6 @@
-# chan_0: xco2
-# chan_1: no2
-# chan_2: seg_2km_64_ber_no2
-# chan_3: u_wind
-# chan_4: v_wind
 chan_0: xco2
 chan_1: u_wind
 chan_2: v_wind
 chan_3: None
 chan_4: None
-# chan_3: no2
-# chan_4: weighted_plume
 dir_seg_models: /cerea_raid/users/dumontj/dev/coco2/dl/res/models
