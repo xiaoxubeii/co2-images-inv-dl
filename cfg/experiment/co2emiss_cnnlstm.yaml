@@ -1,7 +1,8 @@
 # @package _global_
 
 defaults:
-  - override /model: inversion
+  - override /model: co2emiss-cnnlstm
+  - override /data/output: inversion
 
 data:
   init:
