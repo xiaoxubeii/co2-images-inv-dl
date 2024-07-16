@@ -169,16 +169,16 @@ def get_core_model(
         core_model = MobileNet(input_shape, scaling_coeff=0.4)
     elif name == "shufflenet":
         core_model = ShuffleNet(input_shape, scaling_coefficient=0.75)
-    elif name == "cnn-lstm":
+    elif name == "co2emiss-cnnlstm":
         core_model = cnn_lstm(input_shape)
-    elif name == "xco2_mae":
+    elif name == "xco2embedd-mae":
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
                          patch_size=config.model.patch_size, bottom_layers=bottom_layers)
     # elif name == "xco2_ae":
     #     core_model = autoencoder(input_shape=input_shape)
     # elif name == "xco2_vae":
     #     core_model = vae(input_shape=input_shape)
-    elif name == "co2emission_transformer":
+    elif name == "co2emiss-transformer":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
