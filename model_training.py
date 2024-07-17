@@ -254,6 +254,7 @@ class Model_training_manager:
         """Train the model with the training data."""
         wandb.login(key=self.cfg.wandb.key)
         config = OmegaConf.to_container(self.cfg, resolve=True)
+        import pdb;pdb.set_trace()
         run_tags = [self.cfg.model.type]
         run_tags.extend(self.cfg.run_tags)
         with wandb.init(project=self.cfg.wandb.project_name,
