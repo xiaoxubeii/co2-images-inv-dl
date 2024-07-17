@@ -1,9 +1,0 @@
-tests:
-  test-co2emiss-cnnlstm-win12-chan5-07162238:
-    metric_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2emiss-cnnlstm-win12-chan5-07162238/metrics.json
-  test-co2et-win36-patch16-chan5-07152145:
-    metric_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2et-win36-patch16-chan5-07152145/metrics.json
-wandb:
-  project_name: co2-emission-estimation
-  key: 69fea85817147f437d88815d733f3e2ed9799c12
-exp_name: test1212121
