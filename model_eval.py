@@ -537,7 +537,7 @@ def get_summary_histo_inversion(
         fill=True,
         alpha=0.2,
         ax=axs[1],
-)
+    )
     # sns.kdeplot(
     #     data=df_emiss,
     #     x="emiss",

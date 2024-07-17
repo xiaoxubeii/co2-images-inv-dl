@@ -215,7 +215,7 @@ class Model_training_manager:
             # )
         elif cfg.model.type in "inversion":
             generator_cls = generators.ScaleDataGen
-            if cfg.model.name == "co2emission_transformer":
+            if cfg.model.name == "co2emiss-transformer":
                 generator_cls = generators.ScaleDataGenTransformer
             generator = generator_cls(
                 self.data.x.train_data,
@@ -255,7 +255,8 @@ class Model_training_manager:
         wandb.login(key=self.cfg.wandb.key)
         config = OmegaConf.to_container(self.cfg, resolve=True)
         run_tags = [self.cfg.model.type]
-        run_tags.extend(self.cfg.run_tags)
+        if "run_tags" in self.cfg:
+            run_tags.extend(self.cfg.run_tags)
         with wandb.init(project=self.cfg.wandb.project_name,
                         name=self.cfg.exp_name, tags=run_tags, config=config) as run:
 

@@ -65,11 +65,12 @@ class EmissionPredictor(keras.Model):
         o1 = self.embedding(x)
         o1 = self.emiss_trans(o1)
         o1_y = self.do_embedding(y1)
-        loss1 = keras.losses.MeanSquaredError()(o1_y, o1)
+        # loss1 = keras.losses.MeanSquaredError()(o1_y, o1)
 
         o2 = self.predictor(o1)
         loss2 = keras.losses.MeanAbsoluteError()(y2, o2)
-        return 0.8*loss1+0.2*loss2, y2, o2
+        # return 0.8*loss1+0.2*loss2, y2, o2
+        return loss2, y2, o2
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
