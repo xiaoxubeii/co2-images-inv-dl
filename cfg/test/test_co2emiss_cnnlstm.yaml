@@ -3,6 +3,7 @@
 defaults:
     - override /model: co2emiss_cnnlstm
     - override /data/output: inversion
+    - override /data/input: inversion
 
 data:
     init:
