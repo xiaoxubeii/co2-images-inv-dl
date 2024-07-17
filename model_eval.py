@@ -419,10 +419,10 @@ def draw_idx(
 
 
 def get_summary_histo_inversion1(metrics):
-    df_mae = [pd.DataFrame({"loss": m["mae"], "method": f'{m["method"]}: mean {np.mean(m["mae"]):.2f}, median {np.median(m["mae"]):.2f}, total {len(m["mae"]):d}'})
+    df_mae = [pd.DataFrame({"loss": m["mae"], "method": f'{m["method"]}: \nmean {np.mean(m["mae"]):.2f}, median {np.median(m["mae"]):.2f}, total {len(m["mae"]):d}'})
               for m in metrics]
     df_mape = [pd.DataFrame(
-        {"loss": m["mape"], "method": f'{m["method"]}: mean {np.mean(m["mape"]):.2f}, median {np.median(m["mape"]):.2f} total {len(m["mae"]):d}'}) for m in metrics]
+        {"loss": m["mape"], "method": f'{m["method"]}: \nmean {np.mean(m["mape"]):.2f}, median {np.median(m["mape"]):.2f} total {len(m["mae"]):d}'}) for m in metrics]
 
     df_mae = pd.concat(df_mae)
     df_mape = pd.concat(df_mape)

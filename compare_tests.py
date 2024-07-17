@@ -20,7 +20,6 @@ def _do_run(cfg: DictConfig):
         metrics = []
         for k, v in cfg.tests.items():
             with open(v["metric_path"], 'r') as f:
-                import pdb;pdb.set_trace()
                 metric = json.load(f)
                 metric["method"] = v["model_name"]
                 metrics.append(metric)
