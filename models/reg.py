@@ -210,8 +210,12 @@ class Reg_model_builder:
 
     def get_model(self):
         """Return regression model, keras or locals."""
-        bottom_layers = BottomLayers(
-            self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
+        if self.name == "xco2embedd-mae":
+            bottom_layers = BottomLayers(
+                self.n_layer, self.input_shape[-1], [False]*5, self.window_length)
+        else:
+            bottom_layers = BottomLayers(
+                self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
         top_layers = TopLayers(self.classes, self.name)
         core_model = get_core_model(
             self.name,

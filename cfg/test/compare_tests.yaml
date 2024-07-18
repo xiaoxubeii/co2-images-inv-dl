@@ -8,8 +8,12 @@ tests:
     #     model_name: co2et-win36-patch16-chan5
     #     metric_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2et-win36-patch16-chan5-07152145/metric.json
     test-co2et-win12-patch16-07132345:
-        model_name: test-co2et-win12-patch16
-        metric_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2et-win12-patch16-07132345/metric.json
+        model_name: co2emiss-transformer-win12-patch16
+        metric_path: /users/xiaoxubeii/program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2et-win12-patch16-07132345/metric.json
+
+    test-co2et-win36-patch16-chan5-07152145:
+        model_name: co2emiss-transformer-win36-patch16-chan5
+        metric_path: /users/xiaoxubeii/program/go/src/github.com/co2-images-inv-dl/experiments/inversion/test-co2et-win36-patch16-chan5-07152145/metric.json
 
 wandb:
     project_name: co2-emission-estimation

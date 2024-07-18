@@ -155,14 +155,23 @@ class Model_training_manager:
                 print(f"Unknown model type: {cfg.model.type}")
                 sys.exit()
 
-            self.model.compile(
-                optimizer=optimisers.define_optimiser(
-                    cfg.training.optimiser, cfg.training.learning_rate
-                ),
-                loss=loss.define_loss(cfg.model.loss_func),
-                metrics=loss.define_metrics(cfg.model.type),
-                run_eagerly=True,
-            )
+            if cfg.model.custom_model:
+                self.model.compile(
+                    optimizer=optimisers.define_optimiser(
+                        cfg.training.optimiser, cfg.training.learning_rate
+                    ),
+                    metrics=loss.define_metrics(cfg.model.type),
+                    run_eagerly=True,
+                )
+            else:
+                self.model.compile(
+                    optimizer=optimisers.define_optimiser(
+                        cfg.training.optimiser, cfg.training.learning_rate
+                    ),
+                    loss=loss.define_loss(cfg.model.loss_func),
+                    metrics=loss.define_metrics(cfg.model.type),
+                    run_eagerly=True,
+                )
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""

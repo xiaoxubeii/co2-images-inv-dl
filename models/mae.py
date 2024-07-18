@@ -322,6 +322,8 @@ class MaskedAutoencoder(keras.Model):
         self.patch_size = patch_size
         self.image_size = image_size
         self.bottom_layers = bottom_layers
+        self.mse_loss = keras.losses.MeanSquaredError()
+        self.loss_tracker = keras.metrics.Mean(name="loss")
 
     def build(self, input_shape):
         (_, _, channel_size) = input_shape
@@ -386,7 +388,8 @@ class MaskedAutoencoder(keras.Model):
             decoder_patches, mask_indices, axis=1, batch_dims=1)
 
         # Compute the total loss.
-        total_loss = self.compiled_loss(loss_patch, loss_output)
+        # total_loss = self.compiled_loss(loss_patch, loss_output)
+        total_loss = self.mse_loss(loss_patch, loss_output)
 
         return total_loss, loss_patch, loss_output
 
@@ -408,10 +411,12 @@ class MaskedAutoencoder(keras.Model):
             for g, v in zip(grad, var):
                 tv_list.append((g, v))
         self.optimizer.apply_gradients(tv_list)
-
+        self.loss_tracker.update_state(total_loss)
         # Report progress.
-        self.compiled_metrics.update_state(loss_patch, loss_output)
-        return {m.name: m.result() for m in self.metrics}
+        # self.compiled_metrics.update_state(loss_patch, loss_output)
+        self.loss_tracker.update_state(total_loss)
+
+        return {"loss": self.loss_tracker.result()}
 
     def test_step(self, images):
         if isinstance(images, tuple):
@@ -420,8 +425,8 @@ class MaskedAutoencoder(keras.Model):
             images, test=True)
 
         # Update the trackers.
-        self.compiled_metrics.update_state(loss_patch, loss_output)
-        return {m.name: m.result() for m in self.metrics}
+        self.loss_tracker.update_state(total_loss)
+        return {"loss": self.loss_tracker.result()}
 
     def freeze_all_layers(self):
         self.trainable = False
@@ -435,6 +440,15 @@ class MaskedAutoencoder(keras.Model):
         for k in ["train_augmentation_model", "test_augmentation_model", "bottom_layers"]:
             config[k] = keras.saving.deserialize_keras_object(config[k])
         return cls(**config)
+
+    @property
+    def metrics(self):
+        # We list our `Metric` objects here so that `reset_states()` can be
+        # called automatically at the start of each epoch
+        # or at the start of `evaluate()`.
+        # If you don't implement this property, you have to call
+        # `reset_states()` yourself at the time of your choosing.
+        return [self.loss_tracker]
 
 
 def get_train_augmentation_model(input_shape, image_size):
