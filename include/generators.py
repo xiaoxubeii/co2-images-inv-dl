@@ -92,6 +92,7 @@ class Generator:
         return self.train_generator
 
     def next(self):
+        import pdb;pdb.set_trace()
         return self.image_generator.next(), self.mask_generator.next()
 
     def get_valid_data(self):
