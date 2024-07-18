@@ -209,13 +209,13 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
         return self._is_old_tf_keras_version
 
 
-def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras") -> list:
+def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras", monitor="val_loss") -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
         modelcheckpoint_cb = WandbModelCheckpoint(
             filepath=filepath,
             save_weights_only=False,
-            monitor="val_loss",
+            monitor=monitor,
             mode="auto",
             save_best_only=True,
             verbose=1,
@@ -226,11 +226,11 @@ def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras") -> list:
     return cbs
 
 
-def get_lrscheduler(get: bool, cbs: list) -> list:
+def get_lrscheduler(get: bool, cbs: list, monitor="val_loss") -> list:
     """Add reducelronplateau to callbacks list if get."""
     if get:
         reducelronplateau_cb = tf.keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss",
+            monitor=monitor,
             factor=0.5,
             patience=20,
             verbose=0,
@@ -244,11 +244,11 @@ def get_lrscheduler(get: bool, cbs: list) -> list:
     return cbs
 
 
-def get_earlystopping(get: bool, cbs: list) -> list:
+def get_earlystopping(get: bool, cbs: list, monitor="val_loss") -> list:
     """Add earlystopping to callbacks list if get."""
     if get:
         earlystopping_cb = tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
+            monitor=monitor,
             min_delta=5e-4,
             patience=50,
             verbose=0,

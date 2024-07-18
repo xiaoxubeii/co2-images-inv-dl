@@ -34,10 +34,12 @@ class Trainer:
     N_epochs: int = 10
 
     def train_model(self, model: tf.keras.Model, data: Data_train) -> tf.keras.Model:
-        valid_data = (
-            data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes])
-        if hasattr(self.generator, "get_valid_data"):
-            valid_data = self.generator.get_valid_data()
+        valid_data = None
+        if data.x.valid_data:
+            valid_data = (
+                data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes])
+            if hasattr(self.generator, "get_valid_data"):
+                valid_data = self.generator.get_valid_data()
 
         """Train model and evaluate validation."""
         self.history = model.fit(
@@ -57,9 +59,12 @@ class Trainer:
         """Return history."""
         return self.history
 
-    def get_val_loss(self):
+    def get_loss(self):
         """Return best val loss."""
-        return np.min(self.history.history["val_loss"])
+        if "val_loss" in self.history.history:
+            return np.min(self.history.history["val_loss"])
+        else:
+            return np.min(self.history.history["loss"])
 
 
 class Model_training_manager:
@@ -250,8 +255,9 @@ class Model_training_manager:
             sys.exit()
 
         cbs = callbacks.get_lrscheduler(
-            cfg.callbacks.learning_rate_monitor, [])
-        cbs = callbacks.get_earlystopping(cfg.callbacks.early_stopping, cbs)
+            cfg.callbacks.learning_rate_monitor, [], cfg.callbacks.learning_rate_monitor.monitor)
+        cbs = callbacks.get_earlystopping(
+            cfg.callbacks.early_stopping, cbs, cfg.callbacks.early_stopping.monitor)
         self.trainer = Trainer(
             generator,
             cbs,
@@ -270,15 +276,13 @@ class Model_training_manager:
                         name=self.cfg.exp_name, tags=run_tags, config=config) as run:
 
             self.trainer.callbacks.append(
-                callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, []))
+                callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, [], monitor=self.cfg.callbacks.model_checkpoint.monitor))
             self.trainer.callbacks.append(WandbMetricsLogger())
-            # self.trainer.callbacks.append(WandbModelCheckpoint("models"))
             self.model = self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
-        return self.trainer.get_val_loss()
+        return self.trainer.get_loss()
 
     def save(self) -> None:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
         self.saver.save_model_and_weights(self.model)
-        # self.saver.save_weights(self.model)_util

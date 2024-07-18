@@ -12,18 +12,17 @@ data:
         train:
             - name: all_hotspots_but_box
               nc: train_dataset.nc
-            # - name: boxberg
-            #   nc: train_dataset.nc
-        valid:
             - name: all_hotspots_but_box
               nc: valid_dataset.nc
-            # - name: boxberg
-            #   nc: valid_dataset.nc
-        test:
             - name: all_hotspots_but_box
               nc: test_dataset.nc
-            # - name: boxberg
-            #   nc: test_dataset.nc
+        test:
+            - name: boxberg
+              nc: train_dataset.nc
+            - name: boxberg
+              nc: valid_dataset.nc
+            - name: boxberg
+              nc: test_dataset.nc
     input:
         chan_0: xco2
         chan_1: v_wind
@@ -33,8 +32,13 @@ data:
         # chan_3: no2
         # chan_4: weighted_plume
 callbacks:
-    model_checkpoint: true
-    early_stopping: true
+    model_checkpoint:
+        monitor: loss
+    early_stopping:
+        monitor: loss
+    learning_rate_monitor:
+        monitor: loss
+
 training:
     max_epochs: 1
     batch_size: 32
@@ -43,17 +47,3 @@ sweep: true
 wandb:
     project_name: co2-emission-estimation
     key: 69fea85817147f437d88815d733f3e2ed9799c12
-# augmentations:
-#     shuffle: False
-#     rot:
-#         range: 0
-#     shift:
-#         range: 0
-#     flip:
-#         bool: False
-#     shear:
-#         range: 0
-#     zoom:
-#         range: 0
-#     plume_scaling_max: 0
-#     plume_scaling_min: 0

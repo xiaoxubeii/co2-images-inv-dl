@@ -6,11 +6,5 @@ defaults:
 path:
   directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
   train:
-    - name: all_hotspots_but_lip
-      nc: train_dataset.nc
   valid:
-    - name: all_hotspots_but_lip
-      nc: valid_dataset.nc
   test:
-    - name: all_hotspots_but_lip
-      nc: test_dataset.nc

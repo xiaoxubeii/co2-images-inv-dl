@@ -333,8 +333,11 @@ class Input_train:
         )
         self.train_data, self.train_data_indexes, input_shape = filler.fill_data(
             self.ds_train, self.train_list_chans)
-        self.valid_data, self.valid_data_indexes, input_shape = filler.fill_data(
-            self.ds_valid, self.list_chans)
+        if self.ds_valid is not None:
+            self.valid_data, self.valid_data_indexes, input_shape = filler.fill_data(
+                self.ds_valid, self.list_chans)
+        else:
+            self.valid_data, self.valid_data_indexes = None, None
 
         self.fields_input_shape = input_shape[1:]
 
@@ -388,8 +391,11 @@ class Output_train:
         """Get inversion train and valid."""
         self.train_data, self.train_data_indexes = get_emiss(self.ds_train, N_hours_prec,
                                                              window_length=self.window_length, shift=self.shift)
-        self.valid_data, self.valid_data_indexes = get_emiss(self.ds_valid, N_hours_prec,
-                                                             window_length=self.window_length, shift=self.shift)
+        if self.ds_valid is not None:
+            self.valid_data, self.valid_data_indexes = get_emiss(self.ds_valid, N_hours_prec,
+                                                                 window_length=self.window_length, shift=self.shift)
+        else:
+            self.valid_data, self.valid_data_indexes = None, None
 
 
 def concat_dataset(data_dir, datasets):
@@ -411,13 +417,17 @@ class Data_train:
     cutoff_size: int = 0
 
     def __post_init__(self):
-        # self.ds_train = xr.open_dataset(self.path_train_ds)
-        # self.ds_valid = xr.open_dataset(self.path_valid_ds)
         self.ds_train = concat_dataset(self.path_data_dir, self.path_train_ds)
-        self.ds_valid = concat_dataset(self.path_data_dir, self.path_valid_ds)
+        if self.path_valid_ds and len(self.path_valid_ds) > 0:
+            self.ds_valid = concat_dataset(
+                self.path_data_dir, self.path_valid_ds)
+        else:
+            self.ds_valid = None
+
         if self.cutoff_size > 0:
             self.ds_train = cutoff_ds(self.ds_train, self.cutoff_size)
-            self.ds_valid = cutoff_ds(self.ds_valid, self.cutoff_size)
+            if self.ds_valid is not None:
+                self.ds_valid = cutoff_ds(self.ds_valid, self.cutoff_size)
 
     def prepare_input(
         self,

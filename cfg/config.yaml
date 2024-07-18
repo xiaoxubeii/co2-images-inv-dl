@@ -7,6 +7,7 @@ defaults:
     - callbacks:
           - model_checkpoint
           - learning_rate_monitor
+          - early_stopping
           - wandb
     - hydra: default
 dir_res: res/${model.type}
