@@ -408,9 +408,9 @@ def concat_dataset(data_dir, datasets):
 class Data_train:
     """Object for containing Input and Output data and all other informations."""
 
-    path_train_ds: str
-    path_valid_ds: str
-    path_test_ds: str
+    path_train_ds: list
+    path_valid_ds: list
+    path_test_ds: list
     path_data_dir: str
     window_length: int = 0
     shift: int = 0
@@ -418,7 +418,7 @@ class Data_train:
 
     def __post_init__(self):
         self.ds_train = concat_dataset(self.path_data_dir, self.path_train_ds)
-        if self.path_valid_ds and len(self.path_valid_ds) > 0:
+        if self.path_valid_ds and str(self.path_valid_ds) != "None" and len(self.path_valid_ds) > 0:
             self.ds_valid = concat_dataset(
                 self.path_data_dir, self.path_valid_ds)
         else:
