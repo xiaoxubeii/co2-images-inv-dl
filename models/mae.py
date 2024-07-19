@@ -397,6 +397,7 @@ class MaskedAutoencoder(keras.Model):
         if isinstance(images, tuple):
             images = images[0]
         with tf.GradientTape() as tape:
+            import pdb;pdb.set_trace()
             total_loss, loss_patch, loss_output = self.calculate_loss(images)
 
         # Apply gradients.
