@@ -119,64 +119,62 @@ class Model_training_manager:
     def build_model(self, cfg: DictConfig) -> None:
         """Build the inversion or segmentation model."""
 
-        if "load_weights" in cfg:
-            self.model = tf.keras.models.load_model(
-                cfg.load_weights, compile=True)
+        if cfg.model.type.startswith("segmentation"):
+            seg_builder = sm.Seg_model_builder(
+                cfg.model.name,
+                self.data.x.fields_input_shape,
+                self.data.y.classes,
+                self.data.x.n_layer,
+                self.data.x.xco2_noisy_chans,
+                cfg.model.dropout_rate,
+            )
+            self.model = seg_builder.get_model()
+        elif cfg.model.type == "embedding":
+            reg_builder = rm.Reg_model_builder(
+                name=cfg.model.name,
+                input_shape=self.data.x.fields_input_shape,
+                n_layer=self.data.x.n_layer,
+                noisy_chans=self.data.x.xco2_noisy_chans,
+                config=cfg,
+                load_weights=cfg.load_weights
+            )
+            self.model = reg_builder.get_model()
+
+        elif cfg.model.type == "inversion":
+            reg_builder = rm.Reg_model_builder(
+                cfg.model.name,
+                self.data.x.fields_input_shape,
+                self.data.y.classes,
+                self.data.x.n_layer,
+                self.data.x.xco2_noisy_chans,
+                cfg.model.dropout_rate,
+                cfg.model.scaling_coefficient,
+                self.data.x.window_length,
+                cfg,
+                cfg.load_weights
+            )
+            self.model = reg_builder.get_model()
         else:
-            if cfg.model.type.startswith("segmentation"):
-                seg_builder = sm.Seg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
-                    self.data.y.classes,
-                    self.data.x.n_layer,
-                    self.data.x.xco2_noisy_chans,
-                    cfg.model.dropout_rate,
-                )
-                self.model = seg_builder.get_model()
-            elif cfg.model.type == "embedding":
-                reg_builder = rm.Reg_model_builder(
-                    name=cfg.model.name,
-                    input_shape=self.data.x.fields_input_shape,
-                    n_layer=self.data.x.n_layer,
-                    noisy_chans=self.data.x.xco2_noisy_chans,
-                    config=cfg
-                )
-                self.model = reg_builder.get_model()
+            print(f"Unknown model type: {cfg.model.type}")
+            sys.exit()
 
-            elif cfg.model.type == "inversion":
-                reg_builder = rm.Reg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
-                    self.data.y.classes,
-                    self.data.x.n_layer,
-                    self.data.x.xco2_noisy_chans,
-                    cfg.model.dropout_rate,
-                    cfg.model.scaling_coefficient,
-                    self.data.x.window_length,
-                    cfg
-                )
-                self.model = reg_builder.get_model()
-            else:
-                print(f"Unknown model type: {cfg.model.type}")
-                sys.exit()
-
-            if cfg.model.custom_model:
-                self.model.compile(
-                    optimizer=optimisers.define_optimiser(
-                        cfg.training.optimiser, cfg.training.learning_rate
-                    ),
-                    metrics=loss.define_metrics(cfg.model.type),
-                    run_eagerly=True,
-                )
-            else:
-                self.model.compile(
-                    optimizer=optimisers.define_optimiser(
-                        cfg.training.optimiser, cfg.training.learning_rate
-                    ),
-                    loss=loss.define_loss(cfg.model.loss_func),
-                    metrics=loss.define_metrics(cfg.model.type),
-                    run_eagerly=True,
-                )
+        if cfg.model.custom_model:
+            self.model.compile(
+                optimizer=optimisers.define_optimiser(
+                    cfg.training.optimiser, cfg.training.learning_rate
+                ),
+                metrics=loss.define_metrics(cfg.model.type),
+                run_eagerly=True,
+            )
+        else:
+            self.model.compile(
+                optimizer=optimisers.define_optimiser(
+                    cfg.training.optimiser, cfg.training.learning_rate
+                ),
+                loss=loss.define_loss(cfg.model.loss_func),
+                metrics=loss.define_metrics(cfg.model.type),
+                run_eagerly=True,
+            )
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""

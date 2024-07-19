@@ -207,6 +207,7 @@ class Reg_model_builder:
     scaling_coefficient: float = 1
     window_length: int = 0
     config: DictConfig = None
+    load_weights: str = ""
 
     def get_model(self):
         """Return regression model, keras or locals."""
@@ -217,23 +218,28 @@ class Reg_model_builder:
             bottom_layers = BottomLayers(
                 self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
         top_layers = TopLayers(self.classes, self.name)
-        core_model = get_core_model(
-            self.name,
-            self.input_shape,
-            self.classes,
-            self.dropout_rate,
-            self.scaling_coefficient,
-            bottom_layers,
-            top_layers,
-            self.config
-
-        )
-        if self.config.model.custom_model:
-            return core_model
+        if self.load_weights != "":
+            core_model = tf.keras.models.load_model(self.load_weights)
+            if self.config.model.custom_model:
+                core_model.bottom_layers = bottom_layers
+                core_model.top_layers = top_layers
         else:
+            core_model = get_core_model(
+                self.name,
+                self.input_shape,
+                self.classes,
+                self.dropout_rate,
+                self.scaling_coefficient,
+                bottom_layers,
+                top_layers,
+                self.config
+            )
+        if not self.config.model.custom_model:
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)
             x = core_model(x)
             outputs = top_layers(x)
             return tf.keras.Model(inputs, outputs)
+        else:
+            return core_model
