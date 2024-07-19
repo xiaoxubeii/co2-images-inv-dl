@@ -218,7 +218,7 @@ class Reg_model_builder:
             bottom_layers = BottomLayers(
                 self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
         top_layers = TopLayers(self.classes, self.name)
-        if self.load_weights != "":
+        if self.load_weights:
             core_model = tf.keras.models.load_model(self.load_weights)
             if self.config.model.custom_model:
                 core_model.bottom_layers = bottom_layers

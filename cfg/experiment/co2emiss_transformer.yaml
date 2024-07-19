@@ -26,9 +26,6 @@ data:
         chan_2: u_wind
         chan_3: None
         chan_4: None
-callbacks:
-    model_checkpoint: true
-    early_stopping: true
 training:
     max_epochs: 1
     batch_size: 8

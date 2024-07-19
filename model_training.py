@@ -35,7 +35,7 @@ class Trainer:
 
     def train_model(self, model: tf.keras.Model, data: Data_train) -> tf.keras.Model:
         valid_data = None
-        if data.x.valid_data:
+        if data.x.valid_data is not None and len(data.x.valid_data) > 0:
             valid_data = (
                 data.x.valid_data[data.x.valid_data_indexes], data.y.valid_data[data.y.valid_data_indexes])
             if hasattr(self.generator, "get_valid_data"):

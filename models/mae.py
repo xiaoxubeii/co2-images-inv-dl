@@ -411,7 +411,6 @@ class MaskedAutoencoder(keras.Model):
             for g, v in zip(grad, var):
                 tv_list.append((g, v))
         self.optimizer.apply_gradients(tv_list)
-        self.loss_tracker.update_state(total_loss)
         # Report progress.
         # self.compiled_metrics.update_state(loss_patch, loss_output)
         self.loss_tracker.update_state(total_loss)
