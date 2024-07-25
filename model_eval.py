@@ -309,8 +309,11 @@ def get_inversion_model(
     optimiser: str = "adam",
     loss=tf.keras.losses.MeanAbsoluteError(),
 ):
-    model = tf.keras.models.load_model(
-        os.path.join(dir_res, name_w), compile=False)
+    if name_w:
+        model_path = os.path.join(dir_res, name_w)
+    else:
+        model_path = dir_res
+    model = tf.keras.models.load_model(model_path, compile=False)
     model.compile(optimiser, loss=loss)
     return model
 
@@ -319,7 +322,11 @@ def get_inversion_model_from_weights(dir_res, name_w="w_last.weights.h5", cfg: O
     if cfg is None:
         cfg = OmegaConf.load(os.path.join(dir_res, "config.yaml"))
     model = Model_training_manager(cfg).model
-    model.load_weights(os.path.join(dir_res, name_w))
+    if name_w:
+        model_path = os.path.join(dir_res, name_w)
+    else:
+        model_path = dir_res
+    model.load_weights(model_path)
     return model
 
 
