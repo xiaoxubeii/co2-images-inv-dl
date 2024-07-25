@@ -16,7 +16,7 @@ NORM_EPSILON = 1e-5
 
 @keras.saving.register_keras_serializable()
 class EmissionPredictor(keras.Model):
-    def __init__(self, image_size, embedding_layer, bottom_layers, **kwargs):
+    def __init__(self, image_size, embedding_layer, bottom_layers=None, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
         self.embedding_layer.patch_encoder.downstream = True

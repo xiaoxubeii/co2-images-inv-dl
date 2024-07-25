@@ -313,7 +313,7 @@ class MaskedAutoencoder(keras.Model):
         test_augmentation_model,
         patch_size,
         image_size,
-        bottom_layers,
+        bottom_layers=None,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -345,7 +345,6 @@ class MaskedAutoencoder(keras.Model):
                 "image_size": self.image_size,
                 "train_augmentation_model": keras.saving.serialize_keras_object(self.train_augmentation_model),
                 "test_augmentation_model": keras.saving.serialize_keras_object(self.test_augmentation_model),
-                "bottom_layers": keras.saving.serialize_keras_object(self.bottom_layers),
             }
         )
         return config
@@ -436,7 +435,7 @@ class MaskedAutoencoder(keras.Model):
 
     @classmethod
     def from_config(cls, config):
-        for k in ["train_augmentation_model", "test_augmentation_model", "bottom_layers"]:
+        for k in ["train_augmentation_model", "test_augmentation_model"]:
             config[k] = keras.saving.deserialize_keras_object(config[k])
         return cls(**config)
 
