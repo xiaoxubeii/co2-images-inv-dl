@@ -10,7 +10,7 @@ import sys
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from model_training import Model_training_manager
+# from model_training import Model_training_manager
 import tensorflow as tf
 import os
 
@@ -20,7 +20,6 @@ def main_train(cfg: DictConfig):
     print("\n \n \n \n \n Run begins \n \n \n \n \n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
 
-    print(os.environ)
     # Detect TPU, return appropriate distribution strategy
     try:
         tpu = tf.distribute.cluster_resolver.TPUClusterResolver(tpu="local")
@@ -37,12 +36,12 @@ def main_train(cfg: DictConfig):
 
     print("REPLICAS: ", strategy.num_replicas_in_sync)
 
-    with tpu.scope():
-        model_trainer = Model_training_manager(cfg)
-    val_loss = model_trainer.run()
-    model_trainer.save()
-    print("\n \n \n \n \n Run ends \n \n \n \n \n")
-    return val_loss
+    # with tpu.scope():
+    #     model_trainer = Model_training_manager(cfg)
+    # val_loss = model_trainer.run()
+    # model_trainer.save()
+    # print("\n \n \n \n \n Run ends \n \n \n \n \n")
+    # return val_loss
 
 
 if __name__ == "__main__":
