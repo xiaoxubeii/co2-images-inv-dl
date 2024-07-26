@@ -11,6 +11,7 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 
 from model_training import Model_training_manager
+import tensorflow as tf
 
 
 @hydra.main(config_path="cfg", config_name="config")
