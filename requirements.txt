@@ -1,3 +1,4 @@
+xarray[complete]
 hydra-core
 numpy
 joblib
@@ -5,7 +6,6 @@ matplotlib
 pandas
 seaborn
 tensorflow~=2.16.0
-xarray[complete]
 cmcrameri
 scipy
 scikit-learn
