@@ -11,7 +11,7 @@ scipy
 scikit-learn
 treeconfigparser
 wandb
-# netcdf4
+netcdf4
 keras_applications
 pympler
 keras_nlp
