@@ -2,10 +2,6 @@ import math
 import re
 import os
 import tensorflow as tf
-import numpy as np
-from matplotlib import pyplot as plt
-from kaggle_datasets import KaggleDatasets
-from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 print("Tensorflow version " + tf.__version__)
 AUTO = tf.data.experimental.AUTOTUNE
 
