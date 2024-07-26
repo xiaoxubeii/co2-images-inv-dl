@@ -393,7 +393,6 @@ class MaskedAutoencoder(keras.Model):
         return total_loss, loss_patch, loss_output
 
     def train_step(self, images):
-        print(111111111)
         if isinstance(images, tuple):
             images = images[0]
         with tf.GradientTape() as tape:
