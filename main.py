@@ -36,7 +36,7 @@ def main_train(cfg: DictConfig):
 
     print("REPLICAS: ", strategy.num_replicas_in_sync)
 
-    with tpu.scope():
+    with strategy.scope():
         model_trainer = Model_training_manager(cfg)
     val_loss = model_trainer.run()
     model_trainer.save()
