@@ -119,59 +119,58 @@ class Model_training_manager:
     def build_model(self, cfg: DictConfig) -> None:
         """Build the inversion or segmentation model."""
         # Detect TPU, return appropriate distribution strategy
-        try:
-            tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
-            print('Running on TPU ', tpu.master())
-        except ValueError:
-            tpu = None
+        # try:
+        #     tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
+        #     print('Running on TPU ', tpu.master())
+        # except ValueError:
+        #     tpu = None
 
-        if tpu:
-            tf.config.experimental_connect_to_cluster(tpu)
-            tf.tpu.experimental.initialize_tpu_system(tpu)
-            strategy = tf.distribute.experimental.TPUStrategy(tpu)
+        # if tpu:
+        #     tf.config.experimental_connect_to_cluster(tpu)
+        #     tf.tpu.experimental.initialize_tpu_system(tpu)
+        #     strategy = tf.distribute.experimental.TPUStrategy(tpu)
+        # else:
+        #     strategy = tf.distribute.get_strategy()
+
+        # with strategy.scope():
+        if cfg.model.type.startswith("segmentation"):
+            seg_builder = sm.Seg_model_builder(
+                cfg.model.name,
+                self.data.x.fields_input_shape,
+                self.data.y.classes,
+                self.data.x.n_layer,
+                self.data.x.xco2_noisy_chans,
+                cfg.model.dropout_rate,
+            )
+            self.model = seg_builder.get_model()
+        elif cfg.model.type == "embedding":
+            reg_builder = rm.Reg_model_builder(
+                name=cfg.model.name,
+                input_shape=self.data.x.fields_input_shape,
+                n_layer=self.data.x.n_layer,
+                noisy_chans=self.data.x.xco2_noisy_chans,
+                config=cfg,
+                load_weights=cfg.load_weights
+            )
+            self.model = reg_builder.get_model()
+
+        elif cfg.model.type == "inversion":
+            reg_builder = rm.Reg_model_builder(
+                cfg.model.name,
+                self.data.x.fields_input_shape,
+                self.data.y.classes,
+                self.data.x.n_layer,
+                self.data.x.xco2_noisy_chans,
+                cfg.model.dropout_rate,
+                cfg.model.scaling_coefficient,
+                self.data.x.window_length,
+                cfg,
+                cfg.load_weights
+            )
+            self.model = reg_builder.get_model()
         else:
-            strategy = tf.distribute.get_strategy()
-
-        with strategy.scope():
-
-            if cfg.model.type.startswith("segmentation"):
-                seg_builder = sm.Seg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
-                    self.data.y.classes,
-                    self.data.x.n_layer,
-                    self.data.x.xco2_noisy_chans,
-                    cfg.model.dropout_rate,
-                )
-                self.model = seg_builder.get_model()
-            elif cfg.model.type == "embedding":
-                reg_builder = rm.Reg_model_builder(
-                    name=cfg.model.name,
-                    input_shape=self.data.x.fields_input_shape,
-                    n_layer=self.data.x.n_layer,
-                    noisy_chans=self.data.x.xco2_noisy_chans,
-                    config=cfg,
-                    load_weights=cfg.load_weights
-                )
-                self.model = reg_builder.get_model()
-
-            elif cfg.model.type == "inversion":
-                reg_builder = rm.Reg_model_builder(
-                    cfg.model.name,
-                    self.data.x.fields_input_shape,
-                    self.data.y.classes,
-                    self.data.x.n_layer,
-                    self.data.x.xco2_noisy_chans,
-                    cfg.model.dropout_rate,
-                    cfg.model.scaling_coefficient,
-                    self.data.x.window_length,
-                    cfg,
-                    cfg.load_weights
-                )
-                self.model = reg_builder.get_model()
-            else:
-                print(f"Unknown model type: {cfg.model.type}")
-                sys.exit()
+            print(f"Unknown model type: {cfg.model.type}")
+            sys.exit()
 
         if cfg.model.custom_model:
             self.model.compile(
