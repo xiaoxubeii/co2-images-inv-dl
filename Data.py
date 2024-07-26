@@ -401,9 +401,10 @@ class Output_train:
 def concat_dataset(data_dir, datasets):
     rs_ds = []
     for d in datasets:
-        with xr.open_dataset(os.path.join(data_dir, d.name, d.nc)) as ds:
+        with xr.open_dataset(os.path.join(data_dir, d.name, d.nc), engine='h5netcdf') as ds:
             rs_ds.append(ds)
     return xr.concat(rs_ds, dim='idx_img')
+
 
 @ dataclass
 class Data_train:
