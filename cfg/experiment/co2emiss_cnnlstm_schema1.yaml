@@ -20,12 +20,18 @@ data:
   path:
     directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
     train:
-      - name: boxberg
+      - name: all_hotspots_but_box
         nc: train_dataset.nc
+      - name: all_hotspots_but_box
+        nc: test_dataset.nc
     valid:
-      - name: boxberg
+      - name: all_hotspots_but_box
         nc: valid_dataset.nc
     test:
+      - name: boxberg
+        nc: train_dataset.nc
+      - name: boxberg
+        nc: valid_dataset.nc
       - name: boxberg
         nc: test_dataset.nc
 dir_res: res/${model.type}
