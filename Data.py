@@ -399,12 +399,14 @@ class Output_train:
 
 
 def concat_dataset(data_dir, datasets):
-    ds = [xr.open_dataset(os.path.join(data_dir, d.name, d.nc))
-          for d in datasets]
-    return xr.concat(ds, dim='idx_img')
+    rs_ds = []
+    for d in datasets:
+        with xr.open_dataset(os.path.join(data_dir, d.name, d.nc)) as ds:
+            rs_ds.append(ds)
+    return xr.concat(rs_ds, dim='idx_img')
 
 
-@dataclass
+@ dataclass
 class Data_train:
     """Object for containing Input and Output data and all other informations."""
 
@@ -479,7 +481,7 @@ class Data_train:
         self.y.get_inversion(N_hours_prec=N_hours_prec)
 
 
-@dataclass
+@ dataclass
 class Input_eval:
     """Prepare and store train and valid inputs."""
 
@@ -525,7 +527,7 @@ class Input_eval:
         self.n_layer.adapt(self.eval_data)
 
 
-@dataclass
+@ dataclass
 class Output_eval:
     """Prepare and store train and valid outputs."""
 
@@ -546,7 +548,7 @@ class Output_eval:
                                                  self.window_length, self.shift)
 
 
-@dataclass
+@ dataclass
 class Data_eval:
     data_dir: str
     path_eval_nc: str
@@ -597,7 +599,7 @@ class Data_eval:
         self.y.get_inversion(N_hours_prec=N_hours_prec)
 
 
-@hydra.main(config_path="cfg", config_name="config")
+@ hydra.main(config_path="cfg", config_name="config")
 def estimate_data_size(cfg: DictConfig):
     data = instantiate(cfg.data.init)
     data.prepare_input(
