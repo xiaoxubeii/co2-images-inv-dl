@@ -92,7 +92,6 @@ class Generator:
         return self.train_generator
 
     def next(self):
-        print(1111)
         return self.image_generator.next(), self.mask_generator.next()
 
     def get_valid_data(self):

@@ -20,24 +20,7 @@ def main_train(cfg: DictConfig):
     print("\n \n \n \n \n Run begins \n \n \n \n \n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
 
-    # Detect TPU, return appropriate distribution strategy
-    try:
-        tpu = tf.distribute.cluster_resolver.TPUClusterResolver(tpu="local")
-        print('Running on TPU ', tpu.master())
-    except ValueError:
-        tpu = None
-
-    if tpu:
-        tf.config.experimental_connect_to_cluster(tpu)
-        tf.tpu.experimental.initialize_tpu_system(tpu)
-        strategy = tf.distribute.experimental.TPUStrategy(tpu)
-    else:
-        strategy = tf.distribute.get_strategy()
-
-    print("REPLICAS: ", strategy.num_replicas_in_sync)
-
-    with strategy.scope():
-        model_trainer = Model_training_manager(cfg)
+    model_trainer = Model_training_manager(cfg)
     val_loss = model_trainer.run()
     model_trainer.save()
     print("\n \n \n \n \n Run ends \n \n \n \n \n")
