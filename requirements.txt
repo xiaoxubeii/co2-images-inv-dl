@@ -5,7 +5,7 @@ joblib
 matplotlib
 pandas
 seaborn
-tensorflow~=2.16.0
+tensorflow>=2.16.0
 cmcrameri
 scipy
 scikit-learn
