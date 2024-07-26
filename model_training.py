@@ -177,9 +177,7 @@ class Model_training_manager:
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
                 ),
-                metrics=loss.define_metrics(cfg.model.type),
-                run_eagerly=True,
-            )
+                metrics=loss.define_metrics(cfg.model.type),)
         else:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
