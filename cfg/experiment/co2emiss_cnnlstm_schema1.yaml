@@ -38,8 +38,12 @@ dir_res: res/${model.type}
 seed: 42
 sweep: true
 callbacks:
-  model_checkpoint: true
-  early_stopping: true
+  model_checkpoint:
+    monitor: val_loss
+  early_stopping:
+    monitor: val_loss
+  learning_rate_monitor:
+    monitor: val_loss
 wandb:
   project_name: co2-emission-estimation
   key: 69fea85817147f437d88815d733f3e2ed9799c12
