@@ -4,7 +4,7 @@ joblib
 matplotlib
 pandas
 seaborn
-tensorflow~=2.16
+tensorflow~=2.16.0
 xarray[complete]
 cmcrameri
 scipy
