@@ -10,16 +10,16 @@ data:
     cutoff_size: 64
   path:
     train:
-      - name: all_hotspots_but_box
-        nc: train_dataset.nc
-      - name: all_hotspots_but_box
-        nc: valid_dataset.nc
-      - name: all_hotspots_but_box
-        nc: test_dataset.nc
-      - name: boxberg
-        nc: train_dataset.nc
-      - name: boxberg
-        nc: valid_dataset.nc
+      # - name: all_hotspots_but_box
+      #   nc: train_dataset.nc
+      # - name: all_hotspots_but_box
+      #   nc: valid_dataset.nc
+      # - name: all_hotspots_but_box
+      #   nc: test_dataset.nc
+      # - name: boxberg
+      #   nc: train_dataset.nc
+      # - name: boxberg
+      #   nc: valid_dataset.nc
       - name: boxberg
         nc: test_dataset.nc
   input:

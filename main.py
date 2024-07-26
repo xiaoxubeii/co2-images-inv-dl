@@ -18,7 +18,16 @@ import tensorflow as tf
 def main_train(cfg: DictConfig):
     print("\n \n \n \n \n Run begins \n \n \n \n \n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
-    model_trainer = Model_training_manager(cfg)
+
+    # with strategy.scope():
+    # detect and init the TPU
+    tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
+
+    # instantiate a distribution strategy
+    tf.tpu.experimental.initialize_tpu_system(tpu)
+    tpu_strategy = tf.distribute.TPUStrategy(tpu)
+    with tpu_strategy.scope():
+        model_trainer = Model_training_manager(cfg)
     val_loss = model_trainer.run()
     model_trainer.save()
     print("\n \n \n \n \n Run ends \n \n \n \n \n")
