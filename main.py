@@ -12,6 +12,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from model_training import Model_training_manager
 import tensorflow as tf
+import os
 
 
 @hydra.main(config_path="cfg", config_name="config")
@@ -19,6 +20,7 @@ def main_train(cfg: DictConfig):
     print("\n \n \n \n \n Run begins \n \n \n \n \n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
 
+    print(os.environ)
     # Detect TPU, return appropriate distribution strategy
     try:
         tpu = tf.distribute.cluster_resolver.TPUClusterResolver(tpu="local")
