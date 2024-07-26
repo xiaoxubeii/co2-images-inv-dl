@@ -4,14 +4,13 @@ joblib
 matplotlib
 pandas
 seaborn
-tensorflow>=2.16.0
+tensorflow~=2.16
 xarray[complete]
 cmcrameri
 scipy
 scikit-learn
 treeconfigparser
 wandb
-# netcdf4
 keras_applications
 pympler
 keras_nlp
