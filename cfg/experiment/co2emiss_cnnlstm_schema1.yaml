@@ -18,7 +18,6 @@ data:
     chan_3: None
     chan_4: None
   path:
-    directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
     train:
       - name: all_hotspots_but_box
         nc: train_dataset.nc
