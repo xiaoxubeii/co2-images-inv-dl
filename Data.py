@@ -405,7 +405,6 @@ def concat_dataset(data_dir, datasets):
             rs_ds.append(ds)
     return xr.concat(rs_ds, dim='idx_img')
 
-
 @ dataclass
 class Data_train:
     """Object for containing Input and Output data and all other informations."""
