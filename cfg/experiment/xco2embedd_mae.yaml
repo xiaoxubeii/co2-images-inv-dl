@@ -20,6 +20,8 @@ data:
         nc: train_dataset.nc
       - name: boxberg
         nc: valid_dataset.nc
+      - name: boxberg
+        nc: test_dataset.nc
   input:
     chan_0: xco2
     chan_1: v_wind
