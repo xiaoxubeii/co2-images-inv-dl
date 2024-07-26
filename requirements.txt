@@ -5,13 +5,13 @@ matplotlib
 pandas
 seaborn
 tensorflow>=2.16.0
-xarray
+xarray[complete]
 cmcrameri
 scipy
 scikit-learn
 treeconfigparser
 wandb
-netcdf4
+# netcdf4
 keras_applications
 pympler
 keras_nlp
