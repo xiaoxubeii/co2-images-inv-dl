@@ -33,6 +33,9 @@ training:
   max_epochs: 1
   batch_size: 32
 
+model:
+  patch_size: 16
+
 sweep: true
 wandb:
   project_name: co2-emission-estimation

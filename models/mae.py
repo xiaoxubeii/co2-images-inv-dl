@@ -350,7 +350,6 @@ class MaskedAutoencoder(keras.Model):
         return config
 
     def calculate_loss(self, images, test=False):
-        import pdb;pdb.set_trace()
         if self.bottom_layers:
             images = self.bottom_layers(images)
         # Augment the input images.

@@ -26,6 +26,7 @@ from models.cnn_lstm import cnn_lstm
 from models.mae import mae, autoencoder
 from models.vae import vae
 from models.co2emission_transformer import emission_predictor
+from models.co2emiss_regression import co2emiss_regres
 
 
 def get_preprocessing_layers(
@@ -174,6 +175,11 @@ def get_core_model(
     elif name == "xco2embedd-mae":
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
                          patch_size=config.model.patch_size, bottom_layers=bottom_layers)
+    elif name == "co2emiss-regres":
+        xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
+        xco2_emd.patch_encoder.downstream = True
+        xco2_emd.freeze_all_layers()
+        core_model = co2emiss_regres(input_shape, xco2_emd)
     # elif name == "xco2_ae":
     #     core_model = autoencoder(input_shape=input_shape)
     # elif name == "xco2_vae":
