@@ -19,12 +19,12 @@ data:
     chan_4: None
   path:
     train:
-      - name: all_hotspots_but_box
+      - name: all_hotspots_but_box_reduced
         nc: train_dataset.nc
-      - name: all_hotspots_but_box
+      - name: all_hotspots_but_box_reduced
         nc: test_dataset.nc
     valid:
-      - name: all_hotspots_but_box
+      - name: all_hotspots_but_box_reduced
         nc: valid_dataset.nc
     test:
       - name: boxberg
@@ -33,6 +33,7 @@ data:
         nc: valid_dataset.nc
       - name: boxberg
         nc: test_dataset.nc
+
 dir_res: res/${model.type}
 seed: 42
 sweep: true
