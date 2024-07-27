@@ -23,8 +23,10 @@ class EmissionPredictor(keras.Model):
         self.bottom_layers = bottom_layers
         self.image_size = image_size
         self.mae_metric = keras.metrics.MeanAbsoluteError()
+        self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
         self.mape_loss = keras.losses.MeanAbsolutePercentageError()
+        self.mae_loss = keras.losses.MeanAbsoluteError()
 
     def build(self, input_shape):
         self.flatten = keras.layers.Flatten()
@@ -71,7 +73,7 @@ class EmissionPredictor(keras.Model):
         # loss1 = keras.losses.MeanSquaredError()(o1_y, o1)
 
         o2 = self.predictor(o1)
-        loss2 = self.mape_loss(y2, o2)
+        loss2 = self.mae_loss(y2, o2)
         # return 0.8*loss1+0.2*loss2, y2, o2
         return loss2, y2, o2
 
@@ -93,10 +95,11 @@ class EmissionPredictor(keras.Model):
 
         self.loss_tracker.update_state(total_loss)
         self.mae_metric.update_state(loss_y, loss_pred)
+        self.mape_metric.update_state(loss_y, loss_pred)
         # Report progress.
         # self.compiled_metrics.update_state(loss_y, loss_pred)
         # return {m.name: m.result() for m in self.metrics}
-        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result()}
+        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
 
     def test_step(self, inputs):
         total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
@@ -105,7 +108,8 @@ class EmissionPredictor(keras.Model):
         # return {m.name: m.result() for m in self.metrics}
         self.loss_tracker.update_state(total_loss)
         self.mae_metric.update_state(loss_y, loss_pred)
-        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result()}
+        self.mape_metric.update_state(loss_y, loss_pred)
+        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
 
     def do_embedding(self, input):
         outputs = keras.layers.Resizing(
@@ -148,7 +152,7 @@ class EmissionPredictor(keras.Model):
         # or at the start of `evaluate()`.
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
-        return [self.loss_tracker, self.mae_metric]
+        return [self.loss_tracker, self.mae_metric, self.mape_metric]
 
 
 @keras.saving.register_keras_serializable()
