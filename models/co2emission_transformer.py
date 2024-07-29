@@ -22,11 +22,12 @@ class EmissionPredictor(keras.Model):
         self.embedding_layer.patch_encoder.downstream = True
         self.bottom_layers = bottom_layers
         self.image_size = image_size
-        self.mae_metric = keras.metrics.MeanAbsoluteError()
-        self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
+        # self.mae_metric = keras.metrics.MeanAbsoluteError()
+        # self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
-        self.mape_loss = keras.losses.MeanAbsolutePercentageError()
-        self.mae_loss = keras.losses.MeanAbsoluteError()
+        self.mse_loss = keras.losses.MeanSquaredError()
+        # self.mape_loss = keras.losses.MeanAbsolutePercentageError()
+        # self.mae_loss = keras.losses.MeanAbsoluteError()
 
     def build(self, input_shape):
         self.flatten = keras.layers.Flatten()
@@ -52,15 +53,15 @@ class EmissionPredictor(keras.Model):
         self.emiss_trans = EmissTransformer(
             embedding_shape[1]*embedding_shape[2])
         outputs = self.emiss_trans(inputs)
-        self.predictor(outputs)
+        # self.predictor(outputs)
 
     def call(self, inputs):
         x = inputs
         if self.bottom_layers is not None:
             x = self.bottom_layers(inputs)
         x = self.embedding(x)
-        outputs = self.emiss_trans(x)
-        return self.predictor(outputs)
+        return self.emiss_trans(x)
+        # return self.predictor(outputs)
 
     def calculate_loss(self, inputs):
         x, y1, y2 = inputs[0], inputs[1], inputs[2]
@@ -70,12 +71,12 @@ class EmissionPredictor(keras.Model):
         o1 = self.embedding(x)
         o1 = self.emiss_trans(o1)
         o1_y = self.do_embedding(y1)
-        # loss1 = keras.losses.MeanSquaredError()(o1_y, o1)
+        loss1 = self.mse_loss(o1_y, o1)
 
-        o2 = self.predictor(o1)
-        loss2 = self.mae_loss(y2, o2)
+        # o2 = self.predictor(o1)
+        # loss2 = self.mae_loss(y2, o2)
         # return 0.8*loss1+0.2*loss2, y2, o2
-        return loss2, y2, o2
+        return loss1, o1_y, o1
 
     def train_step(self, inputs):
         with tf.GradientTape() as tape:
@@ -94,12 +95,13 @@ class EmissionPredictor(keras.Model):
         self.optimizer.apply_gradients(tv_list)
 
         self.loss_tracker.update_state(total_loss)
-        self.mae_metric.update_state(loss_y, loss_pred)
-        self.mape_metric.update_state(loss_y, loss_pred)
+        # self.mae_metric.update_state(loss_y, loss_pred)
+        # self.mape_metric.update_state(loss_y, loss_pred)
         # Report progress.
         # self.compiled_metrics.update_state(loss_y, loss_pred)
         # return {m.name: m.result() for m in self.metrics}
-        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+        # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+        return {"loss": self.loss_tracker.result()}
 
     def test_step(self, inputs):
         total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
@@ -107,9 +109,10 @@ class EmissionPredictor(keras.Model):
         # self.compiled_metrics.update_state(loss_y, loss_pred)
         # return {m.name: m.result() for m in self.metrics}
         self.loss_tracker.update_state(total_loss)
-        self.mae_metric.update_state(loss_y, loss_pred)
-        self.mape_metric.update_state(loss_y, loss_pred)
-        return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+        # self.mae_metric.update_state(loss_y, loss_pred)
+        # self.mape_metric.update_state(loss_y, loss_pred)
+        # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+        return {"loss": self.loss_tracker.result()}
 
     def do_embedding(self, input):
         outputs = keras.layers.Resizing(
@@ -152,7 +155,7 @@ class EmissionPredictor(keras.Model):
         # or at the start of `evaluate()`.
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
-        return [self.loss_tracker, self.mae_metric, self.mape_metric]
+        return [self.loss_tracker]
 
 
 @keras.saving.register_keras_serializable()
