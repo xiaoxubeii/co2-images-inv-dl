@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+    - override /model: co2emiss_regres
+    - override /data/output: inversion
+    - override /data/input: inversion
+
+wandb:
+    project_name: co2-emission-estimation
+    key: 69fea85817147f437d88815d733f3e2ed9799c12
