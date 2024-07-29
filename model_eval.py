@@ -480,7 +480,7 @@ def get_summary_histo_inversion1(metrics):
         ax.set_xlabel(titles[i_ax])
         plt.setp(ax.get_legend().get_texts(), fontsize='4')  # for legend text
         ax.get_legend().set_loc("upper center")
-        ax.get_legend().set_bbox_to_anchor((0.5, 1.4))
+        ax.get_legend().set_bbox_to_anchor((0.5, 1.3))
 
     return fig
 
