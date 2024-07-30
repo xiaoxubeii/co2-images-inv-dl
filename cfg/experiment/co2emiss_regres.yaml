@@ -17,15 +17,20 @@ data:
     chan_4: None
   path:
     train:
+      - name: all_hotspots_but_box
+        nc: train_dataset.nc
       - name: boxberg
         nc: train_dataset.nc
     valid:
+      - name: all_hotspots_but_box
+        nc: valid_dataset.nc
       - name: boxberg
         nc: valid_dataset.nc
     test:
+      - name: all_hotspots_but_box
+        nc: test_dataset.nc
       - name: boxberg
         nc: test_dataset.nc
-
 dir_res: res/${model.type}
 seed: 42
 sweep: true
