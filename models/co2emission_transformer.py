@@ -128,7 +128,8 @@ class EmissionPredictor(keras.Model):
         return self.flatten(embedding)
 
     def embedding(self, inputs):
-        embedding = tf.map_fn(lambda x: self.do_embedding(x), inputs)
+        embedding = tf.map_fn(lambda x: self.do_embedding(
+            x), inputs, swap_memory=True)
         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
         return embedding + positional_encoding
 

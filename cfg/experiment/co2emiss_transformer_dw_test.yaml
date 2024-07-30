@@ -1,0 +1,35 @@
+# @package _global_
+
+defaults:
+    - override /model: co2emiss_transformer
+    - override /data/output: inversion
+    - override /data/input: inversion
+
+data:
+    init:
+        window_length: 7
+        shift: 12
+    path:
+        train:
+            - name: boxberg
+              nc: train_dataset.nc
+        valid:
+            - name: boxberg
+              nc: valid_dataset.nc
+        test:
+            - name: boxberg
+              nc: test_dataset.nc
+    input:
+        chan_0: xco2_prec
+        chan_1: v_wind
+        chan_2: u_wind
+        chan_3: None
+        chan_4: None
+training:
+    max_epochs: 1
+    batch_size: 8
+
+sweep: true
+wandb:
+    project_name: co2-emission-estimation
+    key: 69fea85817147f437d88815d733f3e2ed9799c12

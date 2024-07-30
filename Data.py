@@ -391,6 +391,7 @@ class Output_train:
         """Get inversion train and valid."""
         self.train_data, self.train_data_indexes = get_emiss(self.ds_train, N_hours_prec,
                                                              window_length=self.window_length, shift=self.shift)
+
         if self.ds_valid is not None:
             self.valid_data, self.valid_data_indexes = get_emiss(self.ds_valid, N_hours_prec,
                                                                  window_length=self.window_length, shift=self.shift)
