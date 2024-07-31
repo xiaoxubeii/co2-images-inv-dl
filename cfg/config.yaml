@@ -11,7 +11,10 @@ defaults:
           - wandb
     - hydra: default
 dir_res: res/${model.type}
-exp_name: ${model.name}_${now:%Y-%m-%d}_${now:%H-%M-%S}
+exp_name: ${model.name}-${now:%m%d%H%M}
 seed: 42
 sweep: false
 load_weights:
+wandb:
+    project_name: co2-emission-estimation
+    key: 69fea85817147f437d88815d733f3e2ed9799c12
