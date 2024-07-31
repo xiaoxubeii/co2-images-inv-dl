@@ -2,9 +2,7 @@ defaults:
   - init: default
   - input: inversion
   - output: inversion
+  - path: sch1
 
 path:
   directory: /Users/xiaoxubeii/Downloads/data_paper_inv_pp
-  train:
-  valid:
-  test:
