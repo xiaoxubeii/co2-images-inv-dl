@@ -290,6 +290,7 @@ class Model_training_manager:
             self.trainer.callbacks.append(WandbMetricsLogger())
             self.model = self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
+            run.save(os.path.abspath("w_best.keras"))
         return self.trainer.get_loss()
 
     def save(self) -> None:
