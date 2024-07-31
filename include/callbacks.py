@@ -209,17 +209,31 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
         return self._is_old_tf_keras_version
 
 
+# def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras", monitor="val_loss") -> list:
+#     """Add modelcheckpoint to callbacks list if get."""
+#     if get:
+#         modelcheckpoint_cb = WandbModelCheckpoint(
+#             filepath=filepath,
+#             save_weights_only=False,
+#             monitor=monitor,
+#             mode="auto",
+#             save_best_only=True,
+#             save_freq=int((trainloader.cardinality()*N).numpy()),
+#             verbose=1,
+#         )
+#         cbs.append(modelcheckpoint_cb)
+#     else:
+#         pass
+#     return cbs
+
 def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras", monitor="val_loss") -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
-        modelcheckpoint_cb = WandbModelCheckpoint(
+        modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(
             filepath=filepath,
-            save_weights_only=False,
             monitor=monitor,
-            mode="auto",
-            save_best_only=True,
-            verbose=1,
-        )
+            mode='auto',
+            save_best_only=True)
         cbs.append(modelcheckpoint_cb)
     else:
         pass
