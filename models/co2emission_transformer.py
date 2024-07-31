@@ -84,7 +84,6 @@ class EmissionPredictor(keras.Model):
 
          # Apply gradients.
         train_vars = [
-            self.predictor.trainable_variables,
             self.emiss_trans.trainable_variables,
         ]
         grads = tape.gradient(total_loss, train_vars)
