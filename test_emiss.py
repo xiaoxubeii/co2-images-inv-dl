@@ -8,6 +8,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 from models.co2emission_transformer import emission_ensembling
+from models.reg import BottomLayers
 
 
 def run_test(cfg: DictConfig):
@@ -25,9 +26,12 @@ def run_test(cfg: DictConfig):
         quantifier = model_eval.get_inversion_model(
             cfg.model.quantifier_path, name_w=None)
 
+        bottom_layers = BottomLayers(
+            data.x.n_layer, data.x.eval_data.shape[-1], data.x.xco2_noisy_chans, cfg.data.init.window_length)
         x_data = data.x.eval_data[data.x.eval_data_indexes]
         x = tf.convert_to_tensor(x_data, np.float32)
-        model = emission_ensembling(x_data.shape[1:], predictor, quantifier)
+        model = emission_ensembling(
+            x_data.shape[1:], predictor, quantifier, bottom_layers)
 
         pred = tf.convert_to_tensor(model.predict(x), np.float32)
         y = tf.convert_to_tensor(data.y.eval[data.y.eval_indexes], np.float32)

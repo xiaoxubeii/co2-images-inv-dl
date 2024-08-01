@@ -209,8 +209,10 @@ def emission_predictor(input_shape, image_size, embedding, bottom_layers):
     return predictor
 
 
-def emission_ensembling(input_shape, predictor, quantifier):
+def emission_ensembling(input_shape, predictor, quantifier, bottom_layers):
     inputs = keras.Input(shape=input_shape)
+    if bottom_layers is not None:
+        inputs = bottom_layers(inputs)
     x = predictor(inputs)
     outputs = quantifier(x)
     return keras.Model(inputs, outputs)

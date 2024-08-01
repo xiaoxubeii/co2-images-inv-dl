@@ -498,7 +498,6 @@ class Input_eval:
     shift: int = 0
 
     def __post_init__(self):
-
         self.list_chans = [
             self.chan_0,
             self.chan_1,
@@ -519,7 +518,8 @@ class Input_eval:
             self.list_chans,
         )
         self.fields_input_shape = list(shape[1:])
-        # self.get_norm_layer()
+        self.get_norm_layer()
+        self.xco2_noisy_chans = [False] * len(self.list_chans)
 
     def get_norm_layer(self):
         """Get normalisation layer and adapt it to data.x.train."""

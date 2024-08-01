@@ -6,6 +6,11 @@ defaults:
   - override /data/input: inversion
   - override /data/path: sch1
 
+data:
+  init:
+    window_length: 12
+    shift: 2
+
 model:
-  predictor_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-transf-win12-patch16/w_best.keras
+  predictor_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-transf-sch1-win12-patch16/w_best.keras
   quantifier_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-regres-patch16/w_best.keras
