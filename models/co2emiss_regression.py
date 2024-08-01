@@ -38,7 +38,5 @@ class EmissRegression(keras.Model):
     def call(self, inputs):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
-        import pdb
-        pdb.set_trace()
         x = self.embedding_layer(inputs)
         return self.quanifying(x)
