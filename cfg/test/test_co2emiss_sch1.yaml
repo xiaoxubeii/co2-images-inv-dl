@@ -4,7 +4,7 @@ defaults:
   - override /model: co2emiss_regres
   - override /data/output: inversion
   - override /data/input: inversion
-  - override /data/path: boxberg
+  - override /data/path: sch1
 
 model:
   predictor_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-transf-win12-patch16/w_best.keras
