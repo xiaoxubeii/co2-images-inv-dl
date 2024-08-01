@@ -279,9 +279,8 @@ def plot_segmentation_examples(
 #  Get functions
 
 
-def get_data_for_inversion(
-    dir_res: str, data_dir: str, path_eval_nc: str, cfg: OmegaConf = None
-) -> Data_eval:
+def get_data_for_inversion(data_dir: str, path_eval_nc: str, cfg: OmegaConf = None
+                           ) -> Data_eval:
     """Prepare Data_eval object with name_dataset."""
 
     if cfg is None:

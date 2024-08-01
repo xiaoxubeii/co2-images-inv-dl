@@ -3,12 +3,10 @@ train:
     nc: train_dataset.nc
   - name: boxberg
     nc: train_dataset.nc
-valid:
   - name: all_hotspots_but_box
     nc: valid_dataset.nc
   - name: boxberg
     nc: valid_dataset.nc
-test:
   - name: all_hotspots_but_box
     nc: test_dataset.nc
   - name: boxberg
