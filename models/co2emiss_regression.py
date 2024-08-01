@@ -19,7 +19,7 @@ class EmissRegression(keras.Model):
     def __init__(self, embedding_layer, bottom_layers, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
-        self.quanifying = keras.sequentail([
+        self.quanifying = keras.Sequential([
             keras.layers.Dense(1),
             keras.layers.LeakyReLU(alpha=0.3)
         ])
