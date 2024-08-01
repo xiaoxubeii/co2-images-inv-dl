@@ -4,45 +4,7 @@ defaults:
   - override /model: co2emiss_regres
   - override /data/output: inversion
   - override /data/input: inversion
+  - override /data/path: all
 
-data:
-  init:
-    cutoff_size: 64
-  input:
-    dir_seg_models: /cerea_raid/users/dumontj/dev/coco2/dl/res/models
-    chan_0: xco2
-    chan_1: u_wind
-    chan_2: v_wind
-    chan_3: None
-    chan_4: None
-  path:
-    train:
-      - name: all_hotspots_but_box
-        nc: train_dataset.nc
-      - name: boxberg
-        nc: train_dataset.nc
-    valid:
-      - name: all_hotspots_but_box
-        nc: valid_dataset.nc
-      - name: boxberg
-        nc: valid_dataset.nc
-    test:
-      - name: all_hotspots_but_box
-        nc: test_dataset.nc
-      - name: boxberg
-        nc: test_dataset.nc
-dir_res: res/${model.type}
-seed: 42
-sweep: true
-callbacks:
-  model_checkpoint:
-    monitor: val_loss
-  early_stopping:
-    monitor: val_loss
-  learning_rate_monitor:
-    monitor: val_loss
-wandb:
-  project_name: co2-emission-estimation
-  key: 69fea85817147f437d88815d733f3e2ed9799c12
 model:
   embedding_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras
