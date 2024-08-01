@@ -4,7 +4,7 @@ defaults:
   - override /model: co2emiss_regres
   - override /data/output: inversion
   - override /data/input: inversion
-  - override /data/path: all
+  - override /data/path: boxberg
 
 data:
   init:

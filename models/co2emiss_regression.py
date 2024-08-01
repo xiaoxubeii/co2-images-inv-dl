@@ -3,7 +3,6 @@ INTERMEDIATE_DIM = 512
 
 
 def co2emiss_regres(input_shape, embedding, bottom_layers, **kwargs):
-    inputs = keras.Input(shape=input_shape)
     pretrained_embedding_layer = keras.Sequential([
         embedding.patch_layer,
         embedding.patch_encoder,
@@ -20,9 +19,9 @@ class EmissRegression(keras.Model):
     def __init__(self, embedding_layer, bottom_layers, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
-        self.quanifying = keras.Sequential([
-            keras.layers.Dense(INTERMEDIATE_DIM, activation='relu'),
-            keras.layers.Dense(1, activation='linear')
+        self.quanifying = keras.sequentail([
+            keras.layers.Dense(1),
+            keras.layers.LeakyReLU(alpha=0.3)
         ])
         self.bottom_layers = bottom_layers
 
