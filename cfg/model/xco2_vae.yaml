@@ -1,3 +1,0 @@
-type: embedding
-name: xco2_vae
-loss_func: None

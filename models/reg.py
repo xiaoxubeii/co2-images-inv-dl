@@ -27,6 +27,7 @@ from models.mae import mae, autoencoder
 from models.vae import vae
 from models.co2emission_transformer import emission_predictor
 from models.co2emiss_regression import co2emiss_regres
+from models.co2emission_transformer import emission_ensembling
 
 
 def get_preprocessing_layers(
@@ -179,17 +180,18 @@ def get_core_model(
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
-        core_model = co2emiss_regres(input_shape, xco2_emd)
-    # elif name == "xco2_ae":
-    #     core_model = autoencoder(input_shape=input_shape)
-    # elif name == "xco2_vae":
-    #     core_model = vae(input_shape=input_shape)
+        core_model = co2emiss_regres(input_shape, xco2_emd, bottom_layers)
     elif name == "co2emiss-transformer":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
         xco2_emd.freeze_all_layers()
         core_model = emission_predictor(
             input_shape, config.model.image_size, xco2_emd, bottom_layers)
+    elif name == "co2emiss-ensembling":
+        predictor = tf.keras.models.load_model(config.model.predictor_path)
+        quantifier = tf.keras.models.load_model(config.model.quantifier_path)
+        core_model = emission_ensembling(
+            input_shape, predictor, quantifier)
     else:
         print(f"Unknown model name: {name}")
         sys.exit()

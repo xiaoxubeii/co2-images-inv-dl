@@ -6,3 +6,4 @@ scaling_coefficient: 1
 patch_size: 8
 image_size: 64
 custom_model: true
+leverage_loss_metric: false

@@ -172,21 +172,23 @@ class Model_training_manager:
             print(f"Unknown model type: {cfg.model.type}")
             sys.exit()
 
-        if cfg.model.custom_model:
+        if isinstance(self.model, tuple):
+            self.model, self.save_model = self.model
+        else:
+            self.save_model = self.model
+
+        if cfg.model.custom_model and not cfg.model.leverage_loss_metric:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
-                ),
-                metrics=loss.define_metrics(cfg.model.type),)
+                ))
         else:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
                 ),
                 loss=loss.define_loss(cfg.model.loss_func),
-                metrics=loss.define_metrics(cfg.model.type),
-                run_eagerly=True,
-            )
+                metrics=loss.define_metrics(cfg.model.type),)
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""
@@ -216,27 +218,6 @@ class Model_training_manager:
             )
             generator = gen_machine.flow(
                 self.data.x.train_data[self.data.x.train_data_indexes], self.data.y.train_data[self.data.y.train_data_indexes])
-
-            # generator = generators.ScaleDataGen(
-            #     self.data.x.train_data,
-            #     self.data.x.train_data_indexes,
-            #     self.data.x.valid_data,
-            #     self.data.x.valid_data_indexes,
-            #     self.data.x.plumes_train,
-            #     self.data.x.xco2_back_train,
-            #     self.data.x.xco2_alt_anthro_train,
-            #     self.data.y.train_data,
-            #     self.data.y.train_data_indexes,
-            #     self.data.y.valid_data,
-            #     self.data.y.valid_data_indexes,
-            #     self.data.x.scale_bool,
-            #     self.data.x.fields_input_shape,
-            #     cfg.training.batch_size,
-            #     plume_scaling_min=cfg.augmentations.plume_scaling_min,
-            #     plume_scaling_max=cfg.augmentations.plume_scaling_max,
-            #     window_length=self.data.x.window_length,
-            #     scale_y=False
-            # )
         elif cfg.model.type in "inversion":
             generator_cls = generators.ScaleDataGen
             if cfg.model.name == "co2emiss-transformer":
@@ -288,7 +269,7 @@ class Model_training_manager:
             self.trainer.callbacks.append(
                 callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, [], monitor=self.cfg.callbacks.model_checkpoint.monitor))
             self.trainer.callbacks.append(WandbMetricsLogger())
-            self.model = self.trainer.train_model(self.model, self.data)
+            self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
             run.save(os.path.abspath("w_best.keras"))
         return self.trainer.get_loss()
@@ -296,4 +277,4 @@ class Model_training_manager:
     def save(self) -> None:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
-        self.saver.save_model_and_weights(self.model)
+        self.saver.save_model_and_weights(self.save_model)

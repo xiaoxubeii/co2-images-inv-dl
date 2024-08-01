@@ -7,3 +7,4 @@ embedding_path: "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/r
 patch_size: 8
 image_size: 64
 custom_model: true
+leverage_loss_metric: false

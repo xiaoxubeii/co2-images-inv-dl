@@ -84,6 +84,7 @@ class EmissionPredictor(keras.Model):
 
          # Apply gradients.
         train_vars = [
+            self.predictor.trainable_variables,
             self.emiss_trans.trainable_variables,
         ]
         grads = tape.gradient(total_loss, train_vars)
@@ -206,3 +207,10 @@ def emission_predictor(input_shape, image_size, embedding, bottom_layers):
     predictor = EmissionPredictor(image_size, embedding, bottom_layers)
     predictor.build(input_shape)
     return predictor
+
+
+def emission_ensembling(input_shape, predictor, quantifier):
+    inputs = keras.Input(shape=input_shape)
+    x = predictor(inputs)
+    outputs = quantifier(x)
+    return keras.Model(inputs, outputs)
