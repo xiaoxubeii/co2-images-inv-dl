@@ -210,7 +210,6 @@ def emission_predictor(input_shape, image_size, embedding, bottom_layers):
 
 
 def emission_ensembling(input_shape, predictor, quantifier):
-    import pdb;pdb.set_trace()
     inputs = keras.Input(shape=input_shape)
     x = predictor(inputs)
     outputs = quantifier(x)
