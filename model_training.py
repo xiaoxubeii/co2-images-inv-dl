@@ -188,7 +188,7 @@ class Model_training_manager:
                     cfg.training.optimiser, cfg.training.learning_rate
                 ),
                 loss=loss.define_loss(cfg.model.loss_func),
-                metrics=loss.define_metrics(cfg.model.type),)
+                metrics=loss.define_metrics(cfg.model.type), run_eagerly=True)
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""

@@ -1,5 +1,4 @@
 import keras
-INTERMEDIATE_DIM = 512
 
 
 def co2emiss_regres(input_shape, embedding, bottom_layers, **kwargs):
@@ -20,6 +19,7 @@ class EmissRegression(keras.Model):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
         self.quanifying = keras.Sequential([
+            keras.layers.Dense(128, activation='relu'),
             keras.layers.Dense(1),
             keras.layers.LeakyReLU(alpha=0.3)
         ])
@@ -38,5 +38,7 @@ class EmissRegression(keras.Model):
     def call(self, inputs):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
+        import pdb
+        pdb.set_trace()
         x = self.embedding_layer(inputs)
         return self.quanifying(x)
