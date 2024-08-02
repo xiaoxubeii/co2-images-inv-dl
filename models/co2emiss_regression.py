@@ -7,7 +7,7 @@ def co2emiss_regres(input_shape, embedding, bottom_layers, **kwargs):
         embedding.patch_encoder,
         embedding.encoder,
         keras.layers.Flatten(),
-    ])
+    ], name="embedding")
 
     regres = EmissRegression(pretrained_embedding_layer, bottom_layers)
     regres.build(input_shape)
@@ -22,7 +22,7 @@ class EmissRegression(keras.Model):
             keras.layers.Dense(128, activation='relu'),
             keras.layers.Dense(1),
             keras.layers.LeakyReLU(alpha=0.3)
-        ])
+        ], name="regressor")
         self.bottom_layers = bottom_layers
 
     def build(self, input_shape):

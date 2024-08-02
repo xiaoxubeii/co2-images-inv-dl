@@ -229,16 +229,16 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
 def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras", monitor="val_loss") -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
-        modelcheckpoint_cb = TransferModelCheckpoint(
-            filepath=filepath,
-            monitor=monitor,
-            mode='auto',
-            save_best_only=True)
-        # modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(
+        # modelcheckpoint_cb = TransferModelCheckpoint(
         #     filepath=filepath,
         #     monitor=monitor,
         #     mode='auto',
         #     save_best_only=True)
+        modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(
+            filepath=filepath,
+            monitor=monitor,
+            mode='auto',
+            save_best_only=True)
         cbs.append(modelcheckpoint_cb)
     else:
         pass
