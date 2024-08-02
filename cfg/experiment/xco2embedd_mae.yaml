@@ -4,30 +4,8 @@ defaults:
   - override /model: xco2embedd_mae
   - override /data/output: embedding
   - override /data/input: embedding
+  - override /data/path: all
 
-data:
-  init:
-    cutoff_size: 64
-  path:
-    train:
-      - name: all_hotspots_but_box
-        nc: train_dataset.nc
-      - name: all_hotspots_but_box
-        nc: valid_dataset.nc
-      - name: all_hotspots_but_box
-        nc: test_dataset.nc
-      - name: boxberg
-        nc: train_dataset.nc
-      - name: boxberg
-        nc: valid_dataset.nc
-      - name: boxberg
-        nc: test_dataset.nc
-  input:
-    chan_0: xco2
-    chan_1: v_wind
-    chan_2: u_wind
-    chan_3: None
-    chan_4: None
 callbacks:
   model_checkpoint:
     monitor: loss
@@ -35,12 +13,3 @@ callbacks:
     monitor: loss
   learning_rate_monitor:
     monitor: loss
-
-training:
-  max_epochs: 1
-  batch_size: 32
-
-sweep: true
-wandb:
-  project_name: co2-emission-estimation
-  key: 69fea85817147f437d88815d733f3e2ed9799c12
