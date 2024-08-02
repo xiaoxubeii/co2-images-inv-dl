@@ -138,6 +138,7 @@ def get_bool_perf_seg(ds: xr.Dataset) -> np.ndarray:
 
 
 def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int) -> np.ndarray:
+    import pdb;pdb.set_trace()
     """Return emiss array related to ds."""
     emiss = np.array(ds.emiss.values, dtype=float)
     emiss = emiss[:, 1: N_hours_prec + 1]
