@@ -10,6 +10,6 @@ data:
   init:
     cutoff_size: 64
 training:
-  max_epochs: 2
+  max_epochs: 1
 model:
   embedding_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras
