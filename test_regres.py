@@ -26,5 +26,5 @@ if __name__ == "__main__":
     )
 
     model = keras.models.load_model(
-        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-regress-patch16/w_best.keras")
+        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-regres-08030008/w_best.keras")
     model.summary()

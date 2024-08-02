@@ -172,11 +172,6 @@ class Model_training_manager:
             print(f"Unknown model type: {cfg.model.type}")
             sys.exit()
 
-        if isinstance(self.model, tuple):
-            self.model, self.save_model = self.model
-        else:
-            self.save_model = self.model
-
         if cfg.model.custom_model and not cfg.model.leverage_loss_metric:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
@@ -277,4 +272,4 @@ class Model_training_manager:
     def save(self) -> None:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
-        self.saver.save_model_and_weights(self.save_model)
+        self.saver.save_model_and_weights(self.model)
