@@ -138,7 +138,8 @@ def get_bool_perf_seg(ds: xr.Dataset) -> np.ndarray:
 
 
 def get_emiss(ds: xr.Dataset, N_hours_prec: int, window_length: int, shift: int) -> np.ndarray:
-    import pdb;pdb.set_trace()
+    import pdb
+    pdb.set_trace()
     """Return emiss array related to ds."""
     emiss = np.array(ds.emiss.values, dtype=float)
     emiss = emiss[:, 1: N_hours_prec + 1]
@@ -529,7 +530,7 @@ class Input_eval:
         self.n_layer.adapt(self.eval_data)
 
 
-@ dataclass
+@dataclass
 class Output_eval:
     """Prepare and store train and valid outputs."""
 
@@ -601,7 +602,7 @@ class Data_eval:
         self.y.get_inversion(N_hours_prec=N_hours_prec)
 
 
-@ hydra.main(config_path="cfg", config_name="config")
+@hydra.main(config_path="cfg", config_name="config")
 def estimate_data_size(cfg: DictConfig):
     data = instantiate(cfg.data.init)
     data.prepare_input(
