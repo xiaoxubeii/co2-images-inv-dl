@@ -166,7 +166,8 @@ def get_dropout(**kwargs):
 def round_filters(filters, width_coefficient, depth_divisor):
     """Round number of filters based on width multiplier."""
     filters *= width_coefficient
-    new_filters = int(filters + depth_divisor / 2) // depth_divisor * depth_divisor
+    new_filters = int(filters + depth_divisor /
+                      2) // depth_divisor * depth_divisor
     new_filters = max(depth_divisor, new_filters)
     # Make sure that round down does not go down by more than 10%.
     if new_filters < 0.9 * filters:
@@ -188,7 +189,8 @@ def mb_conv_block(
 ):
     """Mobile Inverted Residual Bottleneck."""
 
-    has_se = (block_args.se_ratio is not None) and (0 < block_args.se_ratio <= 1)
+    has_se = (block_args.se_ratio is not None) and (
+        0 < block_args.se_ratio <= 1)
     bn_axis = 3
     # workaround over non working dropout with None in noise_shape in tf.keras
     Dropout = get_dropout()
@@ -207,7 +209,8 @@ def mb_conv_block(
         x = tf.keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "expand_bn")(
             x
         )
-        x = tf.keras.layers.Activation(activation, name=prefix + "expand_activation")(x)
+        x = tf.keras.layers.Activation(
+            activation, name=prefix + "expand_activation")(x)
     else:
         x = inputs
 
@@ -265,14 +268,16 @@ def mb_conv_block(
         kernel_initializer=CONV_KERNEL_INITIALIZER,
         name=prefix + "project_conv",
     )(x)
-    x = tf.keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "project_bn")(x)
+    x = tf.keras.layers.BatchNormalization(
+        axis=bn_axis, name=prefix + "project_bn")(x)
     if (
         block_args.id_skip
         and all(s == 1 for s in block_args.strides)
         and block_args.input_filters == block_args.output_filters
     ):
         if drop_rate and (drop_rate > 0):
-            x = Dropout(drop_rate, noise_shape=(None, 1, 1, 1), name=prefix + "drop")(x)
+            x = Dropout(drop_rate, noise_shape=(
+                None, 1, 1, 1), name=prefix + "drop")(x)
         x = tf.keras.layers.add([x, inputs], name=prefix + "add")
 
     return x
@@ -354,7 +359,8 @@ def EfficientNet_constructor(
             )
             # pylint: enable=protected-access
             for bidx in xrange(block_args.num_repeat - 1):
-                drop_rate = drop_connect_rate * float(block_num) / num_blocks_total
+                drop_rate = drop_connect_rate * \
+                    float(block_num) / num_blocks_total
                 block_prefix = "block{}{}_".format(
                     idx + 1, string.ascii_lowercase[bidx + 1]
                 )

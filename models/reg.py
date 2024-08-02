@@ -115,7 +115,7 @@ class TopLayers():
             "mobilenet",
             "shufflenet",
         ]:
-            self.layer = tf.keras.layers.sequntial([
+            self.layer = tf.keras.Sequential([
                 tf.keras.layers.GlobalAveragePooling2D(name="pooling_layer"),
                 tf.keras.layers.Dense(self.classes, name="regressor"),
                 tf.keras.layers.LeakyReLU(
@@ -125,7 +125,7 @@ class TopLayers():
         elif self.choice_top == "linear":
             self.layer = tf.keras.layers.Dense(self.classes, name="regressor")
         elif self.choice_top.startswith("essential"):
-            self.layer = tf.keras.sequentail([
+            self.layer = tf.keras.Sequential([
                 tf.keras.layers.Dense(1),
                 tf.keras.layers.LeakyReLU(alpha=0.3)
             ])
