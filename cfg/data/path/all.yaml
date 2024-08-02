@@ -11,3 +11,5 @@ train:
     nc: test_dataset.nc
   - name: boxberg
     nc: test_dataset.nc
+test:
+valid:

@@ -14,8 +14,9 @@ def co2emiss_regres(input_shape, embedding, bottom_layers, **kwargs):
     return regres
 
 
+@keras.saving.register_keras_serializable()
 class EmissRegression(keras.Model):
-    def __init__(self, embedding_layer, bottom_layers, **kwargs):
+    def __init__(self, embedding_layer, bottom_layers=None, **kwargs):
         super().__init__(**kwargs)
         self.embedding_layer = embedding_layer
         self.quanifying = keras.Sequential([
@@ -40,3 +41,18 @@ class EmissRegression(keras.Model):
             inputs = self.bottom_layers(inputs)
         x = self.embedding_layer(inputs)
         return self.quanifying(x)
+
+    @classmethod
+    def from_config(cls, config):
+        for k in ["embedding_layer"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "embedding_layer": keras.saving.serialize_keras_object(self.embedding_layer),
+            }
+        )
+        return config
