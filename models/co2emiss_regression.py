@@ -26,8 +26,6 @@ class EmissRegression(keras.Model):
         self.bottom_layers = bottom_layers
 
     def build(self, input_shape):
-        import pdb
-        pdb.set_trace()
         inputs = keras.Input(shape=input_shape)
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
