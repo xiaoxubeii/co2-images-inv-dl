@@ -4,4 +4,4 @@ defaults:
   - override /model: efficientnet
   - override /data/output: inversion
   - override /data/input: inversion
-  - override /data/path: sch1
+  - override /data/path: sch2
