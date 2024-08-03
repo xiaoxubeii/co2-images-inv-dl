@@ -243,7 +243,6 @@ class Reg_model_builder:
                 self.config
             )
         if not self.config.model.custom_model:
-            import pdb;pdb.set_trace()
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
             x = bottom_layers(inputs)

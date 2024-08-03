@@ -21,7 +21,7 @@ data.prepare_input(
 # embedding = keras.models.load_model(
 #     "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras")
 embedding = keras.models.load_model(
-    "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch8/w_best.keras")
+    "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best (9).keras")
 
 embedding.patch_encoder.downstream = True
 

@@ -25,6 +25,12 @@ if __name__ == "__main__":
         "v_wind"
     )
 
-    model = keras.models.load_model(
-        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-regres-08030008/w_best.keras")
-    model.summary()
+    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-regres-08030211"
+    model = keras.models.load_model(f"{path}/w_best.keras")
+
+    model = model.get_layer("co2emiss_regres")
+    embedding = keras.Model(model.input, model.layers[-4].output)
+    quantifying = keras.Model(model.layers[-4].output, model.output)
+
+    result = embedding(data.x.eval_data)
+    print(result)
