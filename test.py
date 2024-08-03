@@ -17,7 +17,7 @@ def run_test(cfg: DictConfig):
     with wandb.init(project=cfg.wandb.project_name,
                     name=cfg.exp_name, tags=run_tags, config=config) as run:
         data = model_eval.get_data_for_inversion(
-            cfg.model.path, cfg.data.path.directory, cfg.data.init.path_test_ds, cfg)
+            cfg.data.path.directory, cfg.data.init.path_test_ds, cfg)
         model = model_eval.get_inversion_model(cfg.model.path, name_w=None)
         metric = model_eval.get_inv_metrics_model_on_data(model, data)
         metric["method"] = cfg.model.name
