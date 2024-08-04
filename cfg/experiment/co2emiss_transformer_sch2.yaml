@@ -5,7 +5,3 @@ defaults:
   - override /data/output: inversion
   - override /data/input: inversion
   - override /data/path: sch2
-
-data:
-  init:
-    shift: 1
