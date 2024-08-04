@@ -175,14 +175,14 @@ class Model_training_manager:
         if cfg.model.custom_model and not cfg.model.leverage_loss_metric:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
-                    cfg.training.optimiser, cfg.training.learning_rate), run_eagerly=True)
+                    cfg.training.optimiser, cfg.training.learning_rate))
         else:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
                 ),
                 loss=loss.define_loss(cfg.model.loss_func),
-                metrics=loss.define_metrics(cfg.model.type), run_eagerly=True)
+                metrics=loss.define_metrics(cfg.model.type))
 
     def prepare_training(self, cfg: DictConfig) -> None:
         """Prepare the training phase."""
