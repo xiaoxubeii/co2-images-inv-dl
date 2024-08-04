@@ -4,3 +4,5 @@ defaults:
     - override /model: efficientnet
     - override /data/output: inversion
     - override /data/input: inversion
+
+load_weights: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/efficient/w_best.keras
