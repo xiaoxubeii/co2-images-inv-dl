@@ -166,7 +166,7 @@ def get_core_model(
     elif name == "co2emiss-regres":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
-        core_model = co2emiss_regres(input_shape, xco2_emd, bottom_layers)
+        core_model = co2emiss_regres(input_shape, xco2_emd)
     elif name == "co2emiss-transformer":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
