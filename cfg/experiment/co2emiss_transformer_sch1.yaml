@@ -6,10 +6,5 @@ defaults:
   - override /data/input: inversion
   - override /data/path: sch1
 
-data:
-  init:
-    cutoff_size: 100
-    window_length: 2
-    shift: 1
 model:
   embedding_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras
