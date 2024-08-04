@@ -240,8 +240,6 @@ class EmissionTransformer(keras.Model):
     def __init__(self, embedding_model,  bottom_layers=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.embedding_model = embedding_model
-        self.embedding_model.patch_encoder.downstream = True
-        self.embedding_model.freeze_all_layers()
         self.embedding_layer = Embedding(self.embedding_model)
         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
             intermediate_dim=INTERMEDIATE_DIM,
@@ -294,7 +292,7 @@ class EmissionTransformer(keras.Model):
         with tf.GradientTape() as tape:
             total_loss = self.calculate_loss(inputs)
 
-         # Apply gradients.
+        # Apply gradients.
         train_vars = [
             self.trainable_variables,
         ]
