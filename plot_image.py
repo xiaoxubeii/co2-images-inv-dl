@@ -9,21 +9,23 @@ import numpy as np
 import matplotlib_functions as mympf
 
 
-def plot_image_from_mae(data, mae):
+def plot_image_from_mae(data, mae_models):
     bottom_layers = BottomLayers(
         data.x.n_layer, data.x.eval_data.shape[-1], data.x.xco2_noisy_chans, 0)
-
-    inputs = bottom_layers(data.x.eval_data)
-    inputs = inputs[0:1]
-    outputs = mae(inputs)
 
     onorm = keras.layers.Normalization(axis=-1, invert=True)
     onorm.adapt(data.x.eval_data)
 
-    # print(keras.losses.MeanSquaredError()(inputs, outputs))
-    outputs = onorm(outputs)
-    data = np.array([inputs[0], outputs[0]])
-    plot_examples(inputs[0].shape, data, list_idx=[0, 1])
+    inputs = bottom_layers(data.x.eval_data)
+    data = [inputs[0]]
+    for m in mae_models:
+        outputs = m(inputs)
+        print(keras.losses.MeanSquaredError()(inputs, outputs))
+        outputs = onorm(outputs)
+        data.extend(outputs)
+
+    data = np.array(data)
+    plot_examples(inputs[0].shape, data, list_idx=range(len(data)))
     plt.show()
 
 
@@ -94,6 +96,17 @@ def plot_examples(
     _plot_data(data, list_idx)
 
 
+def get_mae(path):
+    embedding = keras.models.load_model(path)
+    embedding.patch_encoder.downstream = True
+    return keras.Sequential([
+        embedding.patch_layer,
+        embedding.patch_encoder,
+        embedding.encoder,
+        embedding.decoder,
+    ], name="embedding")
+
+
 if __name__ == "__main__":
     cfg = OmegaConf.create(
         [{"name": "boxberg", "nc": "test_dataset.nc"}]
@@ -103,20 +116,18 @@ if __name__ == "__main__":
     data.prepare_input(
         "xco2",
         "u_wind",
-        "v_wind"
+        "v_wind",
+        # "no2",
+        # "weighted_plume"
     )
 
-    # embedding = keras.models.load_model(
-    #     "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras")
-    embedding = keras.models.load_model(
-        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best (9).keras")
-
-    embedding.patch_encoder.downstream = True
-
-    pretrained_embedding_layer = keras.Sequential([
-        embedding.patch_layer,
-        embedding.patch_encoder,
-        embedding.encoder,
-        embedding.decoder,
-    ], name="embedding")
-    plot_image_from_mae(data, embedding)
+    mae_models = []
+    paths = [
+        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras",
+        "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best_epoch80.keras",
+        # "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best_finetuning.keras",
+        # "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16-chan5/w_best.keras"
+    ]
+    for p in paths:
+        mae_models.append(get_mae(p))
+    plot_image_from_mae(data, mae_models)

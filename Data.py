@@ -209,7 +209,7 @@ class Input_filler:
             data = np.concatenate((data, self.fill_chan(chan, ds)), axis=-1)
         indexes = np.array(range(data.shape[0]))
         shape = data.shape
-        if self.window_length > 0:
+        if self.window_length> 0:
             num_batches = int(
                 np.floor((len(data) - self.window_length)/self.shift)) + 1
             indexes = []

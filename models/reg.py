@@ -25,7 +25,7 @@ from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
 from models.mae import mae, autoencoder
 from models.vae import vae
-from models.co2emission_transformer import emission_predictor
+from models.co2emission_transformer import emission_transf
 from models.co2emiss_regression import co2emiss_regres
 from models.co2emission_transformer import emission_ensembling
 
@@ -60,9 +60,9 @@ def get_preprocessing_layers(
     return preproc_layers
 
 
-@keras.saving.register_keras_serializable()
-class BottomLayers():
-    def __init__(self, n_layer, n_chans, noisy_chans, window_length):
+class BottomLayers(keras.layers.Layer):
+    def __init__(self, n_layer, n_chans, noisy_chans, window_length, *args, **kwargs):
+        super(BottomLayers, self).__init__(*args, **kwargs)
         self.n_layer = n_layer
         self.n_chans = n_chans
         self.noisy_chans = noisy_chans
@@ -70,21 +70,7 @@ class BottomLayers():
         self.gaussian_noise = tf.keras.layers.GaussianNoise(stddev=0.7)
         self.concatenate_layer = tf.keras.layers.Concatenate()
 
-    def get_config(self):
-        return {
-            "n_layer": keras.saving.serialize_keras_object(self.n_layer),
-            "n_chans": self.n_chans,
-            "noisy_chans": self.noisy_chans,
-            "window_length": self.window_length,
-        }
-
-    @classmethod
-    def from_config(cls, config):
-        for k in ["n_layer"]:
-            config[k] = keras.saving.deserialize_keras_object(config[k])
-        return cls(**config)
-
-    def __call__(self, x):
+    def call(self, x):
         chans = [None] * self.n_chans
         for idx in range(self.n_chans):
             if self.noisy_chans[idx]:
@@ -104,8 +90,9 @@ class BottomLayers():
         return self.n_layer(concatted)
 
 
-class TopLayers():
-    def __init__(self, classes: int, choice_top: str = "linear"):
+class TopLayers(keras.layers.Layer):
+    def __init__(self, classes: int, choice_top: str = "linear", *args, **kwargs):
+        super(TopLayers, self).__init__(*args, **kwargs)
         self.classes = classes
         self.choice_top = choice_top
         if self.choice_top in [
@@ -134,7 +121,7 @@ class TopLayers():
         else:
             self.layer = None
 
-    def __call__(self, input, *args, **kwargs):
+    def call(self, input, *args, **kwargs):
         if self.layer:
             return self.layer(input)
         return input
@@ -179,14 +166,12 @@ def get_core_model(
     elif name == "co2emiss-regres":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
-        # xco2_emd.freeze_all_layers()
+        xco2_emd.freeze_all_layers()
         core_model = co2emiss_regres(input_shape, xco2_emd, bottom_layers)
     elif name == "co2emiss-transformer":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
-        xco2_emd.patch_encoder.downstream = True
-        xco2_emd.freeze_all_layers()
-        core_model = emission_predictor(
-            input_shape, config.model.image_size, xco2_emd, bottom_layers)
+        core_model = emission_transf(
+            input_shape, xco2_emd, bottom_layers=bottom_layers)
     elif name == "co2emiss-ensembling":
         predictor = tf.keras.models.load_model(config.model.predictor_path)
         quantifier = tf.keras.models.load_model(config.model.quantifier_path)
@@ -221,11 +206,11 @@ class Reg_model_builder:
         """Return regression model, keras or locals."""
         if self.name == "xco2embedd-mae":
             bottom_layers = BottomLayers(
-                self.n_layer, self.input_shape[-1], [False]*5, self.window_length)
+                self.n_layer, self.input_shape[-1], [False]*5, self.window_length, name="bottom_layers")
         else:
             bottom_layers = BottomLayers(
-                self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length)
-        top_layers = TopLayers(self.classes, self.name)
+                self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length, name="bottom_layers")
+        top_layers = TopLayers(self.classes, self.name, name="top_layers")
         if self.load_weights:
             core_model = tf.keras.models.load_model(self.load_weights)
             if self.config.model.custom_model:

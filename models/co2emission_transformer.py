@@ -14,181 +14,187 @@ DROPOUT = 0.1
 NORM_EPSILON = 1e-5
 
 
-@keras.saving.register_keras_serializable()
-class EmissionPredictor(keras.Model):
-    def __init__(self, image_size, embedding_layer, bottom_layers=None, **kwargs):
-        super().__init__(**kwargs)
-        self.embedding_layer = embedding_layer
-        self.embedding_layer.patch_encoder.downstream = True
-        self.bottom_layers = bottom_layers
-        self.image_size = image_size
-        # self.mae_metric = keras.metrics.MeanAbsoluteError()
-        # self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
-        self.loss_tracker = keras.metrics.Mean(name="loss")
-        self.mse_loss = keras.losses.MeanSquaredError()
-        # self.mape_loss = keras.losses.MeanAbsolutePercentageError()
-        # self.mae_loss = keras.losses.MeanAbsoluteError()
+# @keras.saving.register_keras_serializable()
+# class EmissionPredictor(keras.Model):
+#     def __init__(self, image_size, embedding_layer, bottom_layers=None, **kwargs):
+#         super().__init__(**kwargs)
+#         self.embedding_layer = embedding_layer
+#         self.embedding_layer.patch_encoder.downstream = True
+#         self.bottom_layers = bottom_layers
+#         self.image_size = image_size
+#         # self.mae_metric = keras.metrics.MeanAbsoluteError()
+#         # self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
+#         self.loss_tracker = keras.metrics.Mean(name="loss")
+#         self.mse_loss = keras.losses.MeanSquaredError()
+#         # self.mape_loss = keras.losses.MeanAbsolutePercentageError()
+#         # self.mae_loss = keras.losses.MeanAbsoluteError()
 
-    def build(self, input_shape):
-        self.flatten = keras.layers.Flatten()
-        self.predictor = keras.Sequential([
-            keras.layers.Dense(INTERMEDIATE_DIM, activation='relu'),
-            keras.layers.Dense(1)
-        ])
-        patch_layer = self.embedding_layer.patch_layer
-        patch_encoder = self.embedding_layer.patch_encoder
-        encoder = self.embedding_layer.encoder
-        inputs = keras.Input(shape=input_shape[1:])
-        x = keras.layers.Resizing(
-            self.image_size, self.image_size)(inputs)
+#     def build(self, input_shape):
+#         self.flatten = keras.layers.Flatten()
+#         self.predictor = keras.Sequential([
+#             keras.layers.Dense(INTERMEDIATE_DIM, activation='relu'),
+#             keras.layers.Dense(1)
+#         ])
+#         patch_layer = self.embedding_layer.patch_layer
+#         patch_encoder = self.embedding_layer.patch_encoder
+#         encoder = self.embedding_layer.encoder
+#         inputs = keras.Input(shape=input_shape[1:])
+#         x = keras.layers.Resizing(
+#             self.image_size, self.image_size)(inputs)
 
-        x = patch_layer(inputs)
-        x = patch_encoder(x)
-        x = encoder(x)
+#         x = patch_layer(inputs)
+#         x = patch_encoder(x)
+#         x = encoder(x)
 
-        embedding_shape = x.shape
-        inputs = keras.Input(
-            shape=(input_shape[0], embedding_shape[1]*embedding_shape[2]))
+#         embedding_shape = x.shape
+#         inputs = keras.Input(
+#             shape=(input_shape[0], embedding_shape[1]*embedding_shape[2]))
 
-        self.emiss_trans = EmissTransformer(
-            embedding_shape[1]*embedding_shape[2])
-        outputs = self.emiss_trans(inputs)
-        # self.predictor(outputs)
+#         self.emiss_trans = EmissTransformer(
+#             embedding_shape[1]*embedding_shape[2])
+#         outputs = self.emiss_trans(inputs)
+#         # self.predictor(outputs)
 
-    def call(self, inputs):
-        x = inputs
-        if self.bottom_layers is not None:
-            x = self.bottom_layers(inputs)
-        x = self.embedding(x)
-        return self.emiss_trans(x)
-        # return self.predictor(outputs)
+#     def call(self, inputs):
+#         x = inputs
+#         if self.bottom_layers is not None:
+#             x = self.bottom_layers(inputs)
+#         x = self.embedding(x)
+#         return self.emiss_trans(x)
+#         # return self.predictor(outputs)
 
-    def calculate_loss(self, inputs):
-        x, y1, y2 = inputs[0], inputs[1], inputs[2]
-        if self.bottom_layers is not None:
-            x = self.bottom_layers(x)
+#     def calculate_loss(self, inputs):
+#         x, y1, y2 = inputs[0], inputs[1], inputs[2]
+#         if self.bottom_layers is not None:
+#             x = self.bottom_layers(x)
 
-        o1 = self.embedding(x)
-        o1 = self.emiss_trans(o1)
-        o1_y = self.do_embedding(y1)
-        loss1 = self.mse_loss(o1_y, o1)
+#         o1 = self.embedding(x)
+#         o1 = self.emiss_trans(o1)
+#         o1_y = self.do_embedding(y1)
+#         loss1 = self.mse_loss(o1_y, o1)
 
-        # o2 = self.predictor(o1)
-        # loss2 = self.mae_loss(y2, o2)
-        # return 0.8*loss1+0.2*loss2, y2, o2
-        return loss1, o1_y, o1
+#         # o2 = self.predictor(o1)
+#         # loss2 = self.mae_loss(y2, o2)
+#         # return 0.8*loss1+0.2*loss2, y2, o2
+#         return loss1, o1_y, o1
 
-    def train_step(self, inputs):
-        with tf.GradientTape() as tape:
-            total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
+#     def train_step(self, inputs):
+#         with tf.GradientTape() as tape:
+#             total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
 
-         # Apply gradients.
-        train_vars = [
-            self.predictor.trainable_variables,
-            self.emiss_trans.trainable_variables,
-        ]
-        grads = tape.gradient(total_loss, train_vars)
-        tv_list = []
-        for (grad, var) in zip(grads, train_vars):
-            for g, v in zip(grad, var):
-                tv_list.append((g, v))
-        self.optimizer.apply_gradients(tv_list)
+#          # Apply gradients.
+#         train_vars = [
+#             self.predictor.trainable_variables,
+#             self.emiss_trans.trainable_variables,
+#         ]
+#         grads = tape.gradient(total_loss, train_vars)
+#         tv_list = []
+#         for (grad, var) in zip(grads, train_vars):
+#             for g, v in zip(grad, var):
+#                 tv_list.append((g, v))
+#         self.optimizer.apply_gradients(tv_list)
 
-        self.loss_tracker.update_state(total_loss)
-        # self.mae_metric.update_state(loss_y, loss_pred)
-        # self.mape_metric.update_state(loss_y, loss_pred)
-        # Report progress.
-        # self.compiled_metrics.update_state(loss_y, loss_pred)
-        # return {m.name: m.result() for m in self.metrics}
-        # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
-        return {"loss": self.loss_tracker.result()}
+#         self.loss_tracker.update_state(total_loss)
+#         # self.mae_metric.update_state(loss_y, loss_pred)
+#         # self.mape_metric.update_state(loss_y, loss_pred)
+#         # Report progress.
+#         # self.compiled_metrics.update_state(loss_y, loss_pred)
+#         # return {m.name: m.result() for m in self.metrics}
+#         # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+#         return {"loss": self.loss_tracker.result()}
 
-    def test_step(self, inputs):
-        total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
-        # Update the trackers.
-        # self.compiled_metrics.update_state(loss_y, loss_pred)
-        # return {m.name: m.result() for m in self.metrics}
-        self.loss_tracker.update_state(total_loss)
-        # self.mae_metric.update_state(loss_y, loss_pred)
-        # self.mape_metric.update_state(loss_y, loss_pred)
-        # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
-        return {"loss": self.loss_tracker.result()}
+#     def test_step(self, inputs):
+#         total_loss, loss_y, loss_pred = self.calculate_loss(inputs)
+#         # Update the trackers.
+#         # self.compiled_metrics.update_state(loss_y, loss_pred)
+#         # return {m.name: m.result() for m in self.metrics}
+#         self.loss_tracker.update_state(total_loss)
+#         # self.mae_metric.update_state(loss_y, loss_pred)
+#         # self.mape_metric.update_state(loss_y, loss_pred)
+#         # return {"loss": self.loss_tracker.result(), "mae": self.mae_metric.result(), "mape": self.mape_metric.result()}
+#         return {"loss": self.loss_tracker.result()}
 
-    def do_embedding(self, input):
-        outputs = keras.layers.Resizing(
-            self.image_size, self.image_size)(input)
-        patch_layer = self.embedding_layer.patch_layer
-        patch_encoder = self.embedding_layer.patch_encoder
-        encoder = self.embedding_layer.encoder
+#     def do_embedding(self, input):
+#         outputs = keras.layers.Resizing(
+#             self.image_size, self.image_size)(input)
+#         patch_layer = self.embedding_layer.patch_layer
+#         patch_encoder = self.embedding_layer.patch_encoder
+#         encoder = self.embedding_layer.encoder
 
-        patches = patch_layer(outputs)
-        unmasked_embeddings = patch_encoder(patches)
-        # Pass the unmaksed patch to the encoder.
-        embedding = encoder(unmasked_embeddings)
-        return self.flatten(embedding)
+#         patches = patch_layer(outputs)
+#         unmasked_embeddings = patch_encoder(patches)
+#         # Pass the unmaksed patch to the encoder.
+#         embedding = encoder(unmasked_embeddings)
+#         return self.flatten(embedding)
 
-    def embedding(self, inputs):
-        embedding = tf.map_fn(lambda x: self.do_embedding(x), inputs)
-        positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
-        return embedding + positional_encoding
+#     def embedding(self, inputs):
+#         embedding = tf.map_fn(lambda x: self.do_embedding(x), inputs)
+#         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
+#         return embedding + positional_encoding
 
-    def get_config(self):
-        config = super().get_config()
-        config.update(
-            {
-                "embedding_layer": keras.saving.serialize_keras_object(self.embedding_layer),
-                "image_size": self.image_size,
-            }
-        )
-        return config
+#     def get_config(self):
+#         config = super().get_config()
+#         config.update(
+#             {
+#                 "embedding_layer": keras.saving.serialize_keras_object(self.embedding_layer),
+#                 "image_size": self.image_size,
+#             }
+#         )
+#         return config
 
-    @classmethod
-    def from_config(cls, config):
-        for k in ["embedding_layer"]:
-            config[k] = keras.saving.deserialize_keras_object(config[k])
-        return cls(**config)
+#     @classmethod
+#     def from_config(cls, config):
+#         for k in ["embedding_layer"]:
+#             config[k] = keras.saving.deserialize_keras_object(config[k])
+#         return cls(**config)
 
-    @property
-    def metrics(self):
-        # We list our `Metric` objects here so that `reset_states()` can be
-        # called automatically at the start of each epoch
-        # or at the start of `evaluate()`.
-        # If you don't implement this property, you have to call
-        # `reset_states()` yourself at the time of your choosing.
-        return [self.loss_tracker]
+#     @property
+#     def metrics(self):
+#         # We list our `Metric` objects here so that `reset_states()` can be
+#         # called automatically at the start of each epoch
+#         # or at the start of `evaluate()`.
+#         # If you don't implement this property, you have to call
+#         # `reset_states()` yourself at the time of your choosing.
+#         return [self.loss_tracker]
 
 
-@keras.saving.register_keras_serializable()
-class EmissTransformer(keras.Model):
-    def __init__(self, embed_dim, **kwargs):
-        super().__init__(**kwargs)
-        self.embed_dim = embed_dim
+# @keras.saving.register_keras_serializable()
+# class EmissTransformer(keras.Model):
+#     def __init__(self, embedding_layer, embed_dim, **kwargs):
+#         super().__init__(**kwargs)
+#         self.embed_dim = embed_dim
+#         self.embedding_layer = embedding_layer
 
-    def build(self, input_shape):
-        self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
-            intermediate_dim=INTERMEDIATE_DIM,
-            num_heads=NUM_HEADS,
-            dropout=DROPOUT,
-            layer_norm_epsilon=NORM_EPSILON,
-        )
-        self.dense = keras.layers.Dense(self.embed_dim)
-        self.dropout = keras.layers.Dropout(DROPOUT)
-        self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
-        self.flatten = keras.layers.Flatten()
+#     def build(self, input_shape):
+#         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
+#             intermediate_dim=INTERMEDIATE_DIM,
+#             num_heads=NUM_HEADS,
+#             dropout=DROPOUT,
+#             layer_norm_epsilon=NORM_EPSILON,
+#         )
+#         self.dense = keras.layers.Dense(self.embed_dim)
+#         self.dropout = keras.layers.Dropout(DROPOUT)
+#         self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
+#         self.flatten = keras.layers.Flatten()
 
-    def call(self, inputs):
-        input_shape = ops.shape(inputs)
-        batch_size = input_shape[0]
-        seq_len = input_shape[1]
-        mask = compute_mask(batch_size, seq_len, seq_len, "bool")
-        out1 = inputs
-        for i in range(NUM_LAYERS):
-            out1 = self.transformer_encoder(
-                out1, attention_mask=mask)
-        out1 = self.flatten(out1)
-        out2 = self.dense(out1)
-        out2 = self.dropout(out2)
-        return self.layernorm(out2)
+#     def embedding(self, inputs):
+#         embedding = tf.map_fn(lambda x: self.do_embedding(x), inputs)
+#         positional_encoding = keras_nlp.layers.SinePositionEncoding()(embedding)
+#         return embedding + positional_encoding
+
+#     def call(self, inputs):
+#         input_shape = ops.shape(inputs)
+#         batch_size = input_shape[0]
+#         seq_len = input_shape[1]
+#         mask = compute_mask(batch_size, seq_len, seq_len, "bool")
+#         out1 = inputs
+#         for i in range(NUM_LAYERS):
+#             out1 = self.transformer_encoder(
+#                 out1, attention_mask=mask)
+#         out1 = self.flatten(out1)
+#         out2 = self.dense(out1)
+#         out2 = self.dropout(out2)
+#         return self.layernorm(out2)
 
 
 def compute_mask(batch_size, n_dest, n_src, dtype):
@@ -203,10 +209,157 @@ def compute_mask(batch_size, n_dest, n_src, dtype):
     return ops.tile(mask, mult)
 
 
-def emission_predictor(input_shape, image_size, embedding, bottom_layers):
-    predictor = EmissionPredictor(image_size, embedding, bottom_layers)
-    predictor.build(input_shape)
-    return predictor
+def emission_transf(input_shape, embedding, bottom_layers=None):
+    # inputs = keras.Input(shape=input_shape)
+    # embedding.patch_encoder.downstream = True
+    # transformer_encoder = keras_nlp.layers.TransformerEncoder(
+    #     intermediate_dim=INTERMEDIATE_DIM,
+    #     num_heads=NUM_HEADS,
+    #     dropout=DROPOUT,
+    #     layer_norm_epsilon=NORM_EPSILON,
+    # )
+
+    # embedding_inputs = Embedding(embedding)(inputs)
+    # x = embedding_inputs
+    # mask = compute_mask(batch_size, window_length, window_length, "bool")
+    # for i in range(NUM_LAYERS):
+    #     x = transformer_encoder(
+    #         x, attention_mask=mask)
+
+    # x = keras.layers.Flatten()(x)
+    # x = keras.layers.Dense(embedding_inputs.shape[-1])(x)
+    # x = keras.layers.Dropout(DROPOUT)(x)
+    # outputs = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)(x)
+    # return keras.Model(inputs, outputs)
+    et = EmissionTransformer(embedding, bottom_layers)
+    et.build(input_shape)
+    return et
+
+
+class EmissionTransformer(keras.Model):
+    def __init__(self, embedding_model,  bottom_layers=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.embedding_model = embedding_model
+        self.embedding_model.patch_encoder.downstream = True
+        self.embedding_model.freeze_all_layers()
+        self.embedding_layer = Embedding(self.embedding_model)
+        self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
+            intermediate_dim=INTERMEDIATE_DIM,
+            num_heads=NUM_HEADS,
+            dropout=DROPOUT,
+            layer_norm_epsilon=NORM_EPSILON,
+        )
+        self.dropout = keras.layers.Dropout(DROPOUT)
+        self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
+        self.flatten = keras.layers.Flatten()
+        self.mse = keras.losses.MeanSquaredError()
+        self.loss_tracker = keras.metrics.Mean(name="loss")
+        self.bottom_layers = bottom_layers
+
+    def build(self, input_shape):
+        inputs = keras.Input(shape=input_shape)
+        if self.bottom_layers is not None:
+            inputs = self.bottom_layers(inputs)
+        x = self.embedding_layer(inputs)
+        self.dense = keras.layers.Dense(x.shape[-1])
+        x = self.transformer_encoder(x)
+        x = self.flatten(x)
+        x = self.dense(x)
+        x = self.dropout(x)
+        self.layernorm(x)
+
+    def call(self, inputs):
+        input_shape = tf.shape(inputs)
+        if self.bottom_layers is not None:
+            inputs = self.bottom_layers(inputs)
+        x = self.embedding_layer(inputs)
+        mask = compute_mask(
+            input_shape[0], input_shape[1], input_shape[1], "bool")
+        for i in range(NUM_LAYERS):
+            x = self.transformer_encoder(x, attention_mask=mask)
+        x = self.flatten(x)
+        x = self.dense(x)
+        x = self.dropout(x)
+        return self.layernorm(x)
+
+    def calculate_loss(self, inputs):
+        x, y, _ = inputs
+        y = tf.expand_dims(y, axis=1)
+        y = self.embedding_layer(y)
+        y = tf.squeeze(y, axis=1)
+        pred = self.call(x)
+        return self.mse(y, pred)
+
+    def train_step(self, inputs):
+        with tf.GradientTape() as tape:
+            total_loss = self.calculate_loss(inputs)
+
+         # Apply gradients.
+        train_vars = [
+            self.trainable_variables,
+        ]
+        grads = tape.gradient(total_loss, train_vars)
+        tv_list = []
+        for (grad, var) in zip(grads, train_vars):
+            for g, v in zip(grad, var):
+                tv_list.append((g, v))
+        self.optimizer.apply_gradients(tv_list)
+        self.loss_tracker.update_state(total_loss)
+        return {"loss": self.loss_tracker.result()}
+
+    def test_step(self, inputs):
+        total_loss = self.calculate_loss(inputs)
+        self.loss_tracker.update_state(total_loss)
+        return {"loss": self.loss_tracker.result()}
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "embedding_model": keras.saving.serialize_keras_object(self.embedding_model),
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        for k in ["embedding_model"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
+
+    @property
+    def metrics(self):
+        # We list our `Metric` objects here so that `reset_states()` can be
+        # called automatically at the start of each epoch
+        # or at the start of `evaluate()`.
+        # If you don't implement this property, you have to call
+        # `reset_states()` yourself at the time of your choosing.
+        return [self.loss_tracker]
+
+
+class Embedding(keras.layers.Layer):
+    def __init__(self, embedding, **kwargs):
+        super().__init__(**kwargs)
+        self.embedding = embedding
+        self.position_encoding = keras_nlp.layers.SinePositionEncoding()
+
+    def _do_embedding(self, inputs):
+        x = self.embedding.patch_layer(inputs)
+        x = self.embedding.patch_encoder(x)
+        x = self.embedding.encoder(x)
+        outputs = keras.layers.Flatten()(x)
+        return outputs
+
+    def call(self, input):
+        embedding = tf.map_fn(lambda x: self._do_embedding(x), input)
+        positional_encoding = self.position_encoding(embedding)
+        return embedding + positional_encoding
+
+
+# def emission_predictor(input_shape, image_size, embedding, bottom_layers):
+#     predictor = EmissionPredictor(image_size, embedding, bottom_layers)
+#     predictor.build(input_shape)
+#     return predictor
 
 
 def emission_ensembling(input_shape, predictor, quantifier, bottom_layers):
