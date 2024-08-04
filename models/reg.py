@@ -170,6 +170,7 @@ def get_core_model(
     elif name == "co2emiss-transformer":
         xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
         xco2_emd.patch_encoder.downstream = True
+        xco2_emd.trainable = False
         core_model = emission_transf(
             input_shape, xco2_emd, bottom_layers=bottom_layers)
     elif name == "co2emiss-ensembling":
