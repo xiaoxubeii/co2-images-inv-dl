@@ -212,37 +212,23 @@ class Reg_model_builder:
             bottom_layers = BottomLayers(
                 self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length, name="bottom_layers")
         top_layers = TopLayers(self.classes, self.name, name="top_layers")
-        # if self.load_weights:
-        #     core_model = tf.keras.models.load_model(self.load_weights)
-        #     if self.config.model.custom_model:
-        #         core_model.bottom_layers = bottom_layers
-        #         core_model.top_layers = top_layers
-        # else:
-        #     core_model = get_core_model(
-        #         self.name,
-        #         self.input_shape,
-        #         self.classes,
-        #         self.dropout_rate,
-        #         self.scaling_coefficient,
-        #         bottom_layers,
-        #         top_layers,
-        #         self.config
-        #     )
-        core_model = get_core_model(
-            self.name,
-            self.input_shape,
-            self.classes,
-            self.dropout_rate,
-            self.scaling_coefficient,
-            bottom_layers,
-            top_layers,
-            self.config
-        )
         if self.load_weights:
-            core_model.load_weights(self.load_weights)
+            core_model = tf.keras.models.load_model(self.load_weights)
+            if self.config.model.custom_model:
+                core_model.bottom_layers = bottom_layers
+                core_model.top_layers = top_layers
+        else:
+            core_model = get_core_model(
+                self.name,
+                self.input_shape,
+                self.classes,
+                self.dropout_rate,
+                self.scaling_coefficient,
+                bottom_layers,
+                top_layers,
+                self.config
+            )
 
-        import pdb
-        pdb.set_trace()
         if not self.config.model.custom_model:
             inputs = tf.keras.layers.Input(
                 self.input_shape, name="input_layer")
