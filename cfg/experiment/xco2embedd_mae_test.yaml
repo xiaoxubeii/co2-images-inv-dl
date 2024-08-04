@@ -4,23 +4,8 @@ defaults:
   - override /model: xco2embedd_mae
   - override /data/output: embedding
   - override /data/input: embedding
+  - override /data/path: boxberg
 
-data:
-  init:
-    cutoff_size: 64
-  path:
-    train:
-      - name: boxberg
-        nc: train_dataset.nc
-      - name: boxberg
-        nc: valid_dataset.nc
-
-  input:
-    chan_0: xco2
-    chan_1: v_wind
-    chan_2: u_wind
-    chan_3: None
-    chan_4: None
 callbacks:
   model_checkpoint:
     monitor: loss
@@ -29,14 +14,4 @@ callbacks:
   learning_rate_monitor:
     monitor: loss
 
-training:
-  max_epochs: 1
-  batch_size: 32
-
-model:
-  patch_size: 16
-
-sweep: true
-wandb:
-  project_name: co2-emission-estimation
-  key: 69fea85817147f437d88815d733f3e2ed9799c12
+load_weights: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras

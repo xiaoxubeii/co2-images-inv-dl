@@ -60,9 +60,10 @@ def get_preprocessing_layers(
     return preproc_layers
 
 
-class BottomLayers(keras.layers.Layer):
+# TODO: add a class for the bottom layers
+class BottomLayers():
     def __init__(self, n_layer, n_chans, noisy_chans, window_length, *args, **kwargs):
-        super(BottomLayers, self).__init__(*args, **kwargs)
+        # super(BottomLayers, self).__init__(*args, **kwargs)
         self.n_layer = n_layer
         self.n_chans = n_chans
         self.noisy_chans = noisy_chans
@@ -70,7 +71,7 @@ class BottomLayers(keras.layers.Layer):
         self.gaussian_noise = tf.keras.layers.GaussianNoise(stddev=0.7)
         self.concatenate_layer = tf.keras.layers.Concatenate()
 
-    def call(self, x):
+    def __call__(self, x):
         chans = [None] * self.n_chans
         for idx in range(self.n_chans):
             if self.noisy_chans[idx]:
@@ -90,9 +91,9 @@ class BottomLayers(keras.layers.Layer):
         return self.n_layer(concatted)
 
 
-class TopLayers(keras.layers.Layer):
+# TODO: add a class for the bottom layers
+class TopLayers():
     def __init__(self, classes: int, choice_top: str = "linear", *args, **kwargs):
-        super(TopLayers, self).__init__(*args, **kwargs)
         self.classes = classes
         self.choice_top = choice_top
         if self.choice_top in [
@@ -121,7 +122,7 @@ class TopLayers(keras.layers.Layer):
         else:
             self.layer = None
 
-    def call(self, input, *args, **kwargs):
+    def __call__(self, input, *args, **kwargs):
         if self.layer:
             return self.layer(input)
         return input
@@ -216,7 +217,6 @@ class Reg_model_builder:
             core_model = tf.keras.models.load_model(self.load_weights)
             if self.config.model.custom_model:
                 core_model.bottom_layers = bottom_layers
-                core_model.top_layers = top_layers
         else:
             core_model = get_core_model(
                 self.name,
