@@ -1,6 +1,6 @@
 # @package _global_
 
 defaults:
-    - override /model: co2emiss_regres
+    - override /model: efficientnet
     - override /data/output: inversion
     - override /data/input: inversion
