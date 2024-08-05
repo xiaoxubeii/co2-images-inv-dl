@@ -226,55 +226,30 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
 #         pass
 #     return cbs
 
-def get_modelcheckpoint(get: bool, cbs: list, filepath="w_best.keras", monitor="val_loss") -> list:
+def get_modelcheckpoint(get: bool, cbs: list, **kwargs) -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
-        # modelcheckpoint_cb = TransferModelCheckpoint(
-        #     filepath=filepath,
-        #     monitor=monitor,
-        #     mode='auto',
-        #     save_best_only=True)
-        modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(
-            filepath=filepath,
-            monitor=monitor,
-            mode='auto',
-            save_best_only=True)
+        modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(**kwargs)
         cbs.append(modelcheckpoint_cb)
     else:
         pass
     return cbs
 
 
-def get_lrscheduler(get: bool, cbs: list, monitor="val_loss") -> list:
+def get_lrscheduler(get: bool, cbs: list, **kwargs) -> list:
     """Add reducelronplateau to callbacks list if get."""
     if get:
-        reducelronplateau_cb = tf.keras.callbacks.ReduceLROnPlateau(
-            monitor=monitor,
-            factor=0.5,
-            patience=10,
-            verbose=0,
-            min_delta=5e-3,
-            cooldown=0,
-            min_lr=5e-5,
-        )
+        reducelronplateau_cb = tf.keras.callbacks.ReduceLROnPlateau(**kwargs)
         cbs.append(reducelronplateau_cb)
     else:
         pass
     return cbs
 
 
-def get_earlystopping(get: bool, cbs: list, monitor="val_loss") -> list:
+def get_earlystopping(get: bool, cbs: list, **kwargs) -> list:
     """Add earlystopping to callbacks list if get."""
     if get:
-        earlystopping_cb = tf.keras.callbacks.EarlyStopping(
-            monitor=monitor,
-            min_delta=5e-4,
-            patience=50,
-            verbose=0,
-            mode="auto",
-            baseline=None,
-            restore_best_weights=True,
-        )
+        earlystopping_cb = tf.keras.callbacks.EarlyStopping(**kwargs)
         cbs.append(earlystopping_cb)
     else:
         pass
