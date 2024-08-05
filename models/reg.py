@@ -174,7 +174,7 @@ def get_core_model(
         # embedding_model.patch_encoder.downstream = True
         emd_quant_model = tf.keras.models.load_model(
             config.model.embedd_quanti_path)
-        emd_quant_model = emd_quant_model.get_layer("co2emiss_regres")
+        # emd_quant_model = emd_quant_model.get_layer("co2emiss_regres")
         core_model = emission_predictor(
             input_shape, embedding_model, emd_quant_model, bottom_layers)
     else:

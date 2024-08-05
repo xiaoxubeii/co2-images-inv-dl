@@ -3,5 +3,5 @@ name: co2emiss-regres
 loss_func: MeanAbsoluteError
 dropout_rate: 0.2
 scaling_coefficient: 1
-custom_model: false
-leverage_loss_metric: true
+custom_model: true
+leverage_loss_metric: false

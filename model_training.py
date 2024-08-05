@@ -175,8 +175,9 @@ class Model_training_manager:
         if cfg.model.custom_model and not cfg.model.leverage_loss_metric:
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
-                    cfg.training.optimiser, cfg.training.learning_rate), jit_compile=True)
+                    cfg.training.optimiser, cfg.training.learning_rate))
         else:
+            import pdb;pdb.set_trace()
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
