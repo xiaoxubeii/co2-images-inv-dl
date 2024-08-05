@@ -18,6 +18,7 @@ def plot_image_from_mae(data, mae_models):
 
     inputs = bottom_layers(data.x.eval_data)
     data = [inputs[0]]
+    import pdb; pdb.set_trace()
     for m in mae_models:
         outputs = m(inputs)
         print(keras.losses.MeanSquaredError()(inputs, outputs))
@@ -125,8 +126,6 @@ if __name__ == "__main__":
     paths = [
         "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras",
         "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best_epoch80.keras",
-        # "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best_finetuning.keras",
-        # "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16-chan5/w_best.keras"
     ]
     for p in paths:
         mae_models.append(get_mae(p))

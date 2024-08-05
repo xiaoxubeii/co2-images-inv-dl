@@ -211,7 +211,7 @@ class EmissionTransformer(keras.Model):
         self.bottom_layers = bottom_layers
 
     def build(self, input_shape):
-        inputs = keras.Input(shape=input_shape, batch_size=32)
+        inputs = keras.Input(shape=input_shape)
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
         x = self.embedding_layer(inputs)
