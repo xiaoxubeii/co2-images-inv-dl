@@ -38,7 +38,12 @@ class EmissionPredictor(keras.Model):
         # patch_encoder = self.embedd_quanti_model.get_layer("patch_encoder")
         # patch_encoder.downstream = True
         # encoder = self.embedd_quanti_model.get_layer("mae_encoder")
-        return self.embedding_model.patch_layer, self.embedding_model.patch_encoder, self.embedding_model.encoder
+        patch_layer = self.embedding_model.get_layer("patches")
+        patch_encoder = self.embedding_model.get_layer("patch_encoder")
+        encoder = self.embedding_model.get_layer("mae_encoder")
+
+        # return self.embedding_model.patch_layer, self.embedding_model.patch_encoder, self.embedding_model.encoder
+        return patch_layer, patch_encoder, encoder
 
     def build(self, input_shape):
         self.transf.build(input_shape)
