@@ -7,26 +7,27 @@ from plot_data import plot_examples
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib_functions as mympf
+import tensorflow as tf
 
 
 def plot_image_from_mae(data, mae_models):
     bottom_layers = BottomLayers(
         data.x.n_layer, data.x.eval_data.shape[-1], data.x.xco2_noisy_chans, 0)
-
+    sample_data = [data.x.eval_data[0]]
     onorm = keras.layers.Normalization(axis=-1, invert=True)
     onorm.adapt(data.x.eval_data)
 
     inputs = bottom_layers(data.x.eval_data)
-    data = [inputs[0]]
-    import pdb; pdb.set_trace()
+    sample = inputs[0]
+    sample = tf.expand_dims(sample, 0)
     for m in mae_models:
-        outputs = m(inputs)
+        outputs = m(sample)
         print(keras.losses.MeanSquaredError()(inputs, outputs))
         outputs = onorm(outputs)
-        data.extend(outputs)
+        sample_data = tf.concat([sample_data, outputs], axis=0)
 
-    data = np.array(data)
-    plot_examples(inputs[0].shape, data, list_idx=range(len(data)))
+    sample_data = np.array(sample_data)
+    plot_examples(inputs[0].shape, sample_data, list_idx=range(len(sample_data)))
     plt.show()
 
 

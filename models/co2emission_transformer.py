@@ -92,6 +92,7 @@ class EmissionPredictor(keras.Model):
         config = super().get_config()
         config.update(
             {
+                "embedding_model": keras.saving.serialize_keras_object(self.embedding_model),
                 "embedd_quanti_model": keras.saving.serialize_keras_object(self.embedd_quanti_model),
             }
         )
@@ -99,7 +100,7 @@ class EmissionPredictor(keras.Model):
 
     @classmethod
     def from_config(cls, config):
-        for k in ["embedd_quanti_model"]:
+        for k in ["embedd_quanti_model", "embedding_model"]:
             config[k] = keras.saving.deserialize_keras_object(config[k])
         return cls(**config)
 
@@ -191,6 +192,7 @@ def emission_transf(input_shape, embedding, bottom_layers=None):
     return et
 
 
+@keras.saving.register_keras_serializable()
 class EmissionTransformer(keras.Model):
     def __init__(self, embedding_model,  bottom_layers=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -291,6 +293,7 @@ class EmissionTransformer(keras.Model):
         return [self.loss_tracker]
 
 
+@keras.saving.register_keras_serializable()
 class Embedding(keras.layers.Layer):
     def __init__(self, embedding_model, **kwargs):
         super().__init__(**kwargs)
@@ -313,6 +316,21 @@ class Embedding(keras.layers.Layer):
         embedding = tf.map_fn(lambda x: self._do_embedding(x), input)
         positional_encoding = self.position_encoding(embedding)
         return embedding + positional_encoding
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "embedding_model": keras.saving.serialize_keras_object(self.embedding_model),
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        for k in ["embedding_model"]:
+            config[k] = keras.saving.deserialize_keras_object(config[k])
+        return cls(**config)
 
 
 def emission_predictor(input_shape, embedding_model, emd_quant_model, bottom_layers):
