@@ -21,9 +21,8 @@ class EmissionPredictor(keras.Model):
         self.embedd_quanti_model = embedd_quanti_model
         self.quantifier = self.get_quantifying_model()
         self.bottom_layers = bottom_layers
-        embedding_layer = self.get_embedding_model()
-        embedding_layer.trainable = False
-        self.transf = EmissionTransformer(embedding_layer, bottom_layers)
+        embedding_model = self.get_embedding_model()
+        self.transf = EmissionTransformer(embedding_model, bottom_layers)
         self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.mse_metric = keras.metrics.MeanSquaredError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
@@ -38,7 +37,7 @@ class EmissionPredictor(keras.Model):
         patch_encoder = self.embedd_quanti_model.get_layer("patch_encoder")
         patch_encoder.downstream = True
         encoder = self.embedd_quanti_model.get_layer("mae_encoder")
-        return keras.Sequential([patch_layer, patch_encoder, encoder])
+        return patch_layer, patch_encoder, encoder
 
     def build(self, input_shape):
         self.transf.build(input_shape)
@@ -189,7 +188,7 @@ class EmissionTransformer(keras.Model):
     def __init__(self, embedding_model,  bottom_layers=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.embedding_model = embedding_model
-        self.embedding_layer = Embedding(self.embedding_model)
+        self.embedding_layer = Embedding(*self.embedding_model)
         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
             intermediate_dim=INTERMEDIATE_DIM,
             num_heads=NUM_HEADS,
@@ -285,14 +284,19 @@ class EmissionTransformer(keras.Model):
 
 
 class Embedding(keras.layers.Layer):
-    def __init__(self, embedding, **kwargs):
+    def __init__(self, patch_layer, patch_encoder, encoder, **kwargs):
         super().__init__(**kwargs)
-        self.embedding = embedding
+        self.patch_layer = patch_layer
+        self.patch_encoder = patch_encoder
+        self.encoder = encoder
         self.position_encoding = keras_nlp.layers.SinePositionEncoding()
+        self.flatten = keras.layers.Flatten()
 
     def _do_embedding(self, inputs):
-        x = self.embedding(inputs)
-        outputs = keras.layers.Flatten()(x)
+        x = self.patch_layer(inputs)
+        x = self.patch_encoder(x)
+        x = self.encoder(x)
+        outputs = self.flatten(x)
         return outputs
 
     def call(self, input):
