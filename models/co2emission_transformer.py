@@ -23,7 +23,7 @@ class EmissionPredictor(keras.Model):
         self.quantifier = self.get_quantifying_model()
         self.bottom_layers = bottom_layers
         self.transf = EmissionTransformer(
-            self.get_embedding_model(), bottom_layers)
+            self.get_embedding_model(self.embedd_quanti_model), bottom_layers)
         self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.mse_metric = keras.metrics.MeanSquaredError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
@@ -33,14 +33,14 @@ class EmissionPredictor(keras.Model):
     def get_quantifying_model(self):
         return keras.Sequential(self.embedd_quanti_model.layers[-3:])
 
-    def get_embedding_model(self):
+    def get_embedding_model(self, model):
         # patch_layer = self.embedd_quanti_model.get_layer("patches")
         # patch_encoder = self.embedd_quanti_model.get_layer("patch_encoder")
         # patch_encoder.downstream = True
         # encoder = self.embedd_quanti_model.get_layer("mae_encoder")
-        patch_layer = self.embedding_model.get_layer("patches")
-        patch_encoder = self.embedding_model.get_layer("patch_encoder")
-        encoder = self.embedding_model.get_layer("mae_encoder")
+        patch_layer = model.get_layer("patches")
+        patch_encoder = model.get_layer("patch_encoder")
+        encoder = model.get_layer("mae_encoder")
 
         # return self.embedding_model.patch_layer, self.embedding_model.patch_encoder, self.embedding_model.encoder
         return patch_layer, patch_encoder, encoder

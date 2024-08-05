@@ -1,8 +1,8 @@
 import keras
 
 
-def co2emiss_regres(input_shape, embedding, bottom_layers, **kwargs):
-    inputs = keras.Input(shape=input_shape)
+def co2emiss_regres(input_shape, embedding, **kwargs):
+    inputs = keras.Input(shape=input_shape, batch_size=32)
     x = embedding.patch_layer(inputs)
     x = embedding.patch_encoder(x)
     x = embedding.encoder(x)
