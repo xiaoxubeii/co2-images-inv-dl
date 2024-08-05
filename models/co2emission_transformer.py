@@ -16,9 +16,8 @@ NORM_EPSILON = 1e-5
 
 @keras.saving.register_keras_serializable()
 class EmissionPredictor(keras.Model):
-    def __init__(self, embedding_model, embedd_quanti_model, bottom_layers=None, **kwargs):
+    def __init__(self, embedd_quanti_model, bottom_layers=None, **kwargs):
         super().__init__(**kwargs)
-        self.embedding_model = embedding_model
         self.embedd_quanti_model = embedd_quanti_model
         self.quantifier = self.get_quantifying_model(embedd_quanti_model)
         self.bottom_layers = bottom_layers
@@ -92,7 +91,6 @@ class EmissionPredictor(keras.Model):
         config = super().get_config()
         config.update(
             {
-                "embedding_model": keras.saving.serialize_keras_object(self.embedding_model),
                 "embedd_quanti_model": keras.saving.serialize_keras_object(self.embedd_quanti_model),
             }
         )
@@ -100,7 +98,7 @@ class EmissionPredictor(keras.Model):
 
     @classmethod
     def from_config(cls, config):
-        for k in ["embedd_quanti_model", "embedding_model"]:
+        for k in ["embedd_quanti_model"]:
             config[k] = keras.saving.deserialize_keras_object(config[k])
         return cls(**config)
 
@@ -333,8 +331,7 @@ class Embedding(keras.layers.Layer):
         return cls(**config)
 
 
-def emission_predictor(input_shape, embedding_model, emd_quant_model, bottom_layers):
-    predictor = EmissionPredictor(
-        embedding_model, emd_quant_model, bottom_layers)
+def emission_predictor(input_shape, emd_quant_model, bottom_layers):
+    predictor = EmissionPredictor(emd_quant_model, bottom_layers)
     predictor.build(input_shape)
     return predictor
