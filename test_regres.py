@@ -54,6 +54,14 @@ if __name__ == "__main__":
     # path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08050033/w_best.keras"
     # model = keras.models.load_model(path)
     # print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
-    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08050135/w_best.keras"
-    model = keras.models.load_model(path)
-    print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
+    # path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08050135/w_best.keras"
+    # model = keras.models.load_model(path)
+    # print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
+    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras"
+    embedding_model = keras.models.load_model(path)
+
+    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-regres-08051117/w_best.keras"
+    regres_model = keras.models.load_model(path)
+
+    import pdb; pdb.set_trace()
+    pass
