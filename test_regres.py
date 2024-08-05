@@ -36,17 +36,24 @@ if __name__ == "__main__":
     #     model.get_layer("patch_encoder"),
     #     model.get_layer("mae_encoder"),
     # ])
-    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-regres-patch16/w_best.keras"
-    regres_model = keras.models.load_model(path)
+    # path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-regres-patch16/w_best.keras"
+    # regres_model = keras.models.load_model(path)
 
-    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08041353/w_best.keras"
-    transf_model = keras.models.load_model(path)
+    # path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08041353/w_best.keras"
+    # transf_model = keras.models.load_model(path)
 
-    model = keras.Sequential([
-        transf_model,
-        regres_model
-    ])
+    # model = keras.Sequential([
+    #     transf_model,
+    #     regres_model
+    # ])
 
-    print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
+    # print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
 
     # plot_image_from_mae(data, mae)
+
+    # path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08050033/w_best.keras"
+    # model = keras.models.load_model(path)
+    # print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))
+    path = "/Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/res/inversion/co2emiss-transformer-08050135/w_best.keras"
+    model = keras.models.load_model(path)
+    print(model.predict(data.x.eval_data[data.x.eval_data_indexes]))

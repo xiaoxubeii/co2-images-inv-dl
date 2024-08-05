@@ -23,11 +23,9 @@ from models.my_mobilenet import MobileNet
 from models.my_shufflenet import ShuffleNet
 from models.my_squeezenet import SqueezeNet
 from models.cnn_lstm import cnn_lstm
-from models.mae import mae, autoencoder
-from models.vae import vae
-from models.co2emission_transformer import emission_transf
+from models.mae import mae
 from models.co2emiss_regression import co2emiss_regres
-from models.co2emission_transformer import emission_ensembling
+from models.co2emission_transformer import emission_predictor
 
 
 def get_preprocessing_layers(
@@ -169,16 +167,11 @@ def get_core_model(
         xco2_emd.patch_encoder.downstream = True
         core_model = co2emiss_regres(input_shape, xco2_emd)
     elif name == "co2emiss-transformer":
-        xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
-        xco2_emd.patch_encoder.downstream = True
-        # xco2_emd.trainable = False
-        core_model = emission_transf(
-            input_shape, xco2_emd, bottom_layers=bottom_layers)
-    elif name == "co2emiss-ensembling":
-        predictor = tf.keras.models.load_model(config.model.predictor_path)
-        quantifier = tf.keras.models.load_model(config.model.quantifier_path)
-        core_model = emission_ensembling(
-            input_shape, predictor, quantifier)
+        emd_quant_model = tf.keras.models.load_model(
+            config.model.embedd_quanti_path)
+        emd_quant_model = emd_quant_model.get_layer("co2emiss_regres")
+        core_model = emission_predictor(
+            input_shape, emd_quant_model, bottom_layers)
     else:
         print(f"Unknown model name: {name}")
         sys.exit()
