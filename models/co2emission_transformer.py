@@ -189,6 +189,7 @@ class EmissionTransformer(keras.Model):
         super().__init__(*args, **kwargs)
         self.embedding_model = embedding_model
         self.embedding_layer = Embedding(*self.embedding_model)
+        self.embedding_layer.trainable = False
         self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
             intermediate_dim=INTERMEDIATE_DIM,
             num_heads=NUM_HEADS,
