@@ -229,6 +229,7 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
 def get_modelcheckpoint(get: bool, cbs: list, **kwargs) -> list:
     """Add modelcheckpoint to callbacks list if get."""
     if get:
+        kwargs = remove_unwanted_kwargs(kwargs, ["__target__"])
         modelcheckpoint_cb = keras.callbacks.ModelCheckpoint(**kwargs)
         cbs.append(modelcheckpoint_cb)
     else:
@@ -239,6 +240,7 @@ def get_modelcheckpoint(get: bool, cbs: list, **kwargs) -> list:
 def get_lrscheduler(get: bool, cbs: list, **kwargs) -> list:
     """Add reducelronplateau to callbacks list if get."""
     if get:
+        kwargs = remove_unwanted_kwargs(kwargs, ["__target__"])
         reducelronplateau_cb = tf.keras.callbacks.ReduceLROnPlateau(**kwargs)
         cbs.append(reducelronplateau_cb)
     else:
@@ -249,11 +251,18 @@ def get_lrscheduler(get: bool, cbs: list, **kwargs) -> list:
 def get_earlystopping(get: bool, cbs: list, **kwargs) -> list:
     """Add earlystopping to callbacks list if get."""
     if get:
+        kwargs = remove_unwanted_kwargs(kwargs, ["__target__"])
         earlystopping_cb = tf.keras.callbacks.EarlyStopping(**kwargs)
         cbs.append(earlystopping_cb)
     else:
         pass
     return cbs
+
+
+def remove_unwanted_kwargs(kwargs, unwanted: list) -> list:
+    for key in unwanted:
+        kwargs.pop(key, None)
+    return kwargs
 
 
 class TransferModelCheckpoint(callbacks.ModelCheckpoint):
