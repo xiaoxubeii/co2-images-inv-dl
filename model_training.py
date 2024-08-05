@@ -177,8 +177,6 @@ class Model_training_manager:
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate))
         else:
-            import pdb
-            pdb.set_trace()
             self.model.compile(
                 optimizer=optimisers.define_optimiser(
                     cfg.training.optimiser, cfg.training.learning_rate
@@ -241,10 +239,10 @@ class Model_training_manager:
             print(f"Unknown model type: {cfg.model.type}")
             sys.exit()
 
-        cbs = callbacks.get_lrscheduler(
-            cfg.callbacks.learning_rate_monitor, [], **cfg.callbacks.learning_rate_monitor)
+        cbs = callbacks.get_lrscheduler("learning_rate_monitor" in cfg.callbacks, [
+        ], **cfg.callbacks.learning_rate_monitor)
         cbs = callbacks.get_earlystopping(
-            cfg.callbacks.early_stopping, cbs, **cfg.callbacks.early_stopping)
+            "early_stopping" in cfg.callbacks, cbs, **cfg.callbacks.early_stopping)
         self.trainer = Trainer(
             generator,
             cbs,
@@ -263,7 +261,7 @@ class Model_training_manager:
                         name=self.cfg.exp_name, tags=run_tags, config=config) as run:
 
             self.trainer.callbacks.append(
-                callbacks.get_modelcheckpoint(self.cfg.callbacks.model_checkpoint, [], **self.cfg.callbacks.model_checkpoint))
+                callbacks.get_modelcheckpoint("model_checkpoint" in self.cfg.callbacks, [], **self.cfg.callbacks.model_checkpoint))
             self.trainer.callbacks.append(WandbMetricsLogger())
             self.trainer.train_model(self.model, self.data)
             run.save(os.path.abspath("config.yaml"))
