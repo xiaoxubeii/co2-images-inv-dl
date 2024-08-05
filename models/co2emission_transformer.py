@@ -16,13 +16,14 @@ NORM_EPSILON = 1e-5
 
 @keras.saving.register_keras_serializable()
 class EmissionPredictor(keras.Model):
-    def __init__(self, embedd_quanti_model, bottom_layers=None, **kwargs):
+    def __init__(self, embedding_model, embedd_quanti_model, bottom_layers=None, **kwargs):
         super().__init__(**kwargs)
+        self.embedding_model = embedding_model
         self.embedd_quanti_model = embedd_quanti_model
         self.quantifier = self.get_quantifying_model()
         self.bottom_layers = bottom_layers
-        embedding_model = self.get_embedding_model()
-        self.transf = EmissionTransformer(embedding_model, bottom_layers)
+        self.transf = EmissionTransformer(
+            self.get_embedding_model(), bottom_layers)
         self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.mse_metric = keras.metrics.MeanSquaredError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
@@ -33,11 +34,11 @@ class EmissionPredictor(keras.Model):
         return keras.Sequential(self.embedd_quanti_model.layers[-3:])
 
     def get_embedding_model(self):
-        patch_layer = self.embedd_quanti_model.get_layer("patches")
-        patch_encoder = self.embedd_quanti_model.get_layer("patch_encoder")
-        patch_encoder.downstream = True
-        encoder = self.embedd_quanti_model.get_layer("mae_encoder")
-        return patch_layer, patch_encoder, encoder
+        # patch_layer = self.embedd_quanti_model.get_layer("patches")
+        # patch_encoder = self.embedd_quanti_model.get_layer("patch_encoder")
+        # patch_encoder.downstream = True
+        # encoder = self.embedd_quanti_model.get_layer("mae_encoder")
+        return self.embedding_model.patch_layer, self.embedding_model.patch_encoder, self.embedding_model.encoder
 
     def build(self, input_shape):
         self.transf.build(input_shape)
@@ -306,7 +307,8 @@ class Embedding(keras.layers.Layer):
         return embedding + positional_encoding
 
 
-def emission_predictor(input_shape, emd_quant_model, bottom_layers):
-    predictor = EmissionPredictor(emd_quant_model, bottom_layers)
+def emission_predictor(input_shape, embedding_model, emd_quant_model, bottom_layers):
+    predictor = EmissionPredictor(
+        embedding_model, emd_quant_model, bottom_layers)
     predictor.build(input_shape)
     return predictor
