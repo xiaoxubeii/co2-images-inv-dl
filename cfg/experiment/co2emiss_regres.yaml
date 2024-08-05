@@ -8,4 +8,4 @@ defaults:
 
 callbacks:
   early_stopping:
-    patience: 0
+    patience: 50
