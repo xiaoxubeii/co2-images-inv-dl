@@ -1,5 +1,1 @@
 # @package _global_
-
-wandb:
-    project_name: co2-emission-estimation
-    key: 69fea85817147f437d88815d733f3e2ed9799c12
