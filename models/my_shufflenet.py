@@ -11,7 +11,7 @@ import tensorflow as tf
 
 
 def channel_shuffle(x, groups):
-    _, width, height, channels = x.get_shape().as_list()
+    _, width, height, channels = x.shape
     group_ch = channels // groups
     x = tf.keras.layers.Reshape([width, height, group_ch, groups])(x)
     x = tf.keras.layers.Permute([1, 2, 4, 3])(x)
@@ -27,7 +27,8 @@ def shuffle_unit(x, groups, channels, strides):
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
     x = channel_shuffle(x, groups)
-    x = tf.keras.layers.DepthwiseConv2D((3, 3), strides=strides, padding="same")(x)
+    x = tf.keras.layers.DepthwiseConv2D(
+        (3, 3), strides=strides, padding="same")(x)
     x = tf.keras.layers.BatchNormalization()(x)
     if strides == (2, 2):
         channels = channels - y.shape[-1]
@@ -39,14 +40,15 @@ def shuffle_unit(x, groups, channels, strides):
     if strides == (1, 1):
         x = tf.keras.layers.Add()([x, y])
     if strides == (2, 2):
-        y = tf.keras.layers.AvgPool2D((3, 3), strides=(2, 2), padding="same")(y)
+        y = tf.keras.layers.AvgPool2D(
+            (3, 3), strides=(2, 2), padding="same")(y)
         x = tf.keras.layers.concatenate([x, y])
     x = tf.keras.layers.ReLU()(x)
     return x
 
 
 def ShuffleNet(input_shape=[64, 64, 3], scaling_coefficient=1.0):
-    start_channels = 128 * scaling_coefficient
+    start_channels = int(128 * scaling_coefficient)
     groups = 2
     input_img = tf.keras.layers.Input(input_shape)
     x = tf.keras.layers.Conv2D(
@@ -55,7 +57,8 @@ def ShuffleNet(input_shape=[64, 64, 3], scaling_coefficient=1.0):
 
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
-    x = tf.keras.layers.MaxPool2D(pool_size=(3, 3), strides=2, padding="same")(x)
+    x = tf.keras.layers.MaxPool2D(
+        pool_size=(3, 3), strides=2, padding="same")(x)
     repetitions = [3, 7]
     for i, repetition in enumerate(repetitions):
         channels = start_channels * (2**i)
