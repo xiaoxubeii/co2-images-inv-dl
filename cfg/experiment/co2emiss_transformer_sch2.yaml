@@ -5,3 +5,9 @@ defaults:
   - override /data/output: inversion
   - override /data/input: inversion
   - override /data/path: sch2
+
+callbacks:
+  early_stopping:
+    patience: 100
+  learning_rate_monitor:
+    patience: 10
