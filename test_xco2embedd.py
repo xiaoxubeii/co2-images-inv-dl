@@ -20,7 +20,7 @@ def run(cfg: DictConfig):
         data = model_eval.get_data_for_inversion(
             cfg.data.path.directory, cfg.data.init.path_test_ds, cfg)
         model = model_eval.get_regres_model(
-            cfg.model.embedd_path, cfg.model.regres_path, data.x.eval_data.shape[1:])
+            cfg.embedd_path, cfg.regres_path, data.x.eval_data.shape[1:])
         metric = model_eval.get_inv_metrics_model_on_data(model, data)
         metric["method"] = cfg.model.name
         fig = model_eval.get_summary_histo_inversion1([metric])
