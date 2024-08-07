@@ -1,0 +1,12 @@
+# @package _global_
+
+defaults:
+    - override /model: co2emiss_regres
+    - override /data/output: inversion
+    - override /data/input: inversion
+    - override /data/path: boxberg
+
+model:
+    embedd_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/embedding/xco2embedd-mae-patch16/w_best.keras
+    regres_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-regres-patch16/w_best.keras
+    name: xco2embedd-regres-path16

@@ -302,6 +302,21 @@ def get_data_for_inversion(data_dir: str, path_eval_nc: str, cfg: OmegaConf = No
     return data
 
 
+def get_regres_model(embedd_path, regres_path, input_shape):
+    regres_model = keras.models.load_model(regres_path)
+    mae_model = keras.models.load_model(embedd_path)
+    mae_model.patch_encoder.downstream = True
+
+    quanti_model = regres_model.quantifier
+    embedd_model = keras.Sequential(
+        [mae_model.patch_layer, mae_model.patch_encoder, mae_model.encoder])
+    inputs = keras.Input(input_shape)
+    x = embedd_model(inputs)
+    x = keras.layers.Flatten()(x)
+    outputs = quanti_model(x)
+    return keras.Model(inputs, outputs)
+
+
 def get_inversion_model(
     dir_res: str,
     name_w: str = "w_best.keras",
