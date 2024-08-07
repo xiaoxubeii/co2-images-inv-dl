@@ -241,6 +241,7 @@ class Model_training_manager:
             print(f"Unknown model type: {cfg.model.type}")
             sys.exit()
 
+        import pdb;pdb.set_trace()
         cbs = callbacks.get_lrscheduler("learning_rate_monitor" in cfg.callbacks, [
         ], **cfg.callbacks.learning_rate_monitor)
         cbs = callbacks.get_earlystopping(
