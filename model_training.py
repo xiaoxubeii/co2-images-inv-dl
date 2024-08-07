@@ -150,7 +150,8 @@ class Model_training_manager:
                 n_layer=self.data.x.n_layer,
                 noisy_chans=self.data.x.xco2_noisy_chans,
                 config=cfg,
-                load_weights=cfg.load_weights
+                load_weights=cfg.load_weights,
+                load_model=cfg.load_model
             )
             self.model = reg_builder.get_model()
 
@@ -165,7 +166,8 @@ class Model_training_manager:
                 cfg.model.scaling_coefficient,
                 self.data.x.window_length,
                 cfg,
-                cfg.load_weights
+                cfg.load_weights,
+                cfg.load_model
             )
             self.model = reg_builder.get_model()
         else:
@@ -271,4 +273,5 @@ class Model_training_manager:
     def save(self) -> None:
         """Save results of the run."""
         print("Saving at:", os.getcwd())
-        self.saver.save_model_and_weights(self.model)
+        # self.saver.save_model_and_weights(self.model)
+        self.saver.save_weights(self.model)

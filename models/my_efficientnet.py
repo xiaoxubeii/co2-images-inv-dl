@@ -29,6 +29,7 @@ import collections
 import math
 import os
 import string
+import keras
 
 import tensorflow as tf
 from keras_applications.imagenet_utils import _obtain_input_shape
@@ -141,14 +142,14 @@ def get_swish(**kwargs):
 
 
 def get_dropout(**kwargs):
-    """Wrapper over custom dropout. Fix problem of ``None`` shape for tf.keras.
+    """Wrapper over custom dropout. Fix problem of ``None`` shape for keras.
     It is not possible to define FixedDropout class as global object,
     because we do not have modules for inheritance at first time.
     Issue:
         https://github.com/tensorflow/tensorflow/issues/30946
     """
 
-    class FixedDropout(tf.keras.layers.Dropout):
+    class FixedDropout(keras.layers.Dropout):
         def _get_noise_shape(self, inputs):
             if self.noise_shape is None:
                 return self.noise_shape
@@ -192,13 +193,13 @@ def mb_conv_block(
     has_se = (block_args.se_ratio is not None) and (
         0 < block_args.se_ratio <= 1)
     bn_axis = 3
-    # workaround over non working dropout with None in noise_shape in tf.keras
+    # workaround over non working dropout with None in noise_shape in keras
     Dropout = get_dropout()
 
     # Expansion phase
     filters = block_args.input_filters * block_args.expand_ratio
     if block_args.expand_ratio != 1:
-        x = tf.keras.layers.Conv2D(
+        x = keras.layers.Conv2D(
             filters,
             1,
             padding="same",
@@ -206,16 +207,16 @@ def mb_conv_block(
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             name=prefix + "expand_conv",
         )(inputs)
-        x = tf.keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "expand_bn")(
+        x = keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "expand_bn")(
             x
         )
-        x = tf.keras.layers.Activation(
+        x = keras.layers.Activation(
             activation, name=prefix + "expand_activation")(x)
     else:
         x = inputs
 
     # Depthwise Convolution
-    x = tf.keras.layers.DepthwiseConv2D(
+    x = keras.layers.DepthwiseConv2D(
         block_args.kernel_size,
         strides=block_args.strides,
         padding="same",
@@ -223,23 +224,23 @@ def mb_conv_block(
         depthwise_initializer=CONV_KERNEL_INITIALIZER,
         name=prefix + "dwconv",
     )(x)
-    x = tf.keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "bn")(x)
-    x = tf.keras.layers.Activation(activation, name=prefix + "activation")(x)
+    x = keras.layers.BatchNormalization(axis=bn_axis, name=prefix + "bn")(x)
+    x = keras.layers.Activation(activation, name=prefix + "activation")(x)
 
     # Squeeze and Excitation phase
     if has_se:
         num_reduced_filters = max(
             1, int(block_args.input_filters * block_args.se_ratio)
         )
-        se_tensor = tf.keras.layers.GlobalAveragePooling2D(name=prefix + "se_squeeze")(
+        se_tensor = keras.layers.GlobalAveragePooling2D(name=prefix + "se_squeeze")(
             x
         )
 
         target_shape = (1, 1, filters)
-        se_tensor = tf.keras.layers.Reshape(target_shape, name=prefix + "se_reshape")(
+        se_tensor = keras.layers.Reshape(target_shape, name=prefix + "se_reshape")(
             se_tensor
         )
-        se_tensor = tf.keras.layers.Conv2D(
+        se_tensor = keras.layers.Conv2D(
             num_reduced_filters,
             1,
             activation=activation,
@@ -248,7 +249,7 @@ def mb_conv_block(
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             name=prefix + "se_reduce",
         )(se_tensor)
-        se_tensor = tf.keras.layers.Conv2D(
+        se_tensor = keras.layers.Conv2D(
             filters,
             1,
             activation="sigmoid",
@@ -257,10 +258,10 @@ def mb_conv_block(
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             name=prefix + "se_expand",
         )(se_tensor)
-        x = tf.keras.layers.multiply([x, se_tensor], name=prefix + "se_excite")
+        x = keras.layers.multiply([x, se_tensor], name=prefix + "se_excite")
 
     # Output phase
-    x = tf.keras.layers.Conv2D(
+    x = keras.layers.Conv2D(
         block_args.output_filters,
         1,
         padding="same",
@@ -268,7 +269,7 @@ def mb_conv_block(
         kernel_initializer=CONV_KERNEL_INITIALIZER,
         name=prefix + "project_conv",
     )(x)
-    x = tf.keras.layers.BatchNormalization(
+    x = keras.layers.BatchNormalization(
         axis=bn_axis, name=prefix + "project_bn")(x)
     if (
         block_args.id_skip
@@ -278,7 +279,7 @@ def mb_conv_block(
         if drop_rate and (drop_rate > 0):
             x = Dropout(drop_rate, noise_shape=(
                 None, 1, 1, 1), name=prefix + "drop")(x)
-        x = tf.keras.layers.add([x, inputs], name=prefix + "add")
+        x = keras.layers.add([x, inputs], name=prefix + "add")
 
     return x
 
@@ -309,9 +310,9 @@ def EfficientNet_constructor(
     bn_axis = 3
     activation = get_swish(**kwargs)
 
-    img_input = tf.keras.layers.Input(shape=input_shape)
+    img_input = keras.layers.Input(shape=input_shape)
 
-    x = tf.keras.layers.Conv2D(
+    x = keras.layers.Conv2D(
         round_filters(32, width_coefficient, depth_divisor),
         3,
         strides=(2, 2),
@@ -320,8 +321,8 @@ def EfficientNet_constructor(
         kernel_initializer=CONV_KERNEL_INITIALIZER,
         name="stem_conv",
     )(img_input)
-    x = tf.keras.layers.BatchNormalization(axis=bn_axis, name="stem_bn")(x)
-    x = tf.keras.layers.Activation(activation, name="stem_activation")(x)
+    x = keras.layers.BatchNormalization(axis=bn_axis, name="stem_bn")(x)
+    x = keras.layers.Activation(activation, name="stem_activation")(x)
 
     # Build blocks
     num_blocks_total = sum(
@@ -374,7 +375,7 @@ def EfficientNet_constructor(
                 block_num += 1
 
     # Build top
-    x = tf.keras.layers.Conv2D(
+    x = keras.layers.Conv2D(
         round_filters(1280, width_coefficient, depth_divisor),
         1,
         padding="same",
@@ -382,11 +383,11 @@ def EfficientNet_constructor(
         kernel_initializer=CONV_KERNEL_INITIALIZER,
         name="top_conv",
     )(x)
-    x = tf.keras.layers.BatchNormalization(axis=bn_axis, name="top_bn")(x)
-    x = tf.keras.layers.Activation(activation, name="top_activation")(x)
+    x = keras.layers.BatchNormalization(axis=bn_axis, name="top_bn")(x)
+    x = keras.layers.Activation(activation, name="top_activation")(x)
 
     # Create model.
-    model = tf.keras.models.Model(img_input, x, name=model_name)
+    model = keras.models.Model(img_input, x, name=model_name)
 
     return model
 

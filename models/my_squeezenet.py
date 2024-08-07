@@ -45,17 +45,20 @@ def SqueezeNet(
         name="conv1",
     )(input_img)
 
-    x = tf.keras.layers.MaxPooling2D((3, 3), strides=(2, 2), name="maxpool1")(x)
+    x = tf.keras.layers.MaxPooling2D(
+        (3, 3), strides=(2, 2), name="maxpool1")(x)
 
     x = create_fire_module(x, int(8 * compression), name="fire2")
     x = create_fire_module(x, int(16 * compression), name="fire3")
 
-    x = tf.keras.layers.MaxPooling2D((3, 3), strides=(2, 2), name="maxpool3")(x)
+    x = tf.keras.layers.MaxPooling2D(
+        (3, 3), strides=(2, 2), name="maxpool3")(x)
 
     x = create_fire_module(x, int(32 * compression), name="fire4")
     x = create_fire_module(x, int(32 * compression), name="fire5")
 
-    x = tf.keras.layers.MaxPooling2D((3, 3), strides=(2, 2), name="maxpool5")(x)
+    x = tf.keras.layers.MaxPooling2D(
+        (3, 3), strides=(2, 2), name="maxpool5")(x)
 
     x = create_fire_module(x, int(48 * compression), name="fire6")
     x = create_fire_module(x, int(48 * compression), name="fire7")
@@ -111,11 +114,12 @@ def create_fire_module(x, nb_squeeze_filter, name, use_bypass=False):
     )
 
     if use_bypass:
-        x_ret = tf.keras.layers.Add(name="%s_concatenate_bypass" % name)([x_ret, x])
+        x_ret = tf.keras.layers.Add(
+            name="%s_concatenate_bypass" % name)([x_ret, x])
 
     return x_ret
 
 
 def get_axis():
-    axis = -1 if K.image_data_format() == "channels_last" else 1
+    axis = -1 if tf.keras.backend.image_data_format() == "channels_last" else 1
     return axis

@@ -196,6 +196,7 @@ class Reg_model_builder:
     window_length: int = 0
     config: DictConfig = None
     load_weights: str = ""
+    load_model: str = ""
 
     def get_model(self):
         """Return regression model, keras or locals."""
@@ -206,8 +207,8 @@ class Reg_model_builder:
             bottom_layers = BottomLayers(
                 self.n_layer, self.input_shape[-1], self.noisy_chans, self.window_length, name="bottom_layers")
         top_layers = TopLayers(self.classes, self.name, name="top_layers")
-        if self.load_weights:
-            core_model = tf.keras.models.load_model(self.load_weights)
+        if self.load_model:
+            core_model = tf.keras.models.load_model(self.load_model)
             if self.config.model.custom_model:
                 core_model.bottom_layers = bottom_layers
         else:
@@ -221,6 +222,8 @@ class Reg_model_builder:
                 top_layers,
                 self.config
             )
+            if self.load_weights:
+                core_model.load_weights(self.load_weights)
 
         if not self.config.model.custom_model:
             inputs = tf.keras.layers.Input(
