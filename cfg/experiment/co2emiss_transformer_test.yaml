@@ -4,7 +4,7 @@ defaults:
   - override /model: co2emiss_transformer
   - override /data/output: inversion
   - override /data/input: inversion
-  - override /data/path: sch2_small
+  - override /data/path: boxberg
 
 data:
 training:
