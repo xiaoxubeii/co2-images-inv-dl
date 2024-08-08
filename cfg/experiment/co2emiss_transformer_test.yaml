@@ -25,3 +25,5 @@ callbacks:
 
 model:
   embedd_quanti_path: /Users/xiaoxubeii/Program/go/src/github.com/co2-images-inv-dl/experiments/inversion/co2emiss-regres-patch16-epoch80/w_best.keras
+
+rrun_eagerly: True

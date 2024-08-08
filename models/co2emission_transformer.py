@@ -22,7 +22,7 @@ class EmissionPredictor(keras.Model):
         self.quantifier = self.get_quantifying_model(embedd_quanti_model)
         self.bottom_layers = bottom_layers
         self.transf = EmissionTransformer(
-            self.get_embedding_layer(self.embedd_quanti_model), bottom_layers)
+            self.get_embedding_layer(self.embedd_quanti_model), None)
         self.mape_metric = keras.metrics.MeanAbsolutePercentageError()
         self.mse_metric = keras.metrics.MeanSquaredError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
