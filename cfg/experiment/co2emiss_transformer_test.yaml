@@ -9,6 +9,7 @@ defaults:
 data:
 training:
   max_epochs: 20
+  learning_rate: 5e-4
 
 callbacks:
   early_stopping:
