@@ -10,4 +10,4 @@ callbacks:
   early_stopping:
     patience: 100
   learning_rate_monitor:
-    patience: 10
+    patience: 20
