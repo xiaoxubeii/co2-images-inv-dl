@@ -209,7 +209,7 @@ class Input_filler:
             data = np.concatenate((data, self.fill_chan(chan, ds)), axis=-1)
         indexes = np.array(range(data.shape[0]))
         shape = data.shape
-        if self.window_length> 0:
+        if self.window_length > 0:
             num_batches = int(
                 np.floor((len(data) - self.window_length)/self.shift)) + 1
             indexes = []
@@ -290,6 +290,7 @@ class Input_train:
     window_length: int = 0
     shift: int = 0
     cutoff_size: int = 0
+    scale: bool = True
 
     def __post_init__(self):
 
@@ -353,21 +354,23 @@ class Input_train:
         self.plumes_train = {}
         self.xco2_back_train = {}
         self.xco2_alt_anthro_train = {}
-        for idx, chan in enumerate(self.list_chans):
-            if chan.startswith("xco2"):
-                self.scale_bool[idx] = True
-                if "prec" in chan:
-                    self.plumes_train[idx] = get_plume_prec(self.ds_train)
-                    self.xco2_back_train[idx] = get_xco2_back_prec(
-                        self.ds_train)
-                    self.xco2_alt_anthro_train[idx] = get_xco2_alt_anthro_prec(
-                        self.ds_train
-                    )
-                else:
-                    self.plumes_train[idx] = get_plume(self.ds_train)
-                    self.xco2_back_train[idx] = get_xco2_back(self.ds_train)
-                    self.xco2_alt_anthro_train[idx] = get_xco2_alt_anthro(
-                        self.ds_train)
+        if self.scale:
+            for idx, chan in enumerate(self.list_chans):
+                if chan.startswith("xco2"):
+                    self.scale_bool[idx] = True
+                    if "prec" in chan:
+                        self.plumes_train[idx] = get_plume_prec(self.ds_train)
+                        self.xco2_back_train[idx] = get_xco2_back_prec(
+                            self.ds_train)
+                        self.xco2_alt_anthro_train[idx] = get_xco2_alt_anthro_prec(
+                            self.ds_train
+                        )
+                    else:
+                        self.plumes_train[idx] = get_plume(self.ds_train)
+                        self.xco2_back_train[idx] = get_xco2_back(
+                            self.ds_train)
+                        self.xco2_alt_anthro_train[idx] = get_xco2_alt_anthro(
+                            self.ds_train)
 
 
 @dataclass
@@ -407,7 +410,7 @@ def concat_dataset(data_dir, datasets):
     return xr.concat(rs_ds, dim='idx_img')
 
 
-@ dataclass
+@dataclass
 class Data_train:
     """Object for containing Input and Output data and all other informations."""
 
@@ -418,6 +421,7 @@ class Data_train:
     window_length: int = 0
     shift: int = 0
     cutoff_size: int = 0
+    scale: bool = True
 
     def __post_init__(self):
         self.ds_train = concat_dataset(self.path_data_dir, self.path_train_ds)
@@ -454,6 +458,7 @@ class Data_train:
             window_length=self.window_length,
             shift=self.shift,
             cutoff_size=self.cutoff_size,
+            scale=self.scale
         )
 
     def prepare_output_segmentation(

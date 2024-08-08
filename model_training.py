@@ -236,6 +236,7 @@ class Model_training_manager:
                 plume_scaling_min=cfg.augmentations.plume_scaling_min,
                 plume_scaling_max=cfg.augmentations.plume_scaling_max,
                 window_length=self.data.x.window_length,
+                scale_y=self.data.scale,
             )
         else:
             print(f"Unknown model type: {cfg.model.type}")
