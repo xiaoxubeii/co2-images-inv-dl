@@ -5,3 +5,7 @@ defaults:
   - override /data/output: inversion
   - override /data/input: inversion
   - override /data/path: boxberg
+
+callbacks:
+  learning_rate_monitor:
+    patience: 5
