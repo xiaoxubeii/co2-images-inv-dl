@@ -7,9 +7,9 @@ from keras import ops
 import include.loss as loss
 
 # Model params.
-NUM_LAYERS = 7
+NUM_LAYERS = 3
 INTERMEDIATE_DIM = 512
-NUM_HEADS = 8
+NUM_HEADS = 4
 DROPOUT = 0.1
 NORM_EPSILON = 1e-5
 
@@ -33,7 +33,7 @@ class EmissionPredictor(keras.Model):
     def get_quantifying_model(self, model):
         # return keras.Sequential(self.embedd_quanti_model.layers[-3:])
         # return model.quantifier
-        return keras.layers.Dense(1, activation="relu")
+        return keras.layers.Dense(1)
 
     def get_embedding_layer(self, model):
         # patch_layer = self.embedd_quanti_model.get_layer("patches")
