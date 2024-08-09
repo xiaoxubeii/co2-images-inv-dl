@@ -9,12 +9,3 @@ defaults:
 data:
   init:
     scale: True
-
-training:
-  learning_rate: 5e-4
-
-callbacks:
-  early_stopping:
-    patience: 10
-  learning_rate_monitor:
-    patience: 10

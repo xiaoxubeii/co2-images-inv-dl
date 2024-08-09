@@ -167,6 +167,8 @@ def get_core_model(
         xco2_emd.patch_encoder.downstream = True
         core_model = co2emiss_regres(input_shape, xco2_emd)
     elif name == "co2emiss-transformer":
+        import pdb
+        pdb.set_trace()
         emd_quant_model = tf.keras.models.load_model(
             config.model.embedd_quanti_path)
         # emd_quant_model = emd_quant_model.get_layer("co2emiss_regres")
