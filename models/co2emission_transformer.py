@@ -7,9 +7,9 @@ from keras import ops
 import include.loss as loss
 
 # Model params.
-NUM_LAYERS = 3
+NUM_LAYERS = 7
 INTERMEDIATE_DIM = 512
-NUM_HEADS = 4
+NUM_HEADS = 8
 DROPOUT = 0.1
 NORM_EPSILON = 1e-5
 
@@ -41,7 +41,7 @@ class EmissionPredictor(keras.Model):
         # patch_layer = model.get_layer("patches")
         # patch_encoder = model.get_layer("patch_encoder")
         # encoder = model.get_layer("mae_encoder")
-
+        model.embedding_layer.trainable = False
         return model.embedding_layer
         # return patch_layer, patch_encoder, encoder
 
@@ -72,7 +72,7 @@ class EmissionPredictor(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            self.quantifier.trainable_variables,
+            # self.quantifier.trainable_variables,
             self.transf.trainable_variables,
         ]
         grads = tape.gradient(total_loss, train_vars)
@@ -196,15 +196,6 @@ class EmissionTransformer(keras.Model):
         super().__init__(*args, **kwargs)
         self.embedding_model = embedding_model
         self.embedding_layer = Embedding(self.embedding_model)
-        # self.embedding_layer.trainable = False
-        self.transformer_encoder = keras_nlp.layers.TransformerEncoder(
-            intermediate_dim=INTERMEDIATE_DIM,
-            num_heads=NUM_HEADS,
-            dropout=DROPOUT,
-            layer_norm_epsilon=NORM_EPSILON,
-        )
-        self.dropout = keras.layers.Dropout(DROPOUT)
-        self.layernorm = keras.layers.LayerNormalization(epsilon=NORM_EPSILON)
         self.flatten = keras.layers.Flatten()
         self.mse = keras.losses.MeanSquaredError()
         self.loss_tracker = keras.metrics.Mean(name="loss")
@@ -215,26 +206,25 @@ class EmissionTransformer(keras.Model):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
         x = self.embedding_layer(inputs)
-        self.dense = keras.layers.Dense(x.shape[-1])
-        x = self.transformer_encoder(x)
+        self.transformer_decoder = keras_nlp.layers.TransformerDecoder(
+            intermediate_dim=x.shape[-1],
+            num_heads=NUM_HEADS,
+            dropout=DROPOUT,
+            layer_norm_epsilon=NORM_EPSILON,
+        )
+        x = self.transformer_decoder(x)
+        self.linear = keras.layers.Dense(x.shape[-1])
         x = self.flatten(x)
-        x = self.dense(x)
-        x = self.dropout(x)
-        self.layernorm(x)
+        self.linear(x)
 
     def call(self, inputs):
-        input_shape = tf.shape(inputs)
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
         x = self.embedding_layer(inputs)
-        mask = compute_mask(
-            input_shape[0], input_shape[1], input_shape[1], "bool")
         for i in range(NUM_LAYERS):
-            x = self.transformer_encoder(x, attention_mask=mask)
+            x = self.transformer_decoder(x)
         x = self.flatten(x)
-        x = self.dense(x)
-        x = self.dropout(x)
-        return self.layernorm(x)
+        return self.linear(x)
 
     def calculate_loss(self, inputs):
         x, y = inputs
