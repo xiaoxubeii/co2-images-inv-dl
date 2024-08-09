@@ -28,10 +28,12 @@ class EmissionPredictor(keras.Model):
         self.loss_tracker = keras.metrics.Mean(name="loss")
         self.mse_loss = keras.losses.MeanSquaredError()
         self.mae_loss = keras.losses.MeanAbsoluteError()
+        self.flattern = keras.layers.Flatten()
 
     def get_quantifying_model(self, model):
         # return keras.Sequential(self.embedd_quanti_model.layers[-3:])
-        return model.quantifier
+        # return model.quantifier
+        return keras.layers.Dense(1, activation="relu")
 
     def get_embedding_layer(self, model):
         # patch_layer = self.embedd_quanti_model.get_layer("patches")
@@ -41,25 +43,32 @@ class EmissionPredictor(keras.Model):
         # patch_layer = model.get_layer("patches")
         # patch_encoder = model.get_layer("patch_encoder")
         # encoder = model.get_layer("mae_encoder")
-        model.embedding_layer.trainable = False
+        # model.embedding_layer.trainable = False
         return model.embedding_layer
         # return patch_layer, patch_encoder, encoder
 
     def build(self, input_shape):
         self.transf.build(input_shape)
+        inputs = keras.Input(shape=input_shape)
+        x = self.transf(inputs)
+        x = self.flattern(x)
+        self.quantifier(x)
 
     def call(self, inputs):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
         x = self.transf(inputs)
+        x - self.flattern(x)
         return self.quantifier(x)
 
     def calculate_loss(self, inputs):
         inputs, y1, y2 = inputs
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
-        y1, embedd_pred, _ = self.transf.calculate_loss((inputs, y1))
-        self.mse_metric.update_state(y1, embedd_pred)
+        # y1, embedd_pred, _ = self.transf.calculate_loss((inputs, y1))
+        # self.mse_metric.update_state(y1, embedd_pred)
+        embedd_pred = self.transf(inputs)
+        embedd_pred = self.flattern(embedd_pred)
         outputs = self.quantifier(embedd_pred)
         total_loss = self.mae_loss(y2, outputs)
         self.loss_tracker.update_state(total_loss)
@@ -72,7 +81,7 @@ class EmissionPredictor(keras.Model):
 
         # Apply gradients.
         train_vars = [
-            # self.quantifier.trainable_variables,
+            self.quantifier.trainable_variables,
             self.transf.trainable_variables,
         ]
         grads = tape.gradient(total_loss, train_vars)
@@ -81,11 +90,12 @@ class EmissionPredictor(keras.Model):
             for g, v in zip(grad, var):
                 tv_list.append((g, v))
         self.optimizer.apply_gradients(tv_list)
-        return {"loss": self.loss_tracker.result(), "mse": self.mse_metric.result(), "mape": self.mape_metric.result()}
+        # return {"loss": self.loss_tracker.result(), "mse": self.mse_metric.result(), "mape": self.mape_metric.result()}
+        return {"loss": self.loss_tracker.result(), "mape": self.mape_metric.result()}
 
     def test_step(self, inputs):
         self.calculate_loss(inputs)
-        return {"loss": self.loss_tracker.result(), "mse": self.mse_metric.result(), "mape": self.mape_metric.result()}
+        return {"loss": self.loss_tracker.result(), "mape": self.mape_metric.result()}
 
     def get_config(self):
         config = super().get_config()
@@ -109,7 +119,7 @@ class EmissionPredictor(keras.Model):
         # or at the start of `evaluate()`.
         # If you don't implement this property, you have to call
         # `reset_states()` yourself at the time of your choosing.
-        return [self.loss_tracker, self.mse_metric, self.mape_metric]
+        return [self.loss_tracker, self.mape_metric]
 
 
 # @keras.saving.register_keras_serializable()
@@ -213,18 +223,19 @@ class EmissionTransformer(keras.Model):
             layer_norm_epsilon=NORM_EPSILON,
         )
         x = self.transformer_decoder(x)
-        self.linear = keras.layers.Dense(x.shape[-1])
-        x = self.flatten(x)
-        self.linear(x)
+        # self.linear = keras.layers.Dense(x.shape[-1])
+        # x = self.flatten(x)
+        # self.linear(x)
 
     def call(self, inputs):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
-        x = self.embedding_layer(inputs)
+        outputs = self.embedding_layer(inputs)
         for i in range(NUM_LAYERS):
-            x = self.transformer_decoder(x)
-        x = self.flatten(x)
-        return self.linear(x)
+            outputs = self.transformer_decoder(outputs)
+        # x = self.flatten(x)
+        # return self.linear(x)
+        return outputs
 
     def calculate_loss(self, inputs):
         x, y = inputs
