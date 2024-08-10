@@ -7,9 +7,9 @@ from keras import ops
 import include.loss as loss
 
 # Model params.
-NUM_LAYERS = 3
+NUM_LAYERS = 7
 INTERMEDIATE_DIM = 512
-NUM_HEADS = 4
+NUM_HEADS = 8
 DROPOUT = 0.1
 NORM_EPSILON = 1e-5
 
