@@ -1,10 +1,10 @@
 train:
-  - name: all_hotspots_but_box
+  - name: all_hotspots_but_box_reduced
     nc: train_dataset.nc
-  - name: all_hotspots_but_box
+  - name: all_hotspots_but_box_reduced
     nc: test_dataset.nc
 valid:
-  - name: all_hotspots_but_box
+  - name: all_hotspots_but_box_reduced
     nc: valid_dataset.nc
 test:
   - name: boxberg
