@@ -58,7 +58,7 @@ class EmissionPredictor(keras.Model):
         if self.bottom_layers is not None:
             inputs = self.bottom_layers(inputs)
         x = self.transf(inputs)
-        x - self.flattern(x)
+        x = self.flattern(x)
         return self.quantifier(x)
 
     def calculate_loss(self, inputs):
