@@ -163,8 +163,12 @@ def get_core_model(
         core_model = mae(input_shape=input_shape, image_size=config.model.image_size,
                          patch_size=config.model.patch_size, bottom_layers=bottom_layers)
     elif name == "co2emiss-regres":
-        xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
-        xco2_emd.patch_encoder.downstream = True
+        if "embedding_path" not in config.model:
+            xco2_emd = mae(input_shape=input_shape, image_size=config.model.image_size,
+                           patch_size=config.model.patch_size, bottom_layers=None)
+        else:
+            xco2_emd = tf.keras.models.load_model(config.model.embedding_path)
+            xco2_emd.patch_encoder.downstream = True
         core_model = co2emiss_regres(input_shape, xco2_emd)
     elif name == "co2emiss-transformer":
         emd_quant_model = tf.keras.models.load_model(
