@@ -4,7 +4,7 @@ defaults:
   - override /model: co2emiss_cnnlstm
   - override /data/output: inversion
   - override /data/input: inversion
-  - override /data/path: sch2small
+  - override /data/path: sch2_small
 
 data:
   init:
