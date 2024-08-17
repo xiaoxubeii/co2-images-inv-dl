@@ -19,6 +19,7 @@ def cnn_lstm(input_shape,  drop_CNN=0, drop_dense=0.2, kernel_size=(3, 3)):
 
     model.add(TimeDistributed(Flatten()))
     model.add(LSTM(units=64, return_sequences=True))
+    model.add(LSTM(units=64, return_sequences=False))
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(drop_dense))
     # model.add(Dense(1, activation='linear'))
